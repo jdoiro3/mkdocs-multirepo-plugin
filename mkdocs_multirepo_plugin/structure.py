@@ -61,7 +61,8 @@ class DocsRepo:
             if process.returncode == 1:
                 raise ImportDocsException(f"{self.docs_dir} doesn't exist in the {self.branch} branch of {self.url}")
             if process.returncode > 1:
-                raise ImportDocsException("Error occurred importing docs from another repo")
+                error_output = process.stderr.decode("utf-8")
+                raise ImportDocsException(f"Error occurred importing docs from another repo.\n{error_output}")
             self.imported = True
 
     def load_mkdocs_yaml(self, temp_dir: Path):
