@@ -40,6 +40,7 @@ class DocsRepo:
         # will be populated later
         self.multi_repo_dir = None
         self.config = None
+        self.config_path = None
     
     def import_docs(self, branch: str="master"):
         if platform == "linux" or platform == "linux2":
@@ -53,19 +54,28 @@ class DocsRepo:
                     ], 
                 capture_output=True
                 )
-            if process.returncode != 0:
-                raise ImportDocsException("error importing docs")
+            if process.returncode == 1:
+                raise ImportDocsException(f"{self.docs_dir} doesn't exist in the {branch} branch of {self.url}")
+            if process.returncode > 1:
+                raise ImportDocsException("Error occurred importing docs from another repo")
             self.multi_repo_dir = Path(self.root_docs_dir) / self.name
             self.imported = True
-            print(process.stdout.decode("utf-8"))
 
     def load_mkdocs_yaml(self):
         if self.imported:
-            with open(str(self.multi_repo_dir / "mkdocs.yml"), 'rb') as f:
+            config_file = self.multi_repo_dir / "mkdocs.yml"
+            with open(str(config_file), 'rb') as f:
                 self.config = yaml_load(f)
+                self.config_file = config_file
                 return self.config
         else:
             raise ImportDocsException("docs must be imported before loading yaml")
+
+    def delete_config(self):
+        if self.config_file:
+            self.config_file.unlink()
+        else:
+            print("yaml not loaded yet")
 
     def delete_docs(self):
         shutil.rmtree(str(self.multi_repo_dir))

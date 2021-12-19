@@ -22,8 +22,8 @@ class MultirepoPlugin(BasePlugin):
                 if value.startswith(IMPORT_STATEMENT):
                     repo_url = value.split(" ", 1)[1]
                     repo = DocsRepo(key, repo_url, docs_dir)
-                    terminal_output = repo.import_docs("docs_test")
-                    print("start", terminal_output, "end")
+                    print(f"INFO - Importing docs from {self.url}")
+                    repo.import_docs("docs_test")
                     repo_config = repo.load_mkdocs_yaml()
                     config["nav"][index][key] = repo_config.get('nav')
                     self.repos.append(repo)
@@ -31,6 +31,6 @@ class MultirepoPlugin(BasePlugin):
 
     def on_post_build(self, config):
         for repo in self.repos:
-            repo.delete_docs()
+            repo.delete_config()
         
         

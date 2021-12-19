@@ -6,10 +6,9 @@ docs_dir=$3
 branch=$4
 root_docs_dir=$5
 
-printf "INFO: Pulling documentation from ${url} into ${root_docs_dir}/$name\n"
 cd $root_docs_dir
-mkdir -p $name
-cd $name
+mkdir -p "${name}"
+cd "${name}"
 git init --quiet
 git config core.sparseCheckout true
 git remote add -f origin "$url"
@@ -21,8 +20,8 @@ if [ -d $docs_dir ]; then
     mv * ../
     cd ../
     rm -rf $docs_dir
+    rm -rf .git
 else
-    printf "WARNING: ${docs_dir} directory doesn't exist in ${branch}"
+    rm -rf .git
+    exit 1 # 1 = docs_dir doesn't exist in the branch
 fi
-
-rm -rf .git
