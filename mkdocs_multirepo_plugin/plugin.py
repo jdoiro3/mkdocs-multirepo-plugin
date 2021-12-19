@@ -16,18 +16,17 @@ class MultirepoPlugin(BasePlugin):
         nav = config.get('nav')
         docs_dir = config.get('docs_dir')
 
-        for entry in nav:
+        for index, entry in enumerate(nav):
             (key, value), = entry.items()
             if type(value) is str:
                 if value.startswith(IMPORT_STATEMENT):
                     repo_url = value.split(" ", 1)[1]
                     repo = DocsRepo(key, repo_url, docs_dir)
-                    repo.import_docs("docs_test")
+                    terminal_output = repo.import_docs("docs_test")
+                    print("start", terminal_output, "end")
                     repo_config = repo.load_mkdocs_yaml()
-                    print(repo_config, type(repo_config))
-                    config[key] = repo_config.get('nav')
+                    config["nav"][index][key] = repo_config.get('nav')
                     self.repos.append(repo)
-        print(config)
         return config
 
     def on_post_build(self, config):
