@@ -1,5 +1,4 @@
 from sys import platform
-import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
@@ -29,20 +28,25 @@ def where_git() -> Path:
     else:
         return Path(output).parent.parent
 
+def resolve_nav_paths(nav, section_name):
+    for index, entry in enumerate(nav):
+        (key, value), = entry.items()
+        if type(value) is list:
+            resolve_nav_paths(value, section_name)
+        else:
+            nav[index][key] = str(section_name / Path(value))
+
+
 class DocsRepo:
 
-    def __init__(self, name, url, root_docs_dir, docs_dir="docs"):
+    def __init__(self, name, url, docs_dir="docs", branch="master"):
         self.name = name
         self.url = url
-        self.root_docs_dir = root_docs_dir
+        self.branch = branch
         self.docs_dir = docs_dir
         self.imported = False
-        # will be populated later
-        self.multi_repo_dir = None
-        self.config = None
-        self.config_path = None
     
-    def import_docs(self, branch: str="master"):
+    def import_docs(self, temp_dir: Path):
         if platform == "linux" or platform == "linux2":
             pass
         else:
@@ -50,35 +54,29 @@ class DocsRepo:
             process = subprocess.run(
                 [
                     str(git_folder / "bin" / "bash.exe"), 
-                    "sparse_checkout_docs.sh", self.name, self.url, self.docs_dir, branch, self.root_docs_dir
+                    "sparse_checkout_docs.sh", self.name, self.url, self.docs_dir, self.branch, temp_dir
                     ], 
                 capture_output=True
                 )
             if process.returncode == 1:
-                raise ImportDocsException(f"{self.docs_dir} doesn't exist in the {branch} branch of {self.url}")
+                raise ImportDocsException(f"{self.docs_dir} doesn't exist in the {self.branch} branch of {self.url}")
             if process.returncode > 1:
                 raise ImportDocsException("Error occurred importing docs from another repo")
-            self.multi_repo_dir = Path(self.root_docs_dir) / self.name
             self.imported = True
 
-    def load_mkdocs_yaml(self):
+    def load_mkdocs_yaml(self, temp_dir: Path):
         if self.imported:
-            config_file = self.multi_repo_dir / "mkdocs.yml"
-            with open(str(config_file), 'rb') as f:
-                self.config = yaml_load(f)
-                self.config_file = config_file
-                return self.config
+            config_file = temp_dir / self.name / "mkdocs.yml"
+            if config_file.is_file():
+                with open(str(config_file), 'rb') as f:
+                    config = yaml_load(f)
+                    if 'nav' in config:
+                        resolve_nav_paths(config.get('nav'), self.name)
+                    return config
+            else:
+                print("can't load mkdocs.yml")
         else:
             raise ImportDocsException("docs must be imported before loading yaml")
-
-    def delete_config(self):
-        if self.config_file:
-            self.config_file.unlink()
-        else:
-            print("yaml not loaded yet")
-
-    def delete_docs(self):
-        shutil.rmtree(str(self.multi_repo_dir))
 
 
 
