@@ -55,7 +55,7 @@ class DocsRepo:
                 )
             if process.returncode != 0:
                 raise ImportDocsException("error importing docs")
-            self.multi_repo_dir = Path(self.root_docs_dir / self.name)
+            self.multi_repo_dir = Path(self.root_docs_dir) / self.name
             self.imported = True
             print(process.stdout.decode("utf-8"))
 
