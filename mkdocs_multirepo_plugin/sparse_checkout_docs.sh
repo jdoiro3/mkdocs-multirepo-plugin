@@ -1,16 +1,12 @@
 #!/bin/bash
 
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m'
-
 name=$1
 url=$2
 docs_dir=$3
 branch=$4
 root_docs_dir=$5
 
-printf "${YELLOW}INFO${NC}: Pulling documentation from ${url} into ${root_docs_dir}/$name\n"
+printf "INFO: Pulling documentation from ${url} into ${root_docs_dir}/$name\n"
 cd $root_docs_dir
 mkdir -p $name
 cd $name
@@ -26,7 +22,7 @@ if [ -d $docs_dir ]; then
     cd ../
     rm -rf $docs_dir
 else
-    printf "${RED}WARNING${NC}: ${docs_dir} directory doesn't exist in ${branch}"
+    printf "WARNING: ${docs_dir} directory doesn't exist in ${branch}"
 fi
 
 rm -rf .git
