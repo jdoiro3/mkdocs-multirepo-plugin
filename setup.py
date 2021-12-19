@@ -6,6 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="mkdocs-multirepo-plugin",
+    scripts=['mkdocs_multirepo_plugin/sparse_checkout_docs.sh'],
     version="0.1.0",
     author="Joseph Doiron",
     author_email="josephdoiron1234@yahoo.com",
