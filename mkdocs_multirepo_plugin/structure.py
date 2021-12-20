@@ -66,7 +66,7 @@ class DocsRepo:
             process = subprocess.run(
                 [
                     str(git_folder / "bin" / "bash.exe"), 
-                    "sparse_checkout_docs.sh", self.name, self.url, self.docs_dir, self.branch, temp_dir
+                    "git_docs.sh", self.name, self.url, self.docs_dir, self.branch, temp_dir
                     ], 
                 capture_output=True
                 )
