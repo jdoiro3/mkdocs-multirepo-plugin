@@ -1,14 +1,14 @@
 #!/bin/bash
 
-name="${1}"
-url="${2}"
-docs_dir="${3}"
-branch="${4}"
-temp_dir="${5}"
+name="$1"
+url="$2"
+docs_dir="$3"
+branch="$4"
+temp_dir="$5"
 
 cd $temp_dir
-mkdir -p $name
-cd $name
+mkdir -p "$name"
+cd "$name"
 git init --quiet
 git config core.sparseCheckout true
 git remote add -f origin $url
