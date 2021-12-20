@@ -1,3 +1,4 @@
+from typing import Tuple
 from sys import platform
 import subprocess
 from pathlib import Path
@@ -36,14 +37,14 @@ def resolve_nav_paths(nav: list, section_name: str) -> None:
         else:
             nav[index][key] = str(section_name / Path(value))
 
-def parse_repo_url(repo_url: str) -> tuple[str, str]:
+def parse_repo_url(repo_url: str) -> Tuple[str, str]:
     if "@" in repo_url:
         repo_url, branch = repo_url.rsplit("@", 1)
     else:
         branch = "master"
     return repo_url, branch
 
-def parse_import(import_stmt: str) -> tuple[str, str]:
+def parse_import(import_stmt: str) -> Tuple[str, str]:
     repo_url = import_stmt.split(" ", 1)[1]
     return parse_repo_url(repo_url)
 
