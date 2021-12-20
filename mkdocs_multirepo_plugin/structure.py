@@ -48,6 +48,23 @@ def parse_import(import_stmt: str) -> Tuple[str, str]:
     repo_url = import_stmt.split(" ", 1)[1]
     return parse_repo_url(repo_url)
 
+def git_docs(arguments):
+    if platform == "linux" or platform == "linux2":
+        process = subprocess.run(
+            ["bash", "git_docs.sh"]+arguments,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT
+        )
+    else:
+        git_folder = where_git()
+        process = subprocess.run(
+            [str(git_folder / "bin" / "bash.exe"), "git_docs.sh"]+arguments, 
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT
+        )
+    return process
+
+
 
 class DocsRepo:
 
@@ -59,23 +76,18 @@ class DocsRepo:
         self.imported = False
     
     def import_docs(self, temp_dir: Path) -> None:
-        if platform == "linux" or platform == "linux2":
-            pass
-        else:
-            git_folder = where_git()
-            process = subprocess.run(
-                [
-                    str(git_folder / "bin" / "bash.exe"), 
-                    "git_docs.sh", self.name, self.url, self.docs_dir, self.branch, temp_dir
-                    ], 
-                capture_output=True
+        args = [self.name, self.url, self.docs_dir, self.branch, temp_dir]
+        process = git_docs(args)
+        output = process.stdout.decode("utf-8")
+        if process.returncode == 1:
+            raise ImportDocsException(
+                f"{self.docs_dir} doesn't exist in the {self.branch} branch of {self.url}\nSTDOUT:\n{output}"
                 )
-            if process.returncode == 1:
-                raise ImportDocsException(f"{self.docs_dir} doesn't exist in the {self.branch} branch of {self.url}")
-            if process.returncode > 1:
-                error_output = process.stderr.decode("utf-8")
-                raise ImportDocsException(f"Error occurred importing docs from another repo.\n{error_output}")
-            self.imported = True
+        if process.returncode > 1:
+            raise ImportDocsException(
+                f"Error occurred importing docs from another repo.\nSTDOUT\n{output}"
+                )
+        self.imported = True
 
     def load_mkdocs_yaml(self, temp_dir: Path) -> dict:
         if self.imported:
