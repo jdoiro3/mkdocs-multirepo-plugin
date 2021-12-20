@@ -39,3 +39,7 @@ plugins:
         - section: 'Techdocs-cli'
           import_url: 'https://github.com/backstage/techdocs-cli@main'
 ```
+
+## Notes
+
+- If both `repos` and `nav` is specified in `mkdocs.yml`, `repos` are ignored.
