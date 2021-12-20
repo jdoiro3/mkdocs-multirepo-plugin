@@ -87,7 +87,7 @@ class DocsRepo:
                         resolve_nav_paths(config.get('nav'), self.name)
                     return config
             else:
-                print("can't load mkdocs.yml")
+                raise ImportDocsException(f"{self.name} does not have a mkdocs.yml within the docs directory")
         else:
             raise ImportDocsException("docs must be imported before loading yaml")
 
