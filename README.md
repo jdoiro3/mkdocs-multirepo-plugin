@@ -16,12 +16,26 @@ plugins:
   - multirepo
 ```
 
-The plugin introduces the `!import` statement in your config's `nav` section, allowing you to pass another repo's url, which has a `docs` directory and `mkdocs.yml` with its own `nav`, into the navigation.
+The plugin introduces the `!import` statement in your config's `nav` section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
 
 ```yaml
 nav:
   - Home: 'index.md'
-  - MicroService1: '!import https://github.com/{user}/{repo name}@{branch}'
+  - MicroService: '!import https://github.com/{user}/{repo name}@{branch}'
 ```
 
-## Example
+If you'd prefer `MkDocs` to build the site nav based on the directory structure, you can define your other repos within the `plugins` section.
+
+```yaml
+plugins:
+  - multirepo:
+      cleanup: True # (optional) tells multirepo to cleanup the temporary directory where other repo docs are imported to
+      folder_name: multirepo_docs # (optional) tells multirepo what the temp directory should be called
+      repos:
+        - section: Backstage
+          import_url: 'https://github.com/backstage/backstage'
+        - section: Monorepo
+          import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
+        - section: 'Techdocs-cli'
+          import_url: 'https://github.com/backstage/techdocs-cli@main'
+```
