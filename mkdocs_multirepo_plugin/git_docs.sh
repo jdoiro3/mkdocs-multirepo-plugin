@@ -8,12 +8,9 @@ temp_dir="$5"
 
 cd $temp_dir
 mkdir -p "$name"
+git clone --branch $branch --depth 1 --filter=blob:none --sparse $url "$name"
 cd "$name"
-git init --quiet
-git config core.sparseCheckout true
-git remote add -f origin $url
-echo "${docs_dir}/*"> .git/info/sparse-checkout
-git checkout --quiet $branch
+git sparse-checkout set "${docs_dir}/*"
 
 if [ -d $docs_dir ]; then
     cd $docs_dir
