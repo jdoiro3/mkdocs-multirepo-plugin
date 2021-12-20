@@ -43,3 +43,9 @@ plugins:
 ## Notes
 
 - If both `repos` and `nav` is specified in `mkdocs.yml`, `repos` are ignored.
+
+## TODO
+
+- [ ] Add tests (no one will use it if it isn't tested well).
+- [ ] Add Linux support.
+- [ ] Figure out how tech writers can develop on local copies of repos and see changes in the site before pushing. Maybe using symbolic links.
