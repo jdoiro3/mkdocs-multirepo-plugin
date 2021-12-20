@@ -18,6 +18,7 @@ plugins:
 
 The plugin introduces the `!import` statement in your config's `nav` section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
 
+> `nav` takes precedence over `repos` (see below).
 ```yaml
 nav:
   - Home: 'index.md'
