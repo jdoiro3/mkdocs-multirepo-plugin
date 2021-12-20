@@ -33,6 +33,8 @@ class MultirepoPlugin(BasePlugin):
             for repo in repos:
                 repo_url, branch = parse_repo_url(repo.get("import_url"))
                 repo = DocsRepo(repo.get("section"), repo_url, branch=branch)
+                folder_name = self.config.get("folder_name")
+                print(f"INFO     -  Multirepo plugin is importing docs from {repo.url} into {folder_name}/")
                 repo.import_docs(self.temp_dir)
             return config
         
