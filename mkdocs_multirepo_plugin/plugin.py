@@ -23,12 +23,17 @@ class MultirepoPlugin(BasePlugin):
 
         docs_dir = Path(config.get('docs_dir'))
         self.temp_dir = docs_dir.parent / self.config.get("folder_name")
-        self.temp_dir.mkdir(exist_ok=True)
         repos = self.config.get("repos")
 
+        # create a temporary directory, unless cleanup is set to false, where other repo docs will be
+        # cloned to
+        self.temp_dir.mkdir(exist_ok=True)
+
+        # navigation isn't defined no repos defined in plugin section
         if not config.get('nav') and not repos:
             return config
 
+        # navigation isn't defined but plugin section has repos
         if not config.get('nav') and repos:
             for repo in repos:
                 repo_url, branch = parse_repo_url(repo.get("import_url"))
@@ -37,6 +42,10 @@ class MultirepoPlugin(BasePlugin):
                 print(f"INFO     -  Multirepo plugin is importing docs from {repo.url} into {folder_name}/")
                 repo.import_docs(self.temp_dir)
             return config
+
+        # nav takes precedence over repos
+        if config.get('nav') and repos:
+            print("WARNING  -  Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence")
         
         nav = config.get('nav')
         for index, entry in enumerate(nav):
