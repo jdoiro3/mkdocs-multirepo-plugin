@@ -25,7 +25,6 @@ class MultirepoPlugin(BasePlugin):
         self.temp_dir = docs_dir.parent / self.config.get("folder_name")
         self.temp_dir.mkdir(exist_ok=True)
         repos = self.config.get("repos")
-        print(repos)
 
         if not config.get('nav') and not repos:
             return config
