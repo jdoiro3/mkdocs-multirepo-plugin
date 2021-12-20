@@ -31,7 +31,6 @@ class MultirepoPlugin(BasePlugin):
 
         if not config.get('nav') and repos:
             for repo in repos:
-                print(repo)
                 repo_url, branch = parse_repo_url(repo.get("import_url"))
                 repo = DocsRepo(repo.get("section"), repo_url, branch=branch)
                 repo.import_docs(self.temp_dir)
