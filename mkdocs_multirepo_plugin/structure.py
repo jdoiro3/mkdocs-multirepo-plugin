@@ -28,7 +28,7 @@ def where_git() -> Path:
     else:
         return Path(output).parent.parent
 
-def resolve_nav_paths(nav, section_name):
+def resolve_nav_paths(nav: list, section_name: str) -> None:
     for index, entry in enumerate(nav):
         (key, value), = entry.items()
         if type(value) is list:
@@ -36,17 +36,28 @@ def resolve_nav_paths(nav, section_name):
         else:
             nav[index][key] = str(section_name / Path(value))
 
+def parse_repo_url(repo_url: str) -> tuple[str, str]:
+    if "@" in repo_url:
+        repo_url, branch = repo_url.rsplit("@", 1)
+    else:
+        branch = "master"
+    return repo_url, branch
+
+def parse_import(import_stmt: str) -> tuple[str, str]:
+    repo_url = import_stmt.split(" ", 1)[1]
+    return parse_repo_url(repo_url)
+
 
 class DocsRepo:
 
-    def __init__(self, name, url, docs_dir="docs", branch="master"):
+    def __init__(self, name: str, url: str, docs_dir: str="docs", branch: str="master"):
         self.name = name
         self.url = url
         self.branch = branch
         self.docs_dir = docs_dir
         self.imported = False
     
-    def import_docs(self, temp_dir: Path):
+    def import_docs(self, temp_dir: Path) -> None:
         if platform == "linux" or platform == "linux2":
             pass
         else:
@@ -65,7 +76,7 @@ class DocsRepo:
                 raise ImportDocsException(f"Error occurred importing docs from another repo.\n{error_output}")
             self.imported = True
 
-    def load_mkdocs_yaml(self, temp_dir: Path):
+    def load_mkdocs_yaml(self, temp_dir: Path) -> dict:
         if self.imported:
             config_file = temp_dir / self.name / "mkdocs.yml"
             if config_file.is_file():
