@@ -9,11 +9,10 @@ git clone --branch $branch --depth 1 --filter=blob:none --sparse $url "$name" ||
 cd "$name"
 git sparse-checkout set "${docs_dir}/*"
 
-if [ -d $docs_dir ]; then
-    cd $docs_dir
-    mv * ../
-    cd ../
-    rm -rf "$docs_dir"
+if [ -d "$docs_dir" ]; then
+    mv "$docs_dir"/* .
+    root_dir=$(echo "$docs_dir" | cut -d "/" -f1)
+    rm -rf "$root_dir"
     rm -rf .git
 else
     rm -rf .git

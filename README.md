@@ -9,6 +9,7 @@ Install plugin using pip:
 ```
 pip install git+https://github.com/jdoiro3/mkdocs-multirepo-plugin
 ```
+
 Next, add the plugin to your `mkdocs.yml`
 
 ```yaml
@@ -43,6 +44,10 @@ plugins:
           import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
         - section: 'Techdocs-cli'
           import_url: 'https://github.com/backstage/techdocs-cli@main'
+        - section: FastAPI
+          import_url: 'https://github.com/tiangolo/fastapi'
+          # you can also define where the docs are located in the repo. Default is docs
+          docs_dir: docs/en/docs
 ```
 
 ## Notes
