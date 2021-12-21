@@ -48,6 +48,7 @@ plugins:
 ## TODO
 
 - [ ] Add tests (no one will use it if it isn't tested well).
-- [ ] Add Linux support
-  - ~~Looks like `git clone --sparse` doesn't work with urls on Linux~~ make sure git version is up to date
+- [ ] Make sure Git version supports new `clone` arguments
+- [x] Add Linux support
+  - ~~Looks like `git clone --sparse` doesn't work with urls on Linux~~ git needs to be up to date
 - [ ] Figure out how tech writers can develop on local copies of repos and see changes in the site before pushing. Maybe using symbolic links.
