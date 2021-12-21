@@ -85,7 +85,7 @@ class DocsRepo:
                 f"{self.docs_dir} doesn't exist in the {self.branch} branch of {self.url}\nSTDERR:\n{stderr}"
                 )
         elif process.returncode == 2:
-            raise ImportDocsException(f"Error occurred importing {self.name}.\nSTDERR\n{stderr}")
+            raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
         if process.returncode > 2:
             raise ImportDocsException(f"Error occurred importing {self.name}.\nSTDERR\n{stderr}")
         self.imported = True
