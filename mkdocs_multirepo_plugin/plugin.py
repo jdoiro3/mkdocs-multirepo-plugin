@@ -53,8 +53,7 @@ class MultirepoPlugin(BasePlugin):
                 if value.startswith(IMPORT_STATEMENT):
                     repo_url, branch = parse_import(value)
                     repo = DocsRepo(section_name, repo_url, branch=branch)
-                    folder_name = self.config.get("folder_name")
-                    print(f"INFO     -  Multirepo plugin is importing docs for section {repo.name}")
+                    log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                     repo.import_docs(self.temp_dir)
                     repo_config = repo.load_mkdocs_yaml(self.temp_dir)
                     nav[index][section_name] = repo_config.get('nav')
