@@ -65,7 +65,6 @@ class MultirepoPlugin(BasePlugin):
         temp_config["docs_dir"] = self.temp_dir
         other_repo_files = get_files(temp_config)
         for f in other_repo_files:
-            print(f.page)
             files.append(f)
         return files
 
