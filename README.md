@@ -43,10 +43,6 @@ plugins:
           import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
         - section: 'Techdocs-cli'
           import_url: 'https://github.com/backstage/techdocs-cli@main'
-        - section: FastAPI
-          import_url: 'https://github.com/tiangolo/fastapi'
-          # you can also define where the docs are located in the repo. Default is docs
-          docs_dir: docs/en/docs
 ```
 
 ## Notes
