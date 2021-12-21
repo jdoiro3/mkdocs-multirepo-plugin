@@ -19,6 +19,7 @@ class MultirepoPlugin(BasePlugin):
 
     def __init__(self):
         self.temp_dir = None
+        self.repos = {}
 
     def on_config(self, config: dict) -> dict:
 
@@ -40,6 +41,7 @@ class MultirepoPlugin(BasePlugin):
                 repo = DocsRepo(repo.get("section"), repo_url, docs_dir=repo.get("docs_dir", "docs"), branch=branch)
                 log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                 repo.import_docs(self.temp_dir)
+                self.repos[repo.name] = repo
             return config
 
         # nav takes precedence over repos
@@ -57,7 +59,7 @@ class MultirepoPlugin(BasePlugin):
                     repo.import_docs(self.temp_dir)
                     repo_config = repo.load_mkdocs_yaml(self.temp_dir)
                     nav[index][section_name] = repo_config.get('nav')
-                    self.repos.append(repo)
+                    self.repos[repo.name] = repo
         return config
 
     def on_files(self, files: Files, config: dict) -> Files:
@@ -67,6 +69,10 @@ class MultirepoPlugin(BasePlugin):
         for f in other_repo_files:
             files.append(f)
         return files
+
+    def on_pre_page(self, page, config, files):
+        # need to fix page edit_urls
+        return page
 
     def on_post_build(self, config: dict) -> None:
         if self.temp_dir and self.config.get("cleanup"):
