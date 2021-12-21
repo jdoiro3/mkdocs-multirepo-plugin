@@ -4,31 +4,13 @@ import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
+from .util import where_git
 
 class GitPathException(Exception):
     pass
 
 class ImportDocsException(Exception):
     pass
-
-def where_git() -> Path:
-    output = (
-        subprocess.run(["where","git"], capture_output=True, shell=True)
-        .stdout
-        .decode("utf-8")
-        .replace("\r", "").replace("\n", "")
-    )
-    if "INFO" in output:
-        # see if a git install is located in the default location
-        default_git_loc = Path("C:/Program Files/Git")
-        if default_git_loc.is_dir():
-            return default_git_loc
-        else:
-            raise GitPathException(
-                f"git is not in PATH and install isn't located at {str(default_git_loc)}"
-                )
-    else:
-        return Path(output).parent.parent
 
 def resolve_nav_paths(nav: list, section_name: str) -> None:
     for index, entry in enumerate(nav):

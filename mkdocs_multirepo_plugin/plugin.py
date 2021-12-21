@@ -2,6 +2,7 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
 from mkdocs.config import config_options
 from .structure import DocsRepo, ImportDocsException, parse_import, parse_repo_url
+from .util import log
 from pathlib import Path
 from copy import deepcopy
 import shutil
@@ -37,14 +38,13 @@ class MultirepoPlugin(BasePlugin):
             for repo in repos:
                 repo_url, branch = parse_repo_url(repo.get("import_url"))
                 repo = DocsRepo(repo.get("section"), repo_url, branch=branch)
-                folder_name = self.config.get("folder_name")
-                print(f"INFO     -  Multirepo plugin is importing docs for section {repo.name}")
+                log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                 repo.import_docs(self.temp_dir)
             return config
 
         # nav takes precedence over repos
         if config.get('nav') and repos:
-            print("WARNING  -  Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence")
+            log.warning("Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence")
         
         nav = config.get('nav')
         for index, entry in enumerate(nav):
@@ -72,7 +72,7 @@ class MultirepoPlugin(BasePlugin):
     def on_post_build(self, config: dict) -> None:
         if self.temp_dir and self.config.get("cleanup"):
             folder_name = self.config.get("folder_name")
-            print(f"INFO     -  Multirepo plugin is cleaning up {folder_name}/")
+            log.info(f"Multirepo plugin is cleaning up {folder_name}/")
             shutil.rmtree(str(self.temp_dir))
         
         
