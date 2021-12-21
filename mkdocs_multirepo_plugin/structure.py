@@ -1,5 +1,6 @@
 from typing import Tuple
 from sys import platform
+import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
@@ -48,19 +49,17 @@ def parse_import(import_stmt: str) -> Tuple[str, str]:
     repo_url = import_stmt.split(" ", 1)[1]
     return parse_repo_url(repo_url)
 
-def git_docs(arguments):
+def git_docs(arguments: list, cwd: Path):
     if platform == "linux" or platform == "linux2":
         process = subprocess.run(
-            ["bash", "git_docs.sh"]+arguments,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT
+            ["bash", "git_docs.sh"]+arguments, capture_output=True, text=True,
+            cwd=cwd
         )
     else:
         git_folder = where_git()
         process = subprocess.run(
-            [str(git_folder / "bin" / "bash.exe"), "git_docs.sh"]+arguments, 
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT
+            [str(git_folder / "bin" / "bash.exe"), "git_docs.sh"]+arguments, capture_output=True, text=True,
+            cwd=cwd
         )
     return process
 
@@ -75,18 +74,20 @@ class DocsRepo:
         self.docs_dir = docs_dir
         self.imported = False
     
-    def import_docs(self, temp_dir: Path) -> None:
-        args = [self.name, self.url, self.docs_dir, self.branch, temp_dir]
-        process = git_docs(args)
-        output = process.stdout.decode("utf-8")
+    def import_docs(self, temp_dir: Path, remove_existing=True) -> None:
+        if (temp_dir / self.name).is_dir() and remove_existing:
+            shutil.rmtree(str(temp_dir / self.name))
+        args = [self.name, self.url, self.docs_dir, self.branch]
+        process = git_docs(args, temp_dir)
+        stderr = process.stderr
         if process.returncode == 1:
             raise ImportDocsException(
-                f"{self.docs_dir} doesn't exist in the {self.branch} branch of {self.url}\nSTDOUT:\n{output}"
+                f"{self.docs_dir} doesn't exist in the {self.branch} branch of {self.url}\nSTDERR:\n{stderr}"
                 )
-        if process.returncode > 1:
-            raise ImportDocsException(
-                f"Error occurred importing docs from another repo.\nSTDOUT\n{output}"
-                )
+        elif process.returncode == 2:
+            raise ImportDocsException(f"Error occurred importing {self.name}.\nSTDERR\n{stderr}")
+        if process.returncode > 2:
+            raise ImportDocsException(f"Error occurred importing {self.name}.\nSTDERR\n{stderr}")
         self.imported = True
 
     def load_mkdocs_yaml(self, temp_dir: Path) -> dict:

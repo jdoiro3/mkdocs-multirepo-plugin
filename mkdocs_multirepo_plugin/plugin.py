@@ -25,9 +25,8 @@ class MultirepoPlugin(BasePlugin):
         self.temp_dir = docs_dir.parent / self.config.get("folder_name")
         repos = self.config.get("repos")
 
-        # create a temporary directory, unless cleanup is set to false, where other repo docs will be
-        # cloned to
-        self.temp_dir.mkdir(exist_ok=True)
+        if not self.temp_dir.is_dir():
+            self.temp_dir.mkdir(exist_ok=True)
 
         # navigation isn't defined no repos defined in plugin section
         if not config.get('nav') and not repos:
@@ -39,7 +38,7 @@ class MultirepoPlugin(BasePlugin):
                 repo_url, branch = parse_repo_url(repo.get("import_url"))
                 repo = DocsRepo(repo.get("section"), repo_url, branch=branch)
                 folder_name = self.config.get("folder_name")
-                print(f"INFO     -  Multirepo plugin is importing docs from {repo.url} into {folder_name}/")
+                print(f"INFO     -  Multirepo plugin is importing docs for section {repo.name}")
                 repo.import_docs(self.temp_dir)
             return config
 
@@ -55,7 +54,7 @@ class MultirepoPlugin(BasePlugin):
                     repo_url, branch = parse_import(value)
                     repo = DocsRepo(section_name, repo_url, branch=branch)
                     folder_name = self.config.get("folder_name")
-                    print(f"INFO     -  Multirepo plugin is importing docs from {repo.url} into {folder_name}/")
+                    print(f"INFO     -  Multirepo plugin is importing docs for section {repo.name}")
                     repo.import_docs(self.temp_dir)
                     repo_config = repo.load_mkdocs_yaml(self.temp_dir)
                     nav[index][section_name] = repo_config.get('nav')
