@@ -6,9 +6,15 @@ from mkdocs.utils import warning_filter
 log = logging.getLogger("mkdocs.plugins." + __name__)
 log.addFilter(warning_filter)
 
+class GitPathException(Exception):
+    pass
+
+class ImportDocsException(Exception):
+    pass
+
 def where_git() -> Path:
     output = (
-        subprocess.run(["where","git"], capture_output=True, shell=True)
+        subprocess.run(["where","git"], capture_output=True)
         .stdout
         .decode("utf-8")
         .replace("\r", "").replace("\n", "")

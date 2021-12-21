@@ -4,13 +4,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
-from .util import where_git
-
-class GitPathException(Exception):
-    pass
-
-class ImportDocsException(Exception):
-    pass
+from .util import where_git, GitPathException, ImportDocsException
 
 def resolve_nav_paths(nav: list, section_name: str) -> None:
     for index, entry in enumerate(nav):
