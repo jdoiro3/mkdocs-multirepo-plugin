@@ -13,8 +13,8 @@ class MultirepoPlugin(BasePlugin):
 
     config_scheme = (
         ("cleanup", config_options.Type(bool, default=True)),
-        ("folder_name", config_options.Type(str, default="temp_docs")),
-        ("repos", config_options.Type(list))
+        ("temp_dir", config_options.Type(str, default="temp_docs")),
+        ("repos", config_options.Type(list, default=[]))
     )
 
     def __init__(self):
@@ -23,7 +23,7 @@ class MultirepoPlugin(BasePlugin):
     def on_config(self, config: dict) -> dict:
 
         docs_dir = Path(config.get('docs_dir'))
-        self.temp_dir = docs_dir.parent / self.config.get("folder_name")
+        self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
         repos = self.config.get("repos")
 
         if not self.temp_dir.is_dir():
@@ -37,7 +37,7 @@ class MultirepoPlugin(BasePlugin):
         if not config.get('nav') and repos:
             for repo in repos:
                 repo_url, branch = parse_repo_url(repo.get("import_url"))
-                repo = DocsRepo(repo.get("section"), repo_url, branch=branch)
+                repo = DocsRepo(repo.get("section"), repo_url, docs_dir=repo.get("docs_dir", "docs"), branch=branch)
                 log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                 repo.import_docs(self.temp_dir)
             return config

@@ -19,8 +19,10 @@ plugins:
 The plugin introduces the `!import` statement in your config's `nav` section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
 
 > Things to Note:
+>
 > - If using `!import` in the `nav`, the repo's docs folder must have a `mkdocs.yml` file with a `nav` section.
 > - `nav` takes precedence over `repos` (see below).
+>
 ```yaml
 nav:
   - Home: 'index.md'
@@ -33,7 +35,7 @@ If you'd prefer `MkDocs` to build the site nav based on the directory structure,
 plugins:
   - multirepo:
       cleanup: True # (optional) tells multirepo to cleanup the temporary directory where other repo docs are imported to
-      folder_name: multirepo_docs # (optional) tells multirepo what the temp directory should be called
+      temp_dir: multirepo_docs # (optional) tells multirepo what the temp directory should be called
       repos:
         - section: Backstage
           import_url: 'https://github.com/backstage/backstage'
@@ -41,6 +43,10 @@ plugins:
           import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
         - section: 'Techdocs-cli'
           import_url: 'https://github.com/backstage/techdocs-cli@main'
+        - section: FastAPI
+          import_url: 'https://github.com/tiangolo/fastapi'
+          # you can also define where the docs are located in the repo. Default is docs
+          docs_dir: docs/en/docs
 ```
 
 ## Notes
