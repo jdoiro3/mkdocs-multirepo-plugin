@@ -26,18 +26,18 @@ def parse_import(import_stmt: str) -> Tuple[str, str]:
     return parse_repo_url(repo_url)
 
 def git_docs(arguments: list, cwd: Path):
-    if platform == "linux" or platform == "linux2":
-        process = subprocess.run(
+    if platform in ["linux", "linux2"]:
+        return subprocess.run(
             ["bash", "git_docs.sh"]+arguments, capture_output=True, text=True,
             cwd=cwd
         )
-    else:
-        git_folder = where_git()
-        process = subprocess.run(
-            [str(git_folder / "bin" / "bash.exe"), "git_docs.sh"]+arguments, capture_output=True, text=True,
-            cwd=cwd
-        )
-    return process
+    git_folder = where_git()
+    return subprocess.run(
+        [str(git_folder / "bin" / "bash.exe"), "git_docs.sh"] + arguments,
+        capture_output=True,
+        text=True,
+        cwd=cwd,
+    )
 
 
 
@@ -67,18 +67,16 @@ class DocsRepo:
         self.imported = True
 
     def load_mkdocs_yaml(self, temp_dir: Path) -> dict:
-        if self.imported:
-            config_file = temp_dir / self.name / "mkdocs.yml"
-            if config_file.is_file():
-                with open(str(config_file), 'rb') as f:
-                    config = yaml_load(f)
-                    if 'nav' in config:
-                        resolve_nav_paths(config.get('nav'), self.name)
-                    return config
-            else:
-                raise ImportDocsException(f"{self.name} does not have a mkdocs.yml within the docs directory")
-        else:
+        if not self.imported:
             raise ImportDocsException("docs must be imported before loading yaml")
+        config_file = temp_dir / self.name / "mkdocs.yml"
+        if not config_file.is_file():
+            raise ImportDocsException(f"{self.name} does not have a mkdocs.yml within the docs directory")
+        with open(str(config_file), 'rb') as f:
+            config = yaml_load(f)
+            if 'nav' in config:
+                resolve_nav_paths(config.get('nav'), self.name)
+            return config
 
 
 
