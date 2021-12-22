@@ -47,12 +47,21 @@ def git_docs(arguments: list, cwd: Path):
     return process
 
 
+def is_github(url):
+    if "github.com" in self.url:
+        return True
+    return False
+
+
 class DocsRepo:
 
     def __init__(self, name: str, url: str, docs_dir: str="docs", branch: str="master", edit_uri: str=None):
         self.name = name
         self.url = url
         self.edit_uri = edit_uri or docs_dir
+        if is_github(url):
+            self.url_for_edit = f"{self.url}/blob/{branch}"
+        self.url_for_edit = self.url
         self.branch = branch
         self.docs_dir = docs_dir
         self.imported = False

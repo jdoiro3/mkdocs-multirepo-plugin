@@ -63,6 +63,7 @@ class MultirepoPlugin(BasePlugin):
                     self.repos[repo.name] = repo
         return config
 
+
     def on_files(self, files: Files, config: dict) -> Files:
         temp_config = deepcopy(config)
         temp_config["docs_dir"] = self.temp_dir
@@ -71,12 +72,13 @@ class MultirepoPlugin(BasePlugin):
             files.append(f)
         return files
 
+
     def on_nav(self, nav, config, files):
         for f in files:
             root_src_path = get_src_path_root(f.src_path)
-            if root_src_path in self.repos:
+            if root_src_path in self.repos and f.page:
                 repo = self.repos.get(root_src_path)
-                f.page._set_edit_url(repo.url, repo.edit_uri)
+                f.page._set_edit_url(repo.url_for_edit, repo.edit_uri)
         return nav
         
 
