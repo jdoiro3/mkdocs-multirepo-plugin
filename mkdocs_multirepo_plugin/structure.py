@@ -48,7 +48,7 @@ def git_docs(arguments: list, cwd: Path):
 
 
 def is_github(url):
-    if "github.com" in self.url:
+    if "github.com" in url:
         return True
     return False
 
