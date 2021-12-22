@@ -12,6 +12,10 @@ class GitPathException(Exception):
 class ImportDocsException(Exception):
     pass
 
+def remove_parents(path, num_to_remove) -> str:
+    parts_to_keep = Path(path).parts[num_to_remove:]
+    return '/' + str(Path(*parts_to_keep))
+
 def where_git() -> Path:
     output = (
         subprocess.run(["where","git"], capture_output=True)

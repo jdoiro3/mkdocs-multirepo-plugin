@@ -2,8 +2,11 @@ from logging import root
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
 from mkdocs.config import config_options
-from .structure import DocsRepo, ImportDocsException, parse_import, parse_repo_url, get_src_path_root
-from .util import log
+from .structure import (
+    DocsRepo, ImportDocsException, parse_import, 
+    parse_repo_url, get_src_path_root
+    )
+from .util import log, remove_parents
 from pathlib import Path
 from copy import deepcopy
 import shutil
@@ -39,7 +42,11 @@ class MultirepoPlugin(BasePlugin):
         if not config.get('nav') and repos:
             for repo in repos:
                 repo_url, branch = parse_repo_url(repo.get("import_url"))
-                repo = DocsRepo(repo.get("section"), repo_url, docs_dir=repo.get("docs_dir", "docs"), branch=branch)
+                edit_uri = repo.get("edit_uri")
+                repo = DocsRepo(
+                    repo.get("section"), repo_url, docs_dir=repo.get("docs_dir", "docs"), 
+                    branch=branch, edit_uri=edit_uri
+                    )
                 log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                 repo.import_docs(self.temp_dir)
                 self.repos[repo.name] = repo
@@ -59,6 +66,7 @@ class MultirepoPlugin(BasePlugin):
                     log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                     repo.import_docs(self.temp_dir)
                     repo_config = repo.load_mkdocs_yaml(self.temp_dir)
+                    repo.set_edit_uri(repo_config.get("edit_uri"))
                     nav[index][section_name] = repo_config.get('nav')
                     self.repos[repo.name] = repo
         return config
@@ -78,7 +86,8 @@ class MultirepoPlugin(BasePlugin):
             root_src_path = get_src_path_root(f.src_path)
             if root_src_path in self.repos and f.page:
                 repo = self.repos.get(root_src_path)
-                f.page._set_edit_url(repo.url_for_edit, repo.edit_uri)
+                src_path = remove_parents(f.src_path, 1).replace('\\', '/')
+                f.page.edit_url = repo.url + repo.edit_uri + repo.docs_dir + src_path
         return nav
         
 
