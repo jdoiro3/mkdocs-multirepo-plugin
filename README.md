@@ -23,11 +23,19 @@ The plugin introduces the `!import` statement in your config's `nav` section. Yo
 >
 > - If using `!import` in the `nav`, the repo's docs folder must have a `mkdocs.yml` file with a `nav` section.
 > - `nav` takes precedence over `repos` (see below).
->
+
 ```yaml
 nav:
   - Home: 'index.md'
   - MicroService: '!import https://github.com/{user}/{repo name}@{branch}'
+```
+
+*Some other repo's mkdocs.yml*
+```yaml
+edit_uri: /blob/master/
+
+nav:
+  - Home: index.md
 ```
 
 If you'd prefer `MkDocs` to build the site nav based on the directory structure, you can define your other repos within the `plugins` section.
@@ -40,10 +48,14 @@ plugins:
       repos:
         - section: Backstage
           import_url: 'https://github.com/backstage/backstage'
+          # you can define the edit uri path
+          edit_uri: /blob/master/
         - section: Monorepo
           import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
+          edit_uri: /blob/master/
         - section: 'Techdocs-cli'
           import_url: 'https://github.com/backstage/techdocs-cli@main'
+          edit_uri: /blob/main/
         - section: FastAPI
           import_url: 'https://github.com/tiangolo/fastapi'
           # you can also define where the docs are located in the repo. Default is docs
