@@ -1,7 +1,8 @@
+from logging import root
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
 from mkdocs.config import config_options
-from .structure import DocsRepo, ImportDocsException, parse_import, parse_repo_url
+from .structure import DocsRepo, ImportDocsException, parse_import, parse_repo_url, get_src_path_root
 from .util import log
 from pathlib import Path
 from copy import deepcopy
@@ -70,9 +71,14 @@ class MultirepoPlugin(BasePlugin):
             files.append(f)
         return files
 
-    def on_pre_page(self, page, config, files):
-        # need to fix page edit_urls
-        return page
+    def on_nav(self, nav, config, files):
+        for f in files:
+            root_src_path = get_src_path_root(f.src_path)
+            if root_src_path in self.repos:
+                repo = self.repos.get(root_src_path)
+                f.page._set_edit_url(repo.url, repo.edit_uri)
+        return nav
+        
 
     def on_post_build(self, config: dict) -> None:
         if self.temp_dir and self.config.get("cleanup"):

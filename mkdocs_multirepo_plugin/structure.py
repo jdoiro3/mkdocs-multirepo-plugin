@@ -4,7 +4,14 @@ import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
-from .util import where_git, GitPathException, ImportDocsException
+from .util import where_git, ImportDocsException
+
+def get_src_path_root(src_path):
+    if "\\" in src_path:
+        return src_path.split("\\", 1)[0]
+    elif "/" in src_path:
+        return src_path.split("/", 1)[0]
+    return src_path
 
 def resolve_nav_paths(nav: list, section_name: str) -> None:
     for index, entry in enumerate(nav):
@@ -40,12 +47,12 @@ def git_docs(arguments: list, cwd: Path):
     return process
 
 
-
 class DocsRepo:
 
-    def __init__(self, name: str, url: str, docs_dir: str="docs", branch: str="master"):
+    def __init__(self, name: str, url: str, docs_dir: str="docs", branch: str="master", edit_uri: str=None):
         self.name = name
         self.url = url
+        self.edit_uri = edit_uri or docs_dir
         self.branch = branch
         self.docs_dir = docs_dir
         self.imported = False
