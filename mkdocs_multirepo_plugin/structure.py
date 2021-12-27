@@ -19,7 +19,7 @@ def resolve_nav_paths(nav: list, section_name: str) -> None:
         if type(value) is list:
             resolve_nav_paths(value, section_name)
         else:
-            nav[index][key] = str(section_name / Path(value))
+            nav[index][key] = str(section_name / Path(value)).replace("\\", "/")
 
 def parse_repo_url(repo_url: str) -> Tuple[str, str]:
     if "@" in repo_url:

@@ -13,8 +13,11 @@ class ImportDocsException(Exception):
     pass
 
 def remove_parents(path, num_to_remove) -> str:
-    parts_to_keep = Path(path).parts[num_to_remove:]
-    return '/' + str(Path(*parts_to_keep))
+    parts = Path(path).parts
+    if num_to_remove >= len(parts):
+        raise ValueError(f"{num_to_remove} >= to path with {parts} parts.")
+    parts_to_keep = parts[num_to_remove:]
+    return '/' + str(Path(*parts_to_keep)).replace('\\', '/')
 
 def where_git() -> Path:
     output = (
