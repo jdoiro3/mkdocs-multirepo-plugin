@@ -69,7 +69,7 @@ plugins:
 ## TODO
 
 - [ ] Add tests (no one will use it if it isn't tested well).
-- [ ] Change page edit urls to point to the correct repo and have the correct path
+- [x] Change page edit urls to point to the correct repo and have the correct path
 - [ ] Make sure Git version supports new `clone` arguments
 - [x] Add Linux support
   - ~~Looks like `git clone --sparse` doesn't work with urls on Linux~~ git needs to be up to date
