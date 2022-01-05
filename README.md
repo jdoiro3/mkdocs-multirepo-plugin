@@ -50,6 +50,22 @@ plugins:
           docs_dir: docs/en/docs
 ```
 
+## Use in CI/CD
+
+If you want to use the plugin within Azure Pipelines or Github Actions, you'll need to define an `AccessToken` environment variable for the `mkdocs build` step. The `AccessToken` should have access to `clone` all repos.
+
+### Azure Pipeline Step Example
+
+```yaml
+- script: |
+    source ./env/bin/activate
+    cd $(root_dir)
+    mkdocs build
+  env:
+    AccessToken: $(System.AccessToken)
+  displayName: 'Build MkDocs Site'
+```
+
 ## Notes
 
 - If both `repos` and `nav` is specified in `mkdocs.yml`, `repos` are ignored.

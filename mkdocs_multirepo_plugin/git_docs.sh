@@ -5,6 +5,9 @@ url="$2"
 docs_dir="$3"
 branch="$4"
 
+if [[ -n  "$AccessToken" ]]; then
+    git config http.extraheader "AUTHORIZATION: bearer $AccessToken"
+fi
 git clone --branch $branch --depth 1 --filter=blob:none --sparse $url "$name" || exit 2
 cd "$name"
 git sparse-checkout set "${docs_dir}/*"
