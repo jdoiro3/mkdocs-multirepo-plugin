@@ -1,8 +1,12 @@
+from logging import root
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
 from mkdocs.config import config_options
-from .structure import DocsRepo, ImportDocsException, parse_import, parse_repo_url
-from .util import log
+from .structure import (
+    DocsRepo, ImportDocsException, parse_import, 
+    parse_repo_url, get_src_path_root
+    )
+from .util import log, remove_parents
 from pathlib import Path
 from copy import deepcopy
 import shutil
@@ -19,9 +23,9 @@ class MultirepoPlugin(BasePlugin):
 
     def __init__(self):
         self.temp_dir = None
+        self.repos = {}
 
     def on_config(self, config: dict) -> dict:
-
         docs_dir = Path(config.get('docs_dir'))
         self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
         repos = self.config.get("repos")
@@ -37,9 +41,14 @@ class MultirepoPlugin(BasePlugin):
         if not config.get('nav') and repos:
             for repo in repos:
                 repo_url, branch = parse_repo_url(repo.get("import_url"))
-                repo = DocsRepo(repo.get("section"), repo_url, docs_dir=repo.get("docs_dir", "docs"), branch=branch)
+                edit_uri = repo.get("edit_uri")
+                repo = DocsRepo(
+                    repo.get("section"), repo_url, docs_dir=repo.get("docs_dir", "docs"), 
+                    branch=branch, edit_uri=edit_uri
+                    )
                 log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                 repo.import_docs(self.temp_dir)
+                self.repos[repo.name] = repo
             return config
 
         # nav takes precedence over repos
@@ -53,13 +62,14 @@ class MultirepoPlugin(BasePlugin):
                 if value.startswith(IMPORT_STATEMENT):
                     repo_url, branch = parse_import(value)
                     repo = DocsRepo(section_name, repo_url, branch=branch)
-                    folder_name = self.config.get("folder_name")
-                    print(f"INFO     -  Multirepo plugin is importing docs for section {repo.name}")
+                    log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                     repo.import_docs(self.temp_dir)
                     repo_config = repo.load_mkdocs_yaml(self.temp_dir)
+                    repo.set_edit_uri(repo_config.get("edit_uri"))
                     nav[index][section_name] = repo_config.get('nav')
-                    self.repos.append(repo)
+                    self.repos[repo.name] = repo
         return config
+
 
     def on_files(self, files: Files, config: dict) -> Files:
         temp_config = deepcopy(config)
@@ -68,6 +78,17 @@ class MultirepoPlugin(BasePlugin):
         for f in other_repo_files:
             files.append(f)
         return files
+
+
+    def on_nav(self, nav, config, files):
+        for f in files:
+            root_src_path = get_src_path_root(f.src_path)
+            if root_src_path in self.repos and f.page:
+                repo = self.repos.get(root_src_path)
+                src_path = remove_parents(f.src_path, 1)
+                f.page.edit_url = repo.url + repo.edit_uri + repo.docs_dir + src_path
+        return nav
+        
 
     def on_post_build(self, config: dict) -> None:
         if self.temp_dir and self.config.get("cleanup"):
