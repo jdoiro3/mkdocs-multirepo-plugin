@@ -26,7 +26,6 @@ class MultirepoPlugin(BasePlugin):
         self.repos = {}
 
     def on_config(self, config: dict) -> dict:
-
         docs_dir = Path(config.get('docs_dir'))
         self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
         repos = self.config.get("repos")
