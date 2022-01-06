@@ -51,6 +51,34 @@ def git_docs(arguments: list, cwd: Path) -> subprocess.CompletedProcess:
         )
     return process
 
+def git_serve_files(arguments: list, cwd: Path) -> subprocess.CompletedProcess:
+    if platform == "linux" or platform == "linux2":
+        process = subprocess.run(
+            ["bash", "git_serve_files.sh"]+arguments, capture_output=True, text=True,
+            cwd=cwd
+        )
+    else:
+        git_folder = where_git()
+        process = subprocess.run(
+            [str(git_folder / "bin" / "bash.exe"), "git_serve_files.sh"]+arguments, capture_output=True, text=True,
+            cwd=cwd
+        )
+    return process
+
+def import_serve_files(root_dir: Path, config):
+    args = [config.get("url"), config.get("custom_dir"), config.get("yml_file"), config.get("branch") or "master"]
+    process = git_serve_files(args, root_dir)
+    stderr = process.stderr
+    if process.returncode == 1:
+        raise ImportDocsException()
+    elif process.returncode == 2:
+        raise ImportDocsException()
+    if process.returncode > 2:
+        raise ImportDocsException()
+    config_file = str(root_dir / "multirepo.yml")
+    with open(config_file, 'rb') as f:
+        return config_file, yaml_load(f)
+
 
 class DocsRepo:
 
@@ -94,8 +122,3 @@ class DocsRepo:
                 raise ImportDocsException(f"{self.name} does not have a mkdocs.yml within the docs directory")
         else:
             raise ImportDocsException("docs must be imported before loading yaml")
-
-
-
-
-    

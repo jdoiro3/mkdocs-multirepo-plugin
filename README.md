@@ -78,6 +78,21 @@ If you want to use the plugin within Azure Pipelines or Github Actions, you'll n
   displayName: 'Build MkDocs Site'
 ```
 
+## Development in Imported Repos
+
+For `mkdocs serve` to work properly in another repo (a repo that is imported), you will need to add the monorepo plugin within the repo with the following configuration. You will also need to have `plugins` the master repo uses installed within your local `venv`.
+
+```yml
+plugins:
+  multirepo:
+    included_repo: true
+    url: [url to master repo]
+    custom_dir: overrides # assuming you use the material theme and have overrides
+    yml_file: mkdocs.yml # this can also be a relative path
+```
+
+Engineers can now run `mkdocs serve` within there local repo and view what there section will look like in the combined site.
+
 ## Notes
 
 - If both `repos` and `nav` is specified in `mkdocs.yml`, `repos` are ignored.
