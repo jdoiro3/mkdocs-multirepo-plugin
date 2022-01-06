@@ -6,7 +6,8 @@ from pathlib import Path
 from mkdocs.utils import yaml_load
 from .util import where_git, ImportDocsException
 
-def get_src_path_root(src_path):
+def get_src_path_root(src_path: str) -> str:
+    """returns the root directory of a path (represented as a string)"""
     if "\\" in src_path:
         return src_path.split("\\", 1)[0]
     elif "/" in src_path:
@@ -14,6 +15,7 @@ def get_src_path_root(src_path):
     return src_path
 
 def resolve_nav_paths(nav: list, section_name: str) -> None:
+    """adds the section_name to the begining of all paths in a MkDocs nav object"""
     for index, entry in enumerate(nav):
         (key, value), = entry.items()
         if type(value) is list:
@@ -22,6 +24,7 @@ def resolve_nav_paths(nav: list, section_name: str) -> None:
             nav[index][key] = str(section_name / Path(value)).replace("\\", "/")
 
 def parse_repo_url(repo_url: str) -> Tuple[str, str]:
+    """parses !import statement urls"""
     if "@" in repo_url:
         repo_url, branch = repo_url.rsplit("@", 1)
     else:
@@ -29,10 +32,12 @@ def parse_repo_url(repo_url: str) -> Tuple[str, str]:
     return repo_url, branch
 
 def parse_import(import_stmt: str) -> Tuple[str, str]:
+    """parses !import statements"""
     repo_url = import_stmt.split(" ", 1)[1]
     return parse_repo_url(repo_url)
 
-def git_docs(arguments: list, cwd: Path):
+def git_docs(arguments: list, cwd: Path) -> subprocess.CompletedProcess:
+    """imports docs via git"""
     if platform == "linux" or platform == "linux2":
         process = subprocess.run(
             ["bash", "git_docs.sh"]+arguments, capture_output=True, text=True,
