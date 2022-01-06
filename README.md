@@ -80,9 +80,10 @@ If you want to use the plugin within Azure Pipelines or Github Actions, you'll n
 
 ## Development in Imported Repos
 
-For `mkdocs serve` to work properly in another repo (a repo that is imported), you will need to add the monorepo plugin within the repo with the following configuration. You will also need to have `plugins` the master repo uses installed within your local `venv`.
+For `mkdocs serve` to work properly in another repo (a repo that is imported), you will need to add the multirepo plugin within the imported repo, including the following configuration. You will also need to have `plugins` the master repo uses installed within your local `venv`.
 
 ```yml
+
 plugins:
   multirepo:
     included_repo: true
