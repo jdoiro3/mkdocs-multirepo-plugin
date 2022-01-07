@@ -84,7 +84,9 @@ If you want to use the plugin within Azure Pipelines or Github Actions, you'll n
 
 For `mkdocs serve` to work properly in another repo (a repo that is imported into a main site), you will need to add the multirepo plugin within the *imported* repo, including the following configuration.
 
-> You will also need to have `plugins` the main repo (the repo what imports other repos) uses installed within your local `venv`.
+> Notes:
+> - You will also need to have `plugins` the main repo (the repo what imports other repos) uses installed within your local `venv`.
+> - See documentation on the [set](https://git-scm.com/docs/git-sparse-checkout#Documentation/git-sparse-checkout.txt-emsetem) git command for `sparse-checkout` if you are confused with what `dirs` can contain.
 
 ```yml
 site_name: My Docs
@@ -93,17 +95,14 @@ plugins:
   multirepo:
     included_repo: true
     url: [url to main repo]
-    dirs: ["overrides/*", "mkdocs.yml"] # directories needed for building the site
+    # directories and files needed for building the site
+    dirs: ["overrides/*", "mkdocs.yml"]
     custom_dir: overrides # overrides directory
     yml_file: mkdocs.yml # this can also be a relative path
     branch: dev
 ```
 
 Engineers can now run `mkdocs serve` within their local repo, using the main site's configuration, custom theming and features.
-
-## Notes
-
-- If both `repos` and `nav` is specified in `mkdocs.yml`, `repos` are ignored.
 
 ## TODO
 
