@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
 from .util import where_git, ImportDocsException
+from .plugin import MultirepoPlugin
 
 def get_src_path_root(src_path: str) -> str:
     """returns the root directory of a path (represented as a string)"""
@@ -36,6 +37,20 @@ def parse_import(import_stmt: str) -> Tuple[str, str]:
     repo_url = import_stmt.split(" ", 1)[1]
     return parse_repo_url(repo_url)
 
+def execute_bash_script(script: str, arguments: list, cwd: Path) -> subprocess.CompletedProcess:
+    if platform == "linux" or platform == "linux2":
+        process = subprocess.run(
+            ["bash", script]+arguments, capture_output=True, text=True,
+            cwd=cwd
+        )
+    else:
+        git_folder = where_git()
+        process = subprocess.run(
+            [str(git_folder / "bin" / "bash.exe"), script]+arguments, capture_output=True, text=True,
+            cwd=cwd
+        )
+    return process
+
 def git_docs(arguments: list, cwd: Path) -> subprocess.CompletedProcess:
     """imports docs via git"""
     if platform == "linux" or platform == "linux2":
@@ -51,41 +66,49 @@ def git_docs(arguments: list, cwd: Path) -> subprocess.CompletedProcess:
         )
     return process
 
-def git_serve_files(arguments: list, cwd: Path) -> subprocess.CompletedProcess:
-    if platform == "linux" or platform == "linux2":
-        process = subprocess.run(
-            ["bash", "git_serve_files.sh"]+arguments, capture_output=True, text=True,
-            cwd=cwd
-        )
-    else:
-        git_folder = where_git()
-        process = subprocess.run(
-            [str(git_folder / "bin" / "bash.exe"), "git_serve_files.sh"]+arguments, capture_output=True, text=True,
-            cwd=cwd
-        )
-    return process
+class Repo:
 
-def import_serve_files(root_dir: Path, config):
-    args = [config.get("url"), config.get("custom_dir"), config.get("yml_file"), config.get("branch") or "master"]
-    process = git_serve_files(args, root_dir)
-    stderr = process.stderr
-    if process.returncode == 1:
-        raise ImportDocsException()
-    elif process.returncode == 2:
-        raise ImportDocsException()
-    if process.returncode > 2:
-        raise ImportDocsException()
-    config_file = str(root_dir / "multirepo.yml")
-    with open(config_file, 'rb') as f:
-        return config_file, yaml_load(f)
-
-
-class DocsRepo:
-
-    def __init__(self, name: str, url: str, docs_dir: str="docs", branch: str="master", edit_uri: str=None):
+    def __init__(self, name: str, url: str, branch: str, temp_dir: Path):
         self.name = name
         self.url = url
         self.branch = branch
+        self.temp_dir = temp_dir / self.name
+        self.cloned = False
+
+    def sparse_clone(self, dirs: list) -> subprocess.CompletedProcess:
+        dirs = " ".join(f'"{dir}"' for dir in self.dirs)
+        args = [self.url, self.name, dirs]
+        process = execute_bash_script("sparse_clone.sh", args, self.temp_dir.parent)
+        if process.returncode == 1:
+            raise ImportDocsException()
+        self.cloned = True
+        return process
+    
+    def get_config_files(self, plugin_config):
+        return self.sparse_clone(plugin_config.get("dirs"))
+
+    def delete_temp_dir(self):
+        shutil.rmtree(str(self.temp_dir))
+        self.cloned = False
+
+    def get_config(self, plugin_config):
+        if self.cloned:
+            config_file = Path(plugin_config.get("yml_file"))
+            if config_file.is_file():
+                with open(config_file, "rb") as f:
+                    return yaml_load(f)
+            else:
+                raise ImportDocsException(f"{self.name} does not have a mkdocs.yml within the docs directory")
+        else:
+            raise ImportDocsException("docs must be imported before loading yaml")
+
+class DocsRepo(Repo):
+
+    def __init__(
+        self, name: str, url: str, temp_dir: Path, 
+        docs_dir: str="docs", branch: str="master", edit_uri: str=None
+        ):
+        super().__init__(name, url, branch, temp_dir)
         self.docs_dir = docs_dir
         self.edit_uri = edit_uri or docs_dir
         self.imported = False
@@ -94,10 +117,10 @@ class DocsRepo:
         self.edit_uri = edit_uri or self.docs_dir
     
     def import_docs(self, temp_dir: Path, remove_existing=True) -> None:
-        if (temp_dir / self.name).is_dir() and remove_existing:
+        if (self.temp_dir / self.name).is_dir() and remove_existing:
             shutil.rmtree(str(temp_dir / self.name))
         args = [self.name, self.url, self.docs_dir, self.branch]
-        process = git_docs(args, temp_dir)
+        process = execute_bash_script("git_docs.sh", args, temp_dir)
         stderr = process.stderr
         if process.returncode == 1:
             raise ImportDocsException(
@@ -109,16 +132,8 @@ class DocsRepo:
             raise ImportDocsException(f"Error occurred importing {self.name}.\nSTDERR\n{stderr}")
         self.imported = True
 
-    def load_mkdocs_yaml(self, temp_dir: Path) -> dict:
-        if self.imported:
-            config_file = temp_dir / self.name / "mkdocs.yml"
-            if config_file.is_file():
-                with open(str(config_file), 'rb') as f:
-                    config = yaml_load(f)
-                    if 'nav' in config:
-                        resolve_nav_paths(config.get('nav'), self.name)
-                    return config
-            else:
-                raise ImportDocsException(f"{self.name} does not have a mkdocs.yml within the docs directory")
-        else:
-            raise ImportDocsException("docs must be imported before loading yaml")
+    def load_mkdocs_yaml(self, plugin_config) -> dict:
+        config = self.get_config(plugin_config)
+        if 'nav' in config:
+            resolve_nav_paths(config.get('nav'), self.name)
+        return config
