@@ -99,7 +99,7 @@ plugins:
     branch: dev
 ```
 
-Engineers can now run `mkdocs serve` within their local repo, using the main site's configuration, custom themeing and features.
+Engineers can now run `mkdocs serve` within their local repo, using the main site's configuration, custom theming and features.
 
 ## Notes
 
