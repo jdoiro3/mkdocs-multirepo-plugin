@@ -18,12 +18,13 @@ class MultirepoPlugin(BasePlugin):
 
     config_scheme = (
         ("cleanup", config_options.Type(bool, default=True)),
-        ("temp_dir", config_options.Type(str, default="temp_docs")),
+        ("temp_dir", config_options.Type(str, default="temp_dir")),
         ("repos", config_options.Type(list, default=[])),
-        ("included_repo", config_options.Type(bool, default=False)),
         ("url", config_options.Type(str, default=None)),
+        # used when developing in repo that is imported
         ("custom_dir", config_options.Type(str, default=None)),
         ("yml_file", config_options.Type(str, default=None)),
+        ("included_repo", config_options.Type(bool, default=False)),
         ("dirs", config_options.Type(list, default=[])),
         ("branch", config_options.Type(str, default=None))
     )
@@ -32,7 +33,7 @@ class MultirepoPlugin(BasePlugin):
         self.temp_dir = None
         self.repos = {}
 
-    def on_config(self, config: dict) -> dict:
+    def on_config(self, config: Config) -> Config:
 
         docs_dir = Path(config.get('docs_dir'))
         self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
@@ -127,7 +128,7 @@ class MultirepoPlugin(BasePlugin):
             return config
 
 
-    def on_files(self, files: Files, config: dict) -> Files:
+    def on_files(self, files: Files, config: Config) -> Files:
         if self.config.get("included_repo"):
             return files
         else:
@@ -139,7 +140,7 @@ class MultirepoPlugin(BasePlugin):
             return files
 
 
-    def on_nav(self, nav, config, files):
+    def on_nav(self, nav, config: Config, files: Files):
         if self.config.get("included_repo"):
             return nav
         else:
@@ -152,10 +153,9 @@ class MultirepoPlugin(BasePlugin):
             return nav
         
 
-    def on_post_build(self, config: dict) -> None:
-        if self.config.get("included_repo"):
-            #shutil.rmtree("temp_docs")
-            pass
+    def on_post_build(self, config: Config) -> None:
+        if self.config.get("included_repo") and self.config.get("cleanup"):
+            shutil.rmtree("temp_dir")
         else:
             if self.temp_dir and self.config.get("cleanup"):
                 temp_dir = self.config.get("temp_dir")
