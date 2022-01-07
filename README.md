@@ -1,5 +1,7 @@
 # mkdocs-multirepo-plugin
 
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+
 Build documentation in multiple repos into one site.
 
 ## Setup
@@ -97,7 +99,7 @@ plugins:
     branch: dev
 ```
 
-Engineers can now run `mkdocs serve` within there local repo and view what there section will look like in the combined site.
+Engineers can now run `mkdocs serve` within their local repo, using the main site's configuration, custom themeing and features.
 
 ## Notes
 
@@ -110,4 +112,4 @@ Engineers can now run `mkdocs serve` within there local repo and view what there
 - [ ] Make sure Git version supports new `clone` arguments
 - [x] Add Linux support
   - ~~Looks like `git clone --sparse` doesn't work with urls on Linux~~ git needs to be up to date
-- [ ] Figure out how tech writers can develop on local copies of repos and see changes in the site before pushing. Maybe using symbolic links.
+- [x] Figure out how tech writers can develop on local copies of repos and see changes in the site before pushing. Maybe using symbolic links.
