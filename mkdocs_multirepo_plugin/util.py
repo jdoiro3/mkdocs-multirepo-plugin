@@ -6,10 +6,10 @@ from mkdocs.utils import warning_filter
 log = logging.getLogger("mkdocs.plugins." + __name__)
 log.addFilter(warning_filter)
 
-class GitPathException(Exception):
+class ImportDocsException(Exception):
     pass
 
-class ImportDocsException(Exception):
+class GitException(Exception):
     pass
 
 def remove_parents(path, num_to_remove) -> str:
@@ -32,7 +32,7 @@ def where_git() -> Path:
         if default_git_loc.is_dir():
             return default_git_loc
         else:
-            raise GitPathException(
+            raise GitException(
                 f"git is not in PATH and install isn't located at {str(default_git_loc)}"
                 )
     else:

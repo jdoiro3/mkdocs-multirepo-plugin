@@ -1,10 +1,9 @@
-from logging import root
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
 from mkdocs.config import config_options
 from mkdocs.theme import Theme
 from .structure import (
-    DocsRepo, import_serve_files, parse_import, 
+    Repo, DocsRepo, parse_import, 
     parse_repo_url, get_src_path_root
     )
 from .util import log, remove_parents
@@ -25,6 +24,7 @@ class MultirepoPlugin(BasePlugin):
         ("url", config_options.Type(str, default=None)),
         ("custom_dir", config_options.Type(str, default=None)),
         ("yml_file", config_options.Type(str, default=None)),
+        ("dirs", config_options.Type(list, default=[])),
         ("branch", config_options.Type(str, default=None))
     )
 
@@ -39,13 +39,21 @@ class MultirepoPlugin(BasePlugin):
         self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
 
         if self.config.get("included_repo"):
-            config_path, imported_config = import_serve_files(docs_dir.parent, self.config)
-            for p in imported_config["plugins"]:
+            self.temp_dir.mkdir(exist_ok=True)
+            repo = Repo(
+                "importee", self.config.get("url"), self.config.get("branch"),
+                self.temp_dir
+            )
+            repo.import_config_files(self.config.get("dirs"))
+            importee_config = repo.load_config(self.temp_dir, self.config.get("yml_file"))
+            # remove multirepo configuration, which is configured to import this repo
+            for p in importee_config["plugins"]:
                 if "multirepo" in p:
-                    imported_config["plugins"].remove(p)
-            config.update(imported_config)
+                    importee_config["plugins"].remove(p)
+            # update this repo's configuration with the importee's configuration
+            config.update(importee_config)
             # update plugins
-            plugins = config_options.Plugins(default=imported_config.get("plugins"))
+            plugins = config_options.Plugins(default=importee_config.get("plugins"))
             plugin_collection = plugins.validate(None)
             config["plugins"] = plugin_collection
             config["plugins"]["multirepo"] = MultirepoPlugin(included_repo=True)
@@ -57,16 +65,17 @@ class MultirepoPlugin(BasePlugin):
             dev_addr = dev_addr.validate(config.get("dev_addr"))
             config["dev_addr"] = (dev_addr.host, dev_addr.port)
             # update theme
-            if imported_config.get("theme"):
-                del imported_config["theme"]["custom_dir"]
-                name = imported_config["theme"]["name"]
-                del imported_config["theme"]["name"]
+            if importee_config.get("theme"):
+                del importee_config["theme"]["custom_dir"]
+                name = importee_config["theme"]["name"]
+                del importee_config["theme"]["name"]
                 config["theme"] = Theme(
                     name = name,
                     custom_dir = self.config.get("custom_dir"),
-                    **imported_config["theme"]
+                    **importee_config["theme"]
                 )
             return config
+        # this should be a repo where we're imporitng docs from other repos
         else:
             repos = self.config.get("repos")
 
@@ -104,7 +113,7 @@ class MultirepoPlugin(BasePlugin):
                         repo = DocsRepo(section_name, repo_url, branch=branch)
                         log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                         repo.import_docs(self.temp_dir)
-                        repo_config = repo.load_mkdocs_yaml(self.temp_dir)
+                        repo_config = repo.load_config(self.temp_dir, "mkdocs.yml")
                         repo.set_edit_uri(repo_config.get("edit_uri"))
                         nav[index][section_name] = repo_config.get('nav')
                         self.repos[repo.name] = repo
@@ -138,8 +147,7 @@ class MultirepoPlugin(BasePlugin):
 
     def on_post_build(self, config: dict) -> None:
         if self.included_repo:
-            shutil.rmtree("overrides")
-            os.remove("multirepo.yml")
+            shutil.rmtree("temp_docs")
         else:
             if self.temp_dir and self.config.get("cleanup"):
                 temp_dir = self.config.get("temp_dir")
