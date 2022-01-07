@@ -2,6 +2,7 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
 from mkdocs.config import config_options
 from mkdocs.theme import Theme
+from mkdocs.config import Config, defaults
 from .structure import (
     Repo, DocsRepo, parse_import, 
     parse_repo_url, get_src_path_root
@@ -10,7 +11,6 @@ from .util import log, remove_parents
 from pathlib import Path
 from copy import deepcopy
 import shutil
-import os
 
 IMPORT_STATEMENT = "!import"
 
@@ -28,10 +28,9 @@ class MultirepoPlugin(BasePlugin):
         ("branch", config_options.Type(str, default=None))
     )
 
-    def __init__(self, included_repo=False):
+    def __init__(self):
         self.temp_dir = None
         self.repos = {}
-        self.included_repo = included_repo
 
     def on_config(self, config: dict) -> dict:
 
@@ -45,44 +44,46 @@ class MultirepoPlugin(BasePlugin):
                 self.temp_dir
             )
             repo.import_config_files(self.config.get("dirs"))
-            importee_config = repo.load_config(self.temp_dir, self.config.get("yml_file"))
-            # remove multirepo configuration, which is configured to import this repo
-            for p in importee_config["plugins"]:
-                if "multirepo" in p:
-                    importee_config["plugins"].remove(p)
-            # update this repo's configuration with the importee's configuration
-            config.update(importee_config)
+            new_config = repo.load_config(self.config.get("yml_file"))
             # update plugins
-            plugins = config_options.Plugins(default=importee_config.get("plugins"))
-            plugin_collection = plugins.validate(None)
-            config["plugins"] = plugin_collection
-            config["plugins"]["multirepo"] = MultirepoPlugin(included_repo=True)
-            # update markdown extensions
-            md_exts = config_options.MarkdownExtensions()
-            config['markdown_extensions'] = md_exts.validate(config.get("markdown_extensions"))
-            # update dev_addr
-            dev_addr = config_options.IpAddress()
-            dev_addr = dev_addr.validate(config.get("dev_addr"))
-            config["dev_addr"] = (dev_addr.host, dev_addr.port)
+            plugins_copy = deepcopy(new_config["plugins"])
+            for p in plugins_copy:
+                if "search" in p:
+                    log.info("removing search")
+                    new_config["plugins"].remove(p)
+                if "multirepo" in p:
+                    new_config["plugins"].remove(p)
+                    new_config["plugins"].append({"multirepo": {"included_repo": True}})
+            # validate and provide PluginCollection object to config
+            plugins = config_options.Plugins()
+            plugin_collection = plugins.validate(new_config.get("plugins"))
+            new_config["plugins"] = plugin_collection
             # update theme
-            if importee_config.get("theme"):
-                del importee_config["theme"]["custom_dir"]
-                name = importee_config["theme"]["name"]
-                del importee_config["theme"]["name"]
-                config["theme"] = Theme(
-                    name = name,
-                    custom_dir = self.config.get("custom_dir"),
-                    **importee_config["theme"]
+            del new_config["theme"]["custom_dir"]
+            new_config["theme"] = Theme(
+                    custom_dir = str(repo.location / self.config.get("custom_dir")),
+                    **new_config["theme"]
                 )
+            config.update(new_config)
+            new_config = dict(config)
+            # update dev address
+            dev_addr = config_options.IpAddress()
+            addr = dev_addr.validate(new_config.get("dev_addr"))
+            config["dev_addr"] = (addr.host, addr.port)
+            # create new config object
+            config = Config(defaults.get_schema())
+            config.load_dict(new_config)
+            config.validate()
             return config
-        # this should be a repo where we're imporitng docs from other repos
+        # this should be a repo where we're importing docs from other repos
         else:
             repos = self.config.get("repos")
 
             if not self.temp_dir.is_dir():
+                # make the temp_dir if it doesn't already exist
                 self.temp_dir.mkdir(exist_ok=True)
 
-            # navigation isn't defined no repos defined in plugin section
+            # navigation isn't defined and repos aren't defined in plugin section
             if not config.get('nav') and not repos:
                 return config
 
@@ -92,7 +93,7 @@ class MultirepoPlugin(BasePlugin):
                     repo_url, branch = parse_repo_url(repo.get("import_url"))
                     edit_uri = repo.get("edit_uri")
                     repo = DocsRepo(
-                        repo.get("section"), repo_url, docs_dir=repo.get("docs_dir", "docs"), 
+                        repo.get("section"), repo_url, self.temp_dir, docs_dir=repo.get("docs_dir", "docs"), 
                         branch=branch, edit_uri=edit_uri
                         )
                     log.info(f"Multirepo plugin is importing docs for section {repo.name}")
@@ -121,7 +122,7 @@ class MultirepoPlugin(BasePlugin):
 
 
     def on_files(self, files: Files, config: dict) -> Files:
-        if self.included_repo:
+        if self.config.get("included_repo"):
             return files
         else:
             temp_config = deepcopy(config)
@@ -133,7 +134,7 @@ class MultirepoPlugin(BasePlugin):
 
 
     def on_nav(self, nav, config, files):
-        if self.included_repo:
+        if self.config.get("included_repo"):
             return nav
         else:
             for f in files:
@@ -146,8 +147,9 @@ class MultirepoPlugin(BasePlugin):
         
 
     def on_post_build(self, config: dict) -> None:
-        if self.included_repo:
-            shutil.rmtree("temp_docs")
+        if self.config.get("included_repo"):
+            #shutil.rmtree("temp_docs")
+            pass
         else:
             if self.temp_dir and self.config.get("cleanup"):
                 temp_dir = self.config.get("temp_dir")

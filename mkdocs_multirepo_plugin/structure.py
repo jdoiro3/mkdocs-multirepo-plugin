@@ -45,7 +45,7 @@ def execute_bash_script(script: str, arguments: list, cwd: Path) -> subprocess.C
     else:
         git_folder = where_git()
         process = subprocess.run(
-            [str(git_folder / "bin" / "bash.exe"), script]+arguments, stdout=subprocess.PIPE,
+            [str(git_folder / "bin" / "bash.exe"), script]+arguments, capture_output=True, text=True,
             cwd=cwd
         )
     return process
@@ -56,31 +56,37 @@ class Repo:
         self.name = name
         self.url = url
         self.branch = branch
-        self.temp_dir = temp_dir / self.name
+        self.temp_dir = temp_dir
+        self.location = temp_dir / self.name
         self.cloned = False
 
     def sparse_clone(self, dirs: list) -> subprocess.CompletedProcess:
-        print(dirs)
-        args = [self.url, self.name, self.branch]+dirs
-        if self.temp_dir.is_dir():
-            shutil.rmtree(str(self.temp_dir))
-        process = execute_bash_script("sparse_clone.sh", args, self.temp_dir.parent)
+        """sparse clones a repo, using dirs in sparse checkout set command"""
+        args = [self.url, self.name, self.branch] + dirs
+        if self.location.is_dir():
+            # delete the repo's directory to re-clone
+            shutil.rmtree(str(self.location))
+        process = execute_bash_script("sparse_clone.sh", args, self.temp_dir)
         if process.returncode == 2:
             raise GitException(f"error cloning {self.url}\nBash Error\n---------------\n{process.stderr}")
         self.cloned = True
         return process
     
-    def import_config_files(self, dirs: list):
+    def import_config_files(self, dirs: list) -> subprocess.CompletedProcess:
+        """imports directories needed for building the site
+        the list of dirs might include: mkdocs.yml, overrides/*, etc"""
         self.temp_dir.mkdir(exist_ok=True)
         return self.sparse_clone(dirs)
 
-    def delete_temp_dir(self):
-        shutil.rmtree(str(self.temp_dir))
+    def delete_repo(self) -> None:
+        """deletes the repo from the temp directory"""
+        shutil.rmtree(str(self.location))
         self.cloned = False
 
-    def load_config(self, temp_dir: str, yml_file: str):
+    def load_config(self, yml_file: str) -> dict:
+        """loads the mkdocs config yaml file into a dictionary"""
         if self.cloned:
-            config_file = Path(temp_dir) / self.name / Path(yml_file)
+            config_file = self.location / Path(yml_file)
             if config_file.is_file():
                 with open(config_file, "rb") as f:
                     return yaml_load(f)
@@ -91,21 +97,21 @@ class Repo:
 
 class DocsRepo(Repo):
 
-    def __init__(
-        self, name: str, url: str, temp_dir: Path, 
+    def __init__(self, name: str, url: str, temp_dir: Path, 
         docs_dir: str="docs", branch: str="master", edit_uri: str=None
         ):
         super().__init__(name, url, branch, temp_dir)
         self.docs_dir = docs_dir
         self.edit_uri = edit_uri or docs_dir
-        self.imported = False
 
     def set_edit_uri(self, edit_uri):
+        """sets the edit uri for the repo. Used for mkdocs pages"""
         self.edit_uri = edit_uri or self.docs_dir
     
     def import_docs(self, temp_dir: Path, remove_existing=True) -> None:
-        if (self.temp_dir / self.name).is_dir() and remove_existing:
-            shutil.rmtree(str(temp_dir / self.name))
+        """imports the markdown documentation to be included in the site"""
+        if self.location.is_dir() and remove_existing:
+            shutil.rmtree(str(self.location))
         args = [self.name, self.url, self.docs_dir, self.branch]
         process = execute_bash_script("git_docs.sh", args, temp_dir)
         stderr = process.stderr
@@ -119,8 +125,8 @@ class DocsRepo(Repo):
             raise ImportDocsException(f"Error occurred importing {self.name}.\nSTDERR\n{stderr}")
         self.imported = True
 
-    def load_config(self, temp_dir, yml_file) -> dict:
-        config = self.load_config(temp_dir, yml_file)
+    def load_config(self, yml_file) -> dict:
+        config = self.load_config(yml_file)
         if 'nav' in config:
             resolve_nav_paths(config.get('nav'), self.name)
         return config

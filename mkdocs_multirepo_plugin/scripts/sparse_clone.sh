@@ -5,7 +5,6 @@ name="$2"
 branch=$3
 shift 3
 dirs=( "$@" )
-echo "${dirs[*]}"
 
 if [[ -n  "$AccessToken" ]]; then
     git config http.extraheader "AUTHORIZATION: bearer $AccessToken"
