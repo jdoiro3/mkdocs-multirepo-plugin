@@ -90,10 +90,10 @@ site_name: My Docs
 plugins:
   multirepo:
     included_repo: true
-    url: https://azuredevops.unum.com/tfs/UNUM/Portfolio/_git/ENT_Audit.Docs
-    dirs: ["overrides/*", "internal-site/mkdocs.yml"]
-    custom_dir: overrides # assuming you use the material theme and have overrides
-    yml_file: internal-site/mkdocs.yml # this can also be a relative path
+    url: [url to main repo]
+    dirs: ["overrides/*", "mkdocs.yml"] # directories needed for building the site
+    custom_dir: overrides # overrides directory
+    yml_file: mkdocs.yml # this can also be a relative path
     branch: dev
 ```
 
