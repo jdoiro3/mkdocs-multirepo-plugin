@@ -80,16 +80,21 @@ If you want to use the plugin within Azure Pipelines or Github Actions, you'll n
 
 ## Development in Imported Repos
 
-For `mkdocs serve` to work properly in another repo (a repo that is imported), you will need to add the multirepo plugin within the imported repo, including the following configuration. You will also need to have `plugins` the master repo uses installed within your local `venv`.
+For `mkdocs serve` to work properly in another repo (a repo that is imported into a main site), you will need to add the multirepo plugin within the *imported* repo, including the following configuration.
+
+> You will also need to have `plugins` the main repo (the repo what imports other repos) uses installed within your local `venv`.
 
 ```yml
+site_name: My Docs
 
 plugins:
   multirepo:
     included_repo: true
-    url: [url to master repo]
+    url: https://azuredevops.unum.com/tfs/UNUM/Portfolio/_git/ENT_Audit.Docs
+    dirs: ["overrides/*", "internal-site/mkdocs.yml"]
     custom_dir: overrides # assuming you use the material theme and have overrides
-    yml_file: mkdocs.yml # this can also be a relative path
+    yml_file: internal-site/mkdocs.yml # this can also be a relative path
+    branch: dev
 ```
 
 Engineers can now run `mkdocs serve` within there local repo and view what there section will look like in the combined site.
