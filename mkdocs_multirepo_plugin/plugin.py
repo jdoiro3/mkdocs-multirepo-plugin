@@ -45,27 +45,33 @@ class MultirepoPlugin(BasePlugin):
             )
             repo.import_config_files(self.config.get("dirs"))
             new_config = repo.load_config(self.config.get("yml_file"))
+            # remove nav
+            if "nav" in new_config:
+                del new_config["nav"]
             # update plugins
-            plugins_copy = deepcopy(new_config["plugins"])
-            for p in plugins_copy:
-                if "search" in p:
-                    log.info("removing search")
-                    new_config["plugins"].remove(p)
-                if "multirepo" in p:
-                    new_config["plugins"].remove(p)
-                    new_config["plugins"].append({"multirepo": {"included_repo": True}})
-            # validate and provide PluginCollection object to config
-            plugins = config_options.Plugins()
-            plugin_collection = plugins.validate(new_config.get("plugins"))
-            new_config["plugins"] = plugin_collection
+            if "plugins" in new_config:
+                plugins_copy = deepcopy(new_config["plugins"])
+                for p in plugins_copy:
+                    if "search" in p:
+                        log.info("removing search")
+                        new_config["plugins"].remove(p)
+                    if "multirepo" in p:
+                        new_config["plugins"].remove(p)
+                        new_config["plugins"].append({"multirepo": {"included_repo": True}})
+                # validate and provide PluginCollection object to config
+                plugins = config_options.Plugins()
+                plugin_collection = plugins.validate(new_config.get("plugins"))
+                new_config["plugins"] = plugin_collection
             # update theme
-            del new_config["theme"]["custom_dir"]
-            new_config["theme"] = Theme(
-                    custom_dir = str(repo.location / self.config.get("custom_dir")),
-                    **new_config["theme"]
-                )
+            if "theme" in new_config:
+                del new_config["theme"]["custom_dir"]
+                new_config["theme"] = Theme(
+                        custom_dir = str(repo.location / self.config.get("custom_dir")),
+                        **new_config["theme"]
+                    )
+            # update this repo's config with the main repo's config
             config.update(new_config)
-            new_config = dict(config)
+            new_config = dict(config) # needs to be a dict
             # update dev address
             dev_addr = config_options.IpAddress()
             addr = dev_addr.validate(new_config.get("dev_addr"))
