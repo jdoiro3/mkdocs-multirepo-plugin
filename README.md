@@ -32,7 +32,7 @@ nav:
   - MicroService: '!import https://github.com/{user}/{repo name}@{branch}'
 ```
 
-*Some other repo's mkdocs.yml*
+*MicroService mkdocs.yml*
 ```yaml
 edit_uri: /blob/master/
 
