@@ -11,6 +11,7 @@ from .util import log, remove_parents
 from pathlib import Path
 from copy import deepcopy
 import shutil
+from sys import version_info
 
 IMPORT_STATEMENT = "!import"
 
@@ -37,6 +38,8 @@ class MultirepoPlugin(BasePlugin):
 
         docs_dir = Path(config.get('docs_dir'))
         self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
+
+        print(f"Python Version: {version_info.major}.{version_info.minor}")
 
         if self.config.get("included_repo"):
             self.temp_dir.mkdir(exist_ok=True)

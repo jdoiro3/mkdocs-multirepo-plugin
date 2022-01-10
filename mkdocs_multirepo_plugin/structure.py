@@ -1,10 +1,9 @@
 from typing import Tuple
-from sys import platform, version_info
 import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
-from .util import GitException, ImportDocsException, where_git
+from .util import GitException, ImportDocsException, execute_bash_script
 
 def get_src_path_root(src_path: str) -> str:
     """returns the root directory of a path (represented as a string)"""
@@ -35,27 +34,6 @@ def parse_import(import_stmt: str) -> Tuple[str, str]:
     """parses !import statements"""
     repo_url = import_stmt.split(" ", 1)[1]
     return parse_repo_url(repo_url)
-
-def execute_bash_script(script: str, arguments: list, cwd: Path) -> subprocess.CompletedProcess:
-    if platform == "linux" or platform == "linux2":
-        process = subprocess.run(
-            ["bash", script]+arguments, capture_output=True, text=True,
-            cwd=cwd
-        )
-    else:
-        git_folder = where_git()
-        # capture_outpout was added in 3.7.
-        if version_info.major == 3 and version_info.minor > 6:
-            process = subprocess.run(
-                [str(git_folder / "bin" / "bash.exe"), script]+arguments, capture_output=True, text=True,
-                cwd=cwd
-            )
-        else:
-            process = subprocess.run(
-                [str(git_folder / "bin" / "bash.exe"), script]+arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                cwd=cwd
-            )
-    return process
 
 class Repo:
 
