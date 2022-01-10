@@ -1,5 +1,5 @@
 from typing import Tuple
-from sys import platform
+from sys import platform, version_info
 import shutil
 import subprocess
 from pathlib import Path
@@ -44,10 +44,17 @@ def execute_bash_script(script: str, arguments: list, cwd: Path) -> subprocess.C
         )
     else:
         git_folder = where_git()
-        process = subprocess.run(
-            [str(git_folder / "bin" / "bash.exe"), script]+arguments, capture_output=True, text=True,
-            cwd=cwd
-        )
+        # capture_outpout was added in 3.7.
+        if version_info.major == 3 and version_info.minor > 6:
+            process = subprocess.run(
+                [str(git_folder / "bin" / "bash.exe"), script]+arguments, capture_output=True, text=True,
+                cwd=cwd
+            )
+        else:
+            process = subprocess.run(
+                [str(git_folder / "bin" / "bash.exe"), script]+arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                cwd=cwd
+            )
     return process
 
 class Repo:
