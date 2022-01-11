@@ -73,7 +73,6 @@ If you want to use the plugin within Azure Pipelines or Github Actions, you'll n
 ```yaml
 - script: |
     source ./env/bin/activate
-    cd $(docs_dir)
     mkdocs build
   env:
     AccessToken: $(System.AccessToken)
