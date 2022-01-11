@@ -3,7 +3,10 @@ import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
-from .util import GitException, ImportDocsException, execute_bash_script
+from .util import (
+    GitException, ImportDocsException, execute_bash_script,
+    git_supports_sparse_clone, git_version
+)
 
 def get_src_path_root(src_path: str) -> str:
     """returns the root directory of a path (represented as a string)"""
@@ -47,6 +50,9 @@ class Repo:
 
     def sparse_clone(self, dirs: list) -> subprocess.CompletedProcess:
         """sparse clones a repo, using dirs in sparse checkout set command"""
+        if not git_supports_sparse_clone():
+            git_v = git_version()
+            raise GitException(f"Git must >= 2.25. Version {str(git_v.major)}.{str(git_v.minor)} not supported")
         args = [self.url, self.name, self.branch] + dirs
         if self.location.is_dir():
             # delete the repo's directory to re-clone
@@ -98,7 +104,10 @@ class DocsRepo(Repo):
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
         args = [self.name, self.url, self.docs_dir, self.branch]
-        process = execute_bash_script("git_docs.sh", args, temp_dir)
+        if git_supports_sparse_clone():
+            process = execute_bash_script("git_docs.sh", args, temp_dir)
+        else:
+            process = execute_bash_script("git_docs_old_method.sh", args, temp_dir)
         stderr = process.stderr
         if process.returncode == 1:
             raise ImportDocsException(
