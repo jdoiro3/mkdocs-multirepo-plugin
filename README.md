@@ -92,7 +92,7 @@ site_name: My Docs
 
 plugins:
   multirepo:
-    included_repo: true
+    imported_repo: true
     url: [url to main repo]
     # directories and files needed for building the site
     dirs: ["overrides/*", "mkdocs.yml"]

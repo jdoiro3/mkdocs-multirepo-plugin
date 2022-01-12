@@ -25,7 +25,7 @@ class MultirepoPlugin(BasePlugin):
         # used when developing in repo that is imported
         ("custom_dir", config_options.Type(str, default=None)),
         ("yml_file", config_options.Type(str, default=None)),
-        ("included_repo", config_options.Type(bool, default=False)),
+        ("imported_repo", config_options.Type(bool, default=False)),
         ("dirs", config_options.Type(list, default=[])),
         ("branch", config_options.Type(str, default=None))
     )
@@ -39,7 +39,7 @@ class MultirepoPlugin(BasePlugin):
         docs_dir = Path(config.get('docs_dir'))
         self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
 
-        if self.config.get("included_repo"):
+        if self.config.get("imported_repo"):
             self.temp_dir.mkdir(exist_ok=True)
             repo = Repo(
                 "importee", self.config.get("url"), self.config.get("branch"),
@@ -59,7 +59,7 @@ class MultirepoPlugin(BasePlugin):
                         new_config["plugins"].remove(p)
                     if "multirepo" in p:
                         new_config["plugins"].remove(p)
-                        new_config["plugins"].append({"multirepo": {"included_repo": True}})
+                        new_config["plugins"].append({"multirepo": {"imported_repo": True}})
                 # validate and provide PluginCollection object to config
                 plugins = config_options.Plugins()
                 plugin_collection = plugins.validate(new_config.get("plugins"))
@@ -130,7 +130,7 @@ class MultirepoPlugin(BasePlugin):
 
 
     def on_files(self, files: Files, config: Config) -> Files:
-        if self.config.get("included_repo"):
+        if self.config.get("imported_repo"):
             return files
         else:
             temp_config = deepcopy(config)
@@ -142,7 +142,7 @@ class MultirepoPlugin(BasePlugin):
 
 
     def on_nav(self, nav, config: Config, files: Files):
-        if self.config.get("included_repo"):
+        if self.config.get("imported_repo"):
             return nav
         else:
             for f in files:
@@ -155,7 +155,7 @@ class MultirepoPlugin(BasePlugin):
         
 
     def on_post_build(self, config: Config) -> None:
-        if self.config.get("included_repo") and self.config.get("cleanup"):
+        if self.config.get("imported_repo") and self.config.get("cleanup"):
             shutil.rmtree("temp_dir")
         else:
             if self.temp_dir and self.config.get("cleanup"):
