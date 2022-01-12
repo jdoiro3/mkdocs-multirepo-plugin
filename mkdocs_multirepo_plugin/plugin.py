@@ -11,7 +11,6 @@ from .util import log, remove_parents
 from pathlib import Path
 from copy import deepcopy
 import shutil
-from sys import version_info
 
 IMPORT_STATEMENT = "!import"
 
@@ -86,9 +85,8 @@ class MultirepoPlugin(BasePlugin):
         # this should be a repo where we're importing docs from other repos
         else:
             repos = self.config.get("repos")
-
+            # make the temp_dir if it doesn't already exist
             if not self.temp_dir.is_dir():
-                # make the temp_dir if it doesn't already exist
                 self.temp_dir.mkdir(exist_ok=True)
 
             # navigation isn't defined and repos aren't defined in plugin section
@@ -104,8 +102,9 @@ class MultirepoPlugin(BasePlugin):
                         repo.get("section"), repo_url, self.temp_dir, docs_dir=repo.get("docs_dir", "docs"), 
                         branch=branch, edit_uri=edit_uri
                         )
-                    log.info(f"Multirepo plugin is importing docs for section {repo.name}")
-                    repo.import_docs(self.temp_dir)
+                    if not repo.cloned:
+                        log.info(f"Multirepo plugin is importing docs for section {repo.name}")
+                        repo.import_docs(self.temp_dir)
                     self.repos[repo.name] = repo
                 return config
 
@@ -120,8 +119,9 @@ class MultirepoPlugin(BasePlugin):
                     if value.startswith(IMPORT_STATEMENT):
                         repo_url, branch = parse_import(value)
                         repo = DocsRepo(section_name, repo_url, branch=branch)
-                        log.info(f"Multirepo plugin is importing docs for section {repo.name}")
-                        repo.import_docs(self.temp_dir)
+                        if not repo.cloned:
+                            log.info(f"Multirepo plugin is importing docs for section {repo.name}")
+                            repo.import_docs(self.temp_dir)
                         repo_config = repo.load_config(self.temp_dir, "mkdocs.yml")
                         repo.set_edit_uri(repo_config.get("edit_uri"))
                         nav[index][section_name] = repo_config.get('nav')

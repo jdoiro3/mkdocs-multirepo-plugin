@@ -46,7 +46,12 @@ class Repo:
         self.branch = branch
         self.temp_dir = temp_dir
         self.location = temp_dir / self.name
-        self.cloned = False
+
+    @property
+    def cloned(self):
+        if self.location.is_dir():
+            return True
+        return False
 
     def sparse_clone(self, dirs: list) -> subprocess.CompletedProcess:
         """sparse clones a repo, using dirs in sparse checkout set command"""
@@ -60,7 +65,6 @@ class Repo:
         process = execute_bash_script("sparse_clone.sh", args, self.temp_dir)
         if process.returncode == 2:
             raise GitException(f"error cloning {self.url}\nBash Error\n---------------\n{process.stderr}")
-        self.cloned = True
         return process
     
     def import_config_files(self, dirs: list) -> subprocess.CompletedProcess:
@@ -72,7 +76,6 @@ class Repo:
     def delete_repo(self) -> None:
         """deletes the repo from the temp directory"""
         shutil.rmtree(str(self.location))
-        self.cloned = False
 
     def load_config(self, yml_file: str) -> dict:
         """loads the mkdocs config yaml file into a dictionary"""
@@ -117,7 +120,6 @@ class DocsRepo(Repo):
             raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
         if process.returncode > 2:
             raise ImportDocsException(f"Error occurred importing {self.name}.\nSTDERR\n{stderr}")
-        self.imported = True
 
     def load_config(self, yml_file) -> dict:
         config = self.load_config(yml_file)

@@ -42,11 +42,16 @@ nav:
 
 If you'd prefer `MkDocs` to build the site nav based on the directory structure, you can define your other repos within the `plugins` section.
 
+> Note:
+> Cleanup should be set to `False` when developing (i.e., when calling `mkdocs serve`). This will prevent importing repos multiple times with livereload.
+
 ```yaml
 plugins:
   - multirepo:
-      cleanup: True # (optional) tells multirepo to cleanup the temporary directory where other repo docs are imported to
-      temp_dir: multirepo_docs # (optional) tells multirepo what the temp directory should be called
+      # (optional) tells multirepo to cleanup the temporary directory after site is built.
+      cleanup: True
+      # (optional) tells multirepo what the temp directory should be called
+      temp_dir: multirepo_docs
       repos:
         - section: Backstage
           import_url: 'https://github.com/backstage/backstage'
