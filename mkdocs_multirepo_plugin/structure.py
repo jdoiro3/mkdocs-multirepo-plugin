@@ -131,7 +131,8 @@ class DocsRepo(Repo):
         if self.multi_docs:
             self.transform_docs_dir()
         else:
-            execute_bash_script("transform_docs_dir.sh", [self.docs_dir], self.location)
+            process = execute_bash_script("transform_docs_dir.sh", [self.docs_dir], self.location)
+            print(process.stderr, process.stdout)
 
     def load_config(self, yml_file) -> dict:
         config = super().load_config(yml_file)
