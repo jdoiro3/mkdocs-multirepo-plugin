@@ -57,7 +57,7 @@ If you'd prefer *MkDocs* to build the site nav based on the directory structure,
 plugins:
   - multirepo:
       # (optional) tells multirepo to cleanup the temporary directory after site is built.
-      cleanup: True
+      cleanup: true
       # (optional) tells multirepo what the temp directory should be called
       temp_dir: multirepo_docs
       repos:
@@ -65,6 +65,8 @@ plugins:
           import_url: 'https://github.com/backstage/backstage'
           # you can define the edit uri path
           edit_uri: /blob/master/
+          # you can also define where the docs are located in the repo. Default is docs
+          docs_dir: 'docs/*' # this can be a glob
         - section: Monorepo
           import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
           edit_uri: /blob/master/
@@ -73,7 +75,6 @@ plugins:
           edit_uri: /blob/main/
         - section: FastAPI
           import_url: 'https://github.com/tiangolo/fastapi'
-          # you can also define where the docs are located in the repo. Default is docs
           docs_dir: docs/en/docs
 ```
 
