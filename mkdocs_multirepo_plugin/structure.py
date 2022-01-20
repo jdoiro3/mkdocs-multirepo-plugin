@@ -67,7 +67,7 @@ class Repo:
 
     def sparse_clone(self, dirs: list) -> subprocess.CompletedProcess:
         """sparse clones a repo, using dirs in sparse checkout set command"""
-        args = [self.url, self.name, self.branch] + dirs + ["mkdocs.yml"]
+        args = [self.url, self.name, self.branch] + dirs + ["./mkdocs.yml"]
         if git_supports_sparse_clone():
             process = execute_bash_script("sparse_clone.sh", args, self.temp_dir)
         else:
