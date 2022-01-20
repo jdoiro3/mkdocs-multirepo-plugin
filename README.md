@@ -89,6 +89,7 @@ Suppose *Microservice's* directory structure is this.
 ├───project1
 │   └───src
 │   └───docs
+│       └───assets
 |         index.md
 |         technical.md
 ├───project2
@@ -103,6 +104,7 @@ By default, this directory turns into this.
 ├───mkdocs.yml (required if nav section is defined)
 ├───README.md
 ├───project1
+│   └───assets
 |     index.md
 |     technical.md
 ├───project2
