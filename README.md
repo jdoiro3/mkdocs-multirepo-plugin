@@ -19,7 +19,7 @@ plugins:
   - multirepo
 ```
 
-The plugin introduces the `!import` statement in your config's `nav` section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
+The plugin introduces the *!import* statement in your config's *nav* section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
 
 ```yaml
 nav:
@@ -35,23 +35,23 @@ nav:
   - Home: index.md
 ```
 
-### `!import` Statement Sections
+### *!import* Statement Sections
 
-- **`{url}`**: Only *required* part of `!import` statement (e.g., `https://github.com/{user}/{repo name}`).
-- **`@{branch}`**: Tells `multirepo` what branch to use. Defaults to `master` if not supplied.
-- **`?docs_dir={path}`**: The path to the `docs` directory for the section. Defaults to `docs` if not supplied.
+- **{url}**: Only *required* part of *!import* statement (e.g., `https://github.com/{user}/{repo name}`).
+- **@{branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
+- **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs* if not supplied.
 
 > Things to Note:
 >
-> - If using `!import` in the `nav`, the repo's docs folder must have a `mkdocs.yml` file with a `nav` section.
-> - `nav` takes precedence over `repos` (see below).
-> - `{path}` can also be a [glob](https://en.wikipedia.org/wiki/Glob_(programming)) (e.g., `docs/*`).
+> - If using *!import* in the *nav*, the repo's docs folder must have a *mkdocs.yml* file with a *nav* section.
+> - *nav* takes precedence over *repos* (see below).
+> - *{path}* can also be a [glob](https://en.wikipedia.org/wiki/Glob_(programming)) (e.g., `docs/*`).
 
 
-If you'd prefer `MkDocs` to build the site nav based on the directory structure, you can define your other repos within the `plugins` section.
+If you'd prefer *MkDocs* to build the site nav based on the directory structure, you can define your other repos within the *plugins* section.
 
 > Note:
-> Cleanup should be set to `False` when developing (i.e., when calling `mkdocs serve`). This will prevent importing repos multiple times with livereload.
+> Cleanup should be set to `false` when developing (i.e., when calling `mkdocs serve`). This will prevent importing repos multiple times with livereload.
 
 ```yaml
 plugins:
@@ -79,9 +79,9 @@ plugins:
 
 ## Multiple Docs Directories in Imported Repo
 
-If an imported repo is a monorepo (i.e., has multiple `docs` directories), `multirepo` automatically includes them in the site.
+If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site.
 
-Suppose `Microservice`'s directory structure is this.
+Suppose *Microservice's* directory structure is this.
 
 ```
 ├───mkdocs.yml (required if nav section is defined)
@@ -109,7 +109,7 @@ By default, this directory turns into this.
 │     index.md
 ```
 
-> Note: If using the nav `!import` statement, make sure the nav paths reflect the new directory structure, which doesn't include `docs` directories.
+> Note: If using the nav *!import* statement, make sure the nav paths reflect the new directory structure, which doesn't include *docs* directories.
 
 
 ## Use in CI/CD
