@@ -24,7 +24,7 @@ The plugin introduces the *!import* statement in your config's *nav* section. Yo
 ```yaml
 nav:
   - Home: 'index.md'
-  - MicroService: '!import {url}@{branch}?docs_dir={relative path}'
+  - MicroService: '!import {url}@{branch}?docs_dir={relative path}?multi_docs=false'
 ```
 
 *MicroService mkdocs.yml*
@@ -79,7 +79,7 @@ plugins:
 
 ## Multiple Docs Directories in Imported Repo
 
-If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site.
+If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site when `multi_docs` is set to `true`.
 
 Suppose *Microservice's* directory structure is this.
 

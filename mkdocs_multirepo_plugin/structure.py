@@ -6,7 +6,7 @@ from pathlib import Path
 from mkdocs.utils import yaml_load
 from .util import (
     GitException, ImportDocsException, execute_bash_script,
-    git_supports_sparse_clone, git_version
+    git_supports_sparse_clone
 )
 
 def get_src_path_root(src_path: str) -> str:
@@ -102,11 +102,12 @@ class Repo:
 class DocsRepo(Repo):
 
     def __init__(self, name: str, url: str, temp_dir: Path, 
-        docs_dir: str="docs", branch: str="master", edit_uri: str=None
+        docs_dir: str="docs", branch: str="master", edit_uri: str=None, multi_docs: bool=False
         ):
         super().__init__(name, url, branch, temp_dir)
         self.docs_dir = docs_dir
         self.edit_uri = edit_uri or docs_dir
+        self.multi_docs = multi_docs
 
     def set_edit_uri(self, edit_uri):
         """sets the edit uri for the repo. Used for mkdocs pages"""
@@ -127,7 +128,10 @@ class DocsRepo(Repo):
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
         self.sparse_clone([self.docs_dir])
-        self.transform_docs_dir()
+        if self.multi_docs:
+            self.transform_docs_dir()
+        else:
+            execute_bash_script("transform_docs_dir.sh", [self.docs_dir], self.location)
 
     def load_config(self, yml_file) -> dict:
         config = super().load_config(yml_file)
