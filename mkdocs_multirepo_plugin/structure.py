@@ -1,4 +1,5 @@
 from typing import Tuple
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -27,16 +28,27 @@ def resolve_nav_paths(nav: list, section_name: str) -> None:
 
 def parse_repo_url(repo_url: str) -> Tuple[str, str]:
     """parses !import statement urls"""
-    if "@" in repo_url:
-        repo_url, branch = repo_url.rsplit("@", 1)
+    url_parts = re.split('@|\?', repo_url)
+    length = len(url_parts)
+    if length == 1:
+        import_parts = {"url": url_parts[0], "branch": "master", "docs_dir": "docs"}
+    elif length == 2 and url_parts[1].startswith("docs_dir="):
+        docs_dir = url_parts[1].split("=")[1]
+        import_parts = {"url": url_parts[0], "branch": "master", "docs_dir": docs_dir}
+    elif length == 2:
+        import_parts = {"url": url_parts[0], "branch": url_parts[1], "docs_dir": "docs"}
+    elif length == 3 and url_parts[2].startswith("docs_dir="):
+        docs_dir = url_parts[2].split("=")[1]
+        import_parts = {"url": url_parts[0], "branch": url_parts[1], "docs_dir": docs_dir}
     else:
-        branch = "master"
-    return repo_url, branch
+        raise ImportDocsException(f"!import {repo_url} not formatted correctly.")
+    return import_parts
 
+    
 def parse_import(import_stmt: str) -> Tuple[str, str]:
     """parses !import statements"""
-    repo_url = import_stmt.split(" ", 1)[1]
-    return parse_repo_url(repo_url)
+    import_url = import_stmt.split(" ", 1)[1]
+    return parse_repo_url(import_url)
 
 class Repo:
 
@@ -55,16 +67,14 @@ class Repo:
 
     def sparse_clone(self, dirs: list) -> subprocess.CompletedProcess:
         """sparse clones a repo, using dirs in sparse checkout set command"""
-        if not git_supports_sparse_clone():
-            git_v = git_version()
-            raise GitException(f"Git must >= 2.25. Version {str(git_v.major)}.{str(git_v.minor)} not supported")
-        args = [self.url, self.name, self.branch] + dirs
-        if self.location.is_dir():
-            # delete the repo's directory to re-clone
-            shutil.rmtree(str(self.location))
-        process = execute_bash_script("sparse_clone.sh", args, self.temp_dir)
-        if process.returncode == 2:
-            raise GitException(f"error cloning {self.url}\nBash Error\n---------------\n{process.stderr}")
+        args = [self.url, self.name, self.branch] + dirs + ["mkdocs.yml"]
+        if git_supports_sparse_clone():
+            process = execute_bash_script("sparse_clone.sh", args, self.temp_dir)
+        else:
+            process = execute_bash_script("sparse_clone_old.sh", args, self.temp_dir)
+        stderr = process.stderr
+        if process.returncode >= 1:
+            raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
         return process
     
     def import_config_files(self, dirs: list) -> subprocess.CompletedProcess:
@@ -101,28 +111,26 @@ class DocsRepo(Repo):
     def set_edit_uri(self, edit_uri):
         """sets the edit uri for the repo. Used for mkdocs pages"""
         self.edit_uri = edit_uri or self.docs_dir
+
+    def transform_docs_dir(self) -> None:
+        # remove docs nodes from the file tree
+        for p in self.location.rglob("*"):
+            if p.parent.name == "docs":
+                p.rename(p.parent.parent / p.name)
+        # delete all empty docs directories
+        for p in self.location.rglob("*"):
+            if p.name == "docs":
+                shutil.rmtree(str(p))
     
-    def import_docs(self, temp_dir: Path, remove_existing=True) -> None:
+    def import_docs(self, remove_existing=True) -> None:
         """imports the markdown documentation to be included in the site"""
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
-        args = [self.name, self.url, self.docs_dir, self.branch]
-        if git_supports_sparse_clone():
-            process = execute_bash_script("git_docs.sh", args, temp_dir)
-        else:
-            process = execute_bash_script("git_docs_old_method.sh", args, temp_dir)
-        stderr = process.stderr
-        if process.returncode == 1:
-            raise ImportDocsException(
-                f"{self.docs_dir} doesn't exist in the {self.branch} branch of {self.url}\nSTDERR:\n{stderr}"
-                )
-        elif process.returncode == 2:
-            raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
-        if process.returncode > 2:
-            raise ImportDocsException(f"Error occurred importing {self.name}.\nSTDERR\n{stderr}")
+        self.sparse_clone([self.docs_dir])
+        self.transform_docs_dir()
 
     def load_config(self, yml_file) -> dict:
-        config = self.load_config(yml_file)
+        config = super().load_config(yml_file)
         if 'nav' in config:
             resolve_nav_paths(config.get('nav'), self.name)
         return config

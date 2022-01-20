@@ -7,8 +7,8 @@ with open("README.md", "r") as fh:
 setup(
     name="mkdocs-multirepo-plugin",
     scripts=[
-        'mkdocs_multirepo_plugin/scripts/git_docs.sh', 'mkdocs_multirepo_plugin/scripts/sparse_clone.sh',
-        'mkdocs_multirepo_plugin/scripts/git_docs_old_method.sh'],
+        'mkdocs_multirepo_plugin/scripts/sparse_clone.sh',
+        'mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh'],
     version="0.1.0",
     author="Joseph Doiron",
     author_email="josephdoiron1234@yahoo.com",

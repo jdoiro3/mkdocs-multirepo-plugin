@@ -7,7 +7,7 @@ from .structure import (
     Repo, DocsRepo, parse_import, 
     parse_repo_url, get_src_path_root
     )
-from .util import log, remove_parents
+from .util import ImportDocsException, log, remove_parents
 from pathlib import Path
 from copy import deepcopy
 import shutil
@@ -88,45 +88,48 @@ class MultirepoPlugin(BasePlugin):
             # make the temp_dir if it doesn't already exist
             if not self.temp_dir.is_dir():
                 self.temp_dir.mkdir(exist_ok=True)
-
             # navigation isn't defined and repos aren't defined in plugin section
             if not config.get('nav') and not repos:
                 return config
-
+            # nav takes precedence over repos
+            if config.get('nav') and repos:
+                log.warning("Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence")
+            # nav takes precedence over repos
+            if config.get("nav"):
+                nav = config.get('nav')
+                for index, entry in enumerate(nav):
+                    (section_name, value), = entry.items()
+                    if type(value) is str:
+                        if value.startswith(IMPORT_STATEMENT):
+                            import_stmt = parse_import(value)
+                            repo = DocsRepo(
+                                section_name, import_stmt.get("url"), self.temp_dir, 
+                                import_stmt.get("docs_dir"), import_stmt.get("branch")
+                                )
+                            if not repo.cloned:
+                                log.info(f"Multirepo plugin is importing docs for section {repo.name}")
+                                repo.import_docs(self.temp_dir)
+                            repo_config = repo.load_config("mkdocs.yml")
+                            if not repo_config.get("nav"):
+                                raise ImportDocsException(f"{repo.name}'s mkdocs.yml file doesn't have a nav section")
+                            repo.set_edit_uri(repo_config.get("edit_uri"))
+                            nav[index][section_name] = repo_config.get('nav')
+                            self.repos[repo.name] = repo
+                return config
             # navigation isn't defined but plugin section has repos
-            if not config.get('nav') and repos:
+            if repos:
                 for repo in repos:
-                    repo_url, branch = parse_repo_url(repo.get("import_url"))
+                    import_stmt = parse_repo_url(repo.get("import_url"))
                     edit_uri = repo.get("edit_uri")
                     repo = DocsRepo(
-                        repo.get("section"), repo_url, self.temp_dir, docs_dir=repo.get("docs_dir", "docs"), 
-                        branch=branch, edit_uri=edit_uri
+                        repo.get("section"), import_stmt.get("url"), self.temp_dir, repo.get("docs_dir", "docs"), 
+                        import_stmt.get("branch"), edit_uri
                         )
                     if not repo.cloned:
                         log.info(f"Multirepo plugin is importing docs for section {repo.name}")
                         repo.import_docs(self.temp_dir)
                     self.repos[repo.name] = repo
                 return config
-
-            # nav takes precedence over repos
-            if config.get('nav') and repos:
-                log.warning("Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence")
-            
-            nav = config.get('nav')
-            for index, entry in enumerate(nav):
-                (section_name, value), = entry.items()
-                if type(value) is str:
-                    if value.startswith(IMPORT_STATEMENT):
-                        repo_url, branch = parse_import(value)
-                        repo = DocsRepo(section_name, repo_url, branch=branch)
-                        if not repo.cloned:
-                            log.info(f"Multirepo plugin is importing docs for section {repo.name}")
-                            repo.import_docs(self.temp_dir)
-                        repo_config = repo.load_config(self.temp_dir, "mkdocs.yml")
-                        repo.set_edit_uri(repo_config.get("edit_uri"))
-                        nav[index][section_name] = repo_config.get('nav')
-                        self.repos[repo.name] = repo
-            return config
 
 
     def on_files(self, files: Files, config: Config) -> Files:
