@@ -20,7 +20,7 @@ git config core.sparseCheckout true
 git remote add -f origin "$url"
 for dir in "${dirs[@]}"
 do
-   echo "${dir}"> .git/info/sparse-checkout
+   printf "${dir}\n">> .git/info/sparse-checkout
 done
 git checkout $branch
-rm -rf .git
+#rm -rf .git
