@@ -28,20 +28,12 @@ def resolve_nav_paths(nav: list, section_name: str) -> None:
 
 def parse_repo_url(repo_url: str) -> Tuple[str, str]:
     """parses !import statement urls"""
-    url_parts = re.split('@|\?', repo_url)
-    length = len(url_parts)
-    if length == 1:
-        import_parts = {"url": url_parts[0], "branch": "master", "docs_dir": "docs"}
-    elif length == 2 and url_parts[1].startswith("docs_dir="):
-        docs_dir = url_parts[1].split("=")[1]
-        import_parts = {"url": url_parts[0], "branch": "master", "docs_dir": docs_dir}
-    elif length == 2:
-        import_parts = {"url": url_parts[0], "branch": url_parts[1], "docs_dir": "docs"}
-    elif length == 3 and url_parts[2].startswith("docs_dir="):
-        docs_dir = url_parts[2].split("=")[1]
-        import_parts = {"url": url_parts[0], "branch": url_parts[1], "docs_dir": docs_dir}
-    else:
-        raise ImportDocsException(f"!import {repo_url} not formatted correctly.")
+    url_parts = repo_url.split("?")
+    import_parts = {"url": url_parts[0]}
+    for part in url_parts[1:]:
+        k, v = part.split("=")
+        import_parts[k] = v
+    print(import_parts)
     return import_parts
 
     
@@ -102,7 +94,7 @@ class Repo:
 class DocsRepo(Repo):
 
     def __init__(self, name: str, url: str, temp_dir: Path, 
-        docs_dir: str="docs", branch: str="master", edit_uri: str=None, multi_docs: bool=False
+        docs_dir: str="docs/*", branch: str="master", edit_uri: str=None, multi_docs: bool=False
         ):
         super().__init__(name, url, branch, temp_dir)
         self.docs_dir = docs_dir
@@ -131,8 +123,7 @@ class DocsRepo(Repo):
         if self.multi_docs:
             self.transform_docs_dir()
         else:
-            process = execute_bash_script("transform_docs_dir.sh", [self.docs_dir], self.location)
-            print(process.stderr, process.stdout)
+            execute_bash_script("transform_docs_dir.sh", [self.docs_dir.replace("/*", "")], self.location)
 
     def load_config(self, yml_file) -> dict:
         config = super().load_config(yml_file)

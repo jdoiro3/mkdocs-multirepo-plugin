@@ -36,7 +36,8 @@ def where_git() -> Path:
     output = (
         subprocess.run(["where","git"], **extra_run_args)
         .stdout
-        .replace("\r", "").replace("\n", "")
+        .replace("\r", "") # remove carrage return
+        .split("\n")[0] # handle multiple locations of git.exe
     )
     if "INFO" in output:
         # see if a git install is located in the default location

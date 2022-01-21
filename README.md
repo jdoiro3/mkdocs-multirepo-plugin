@@ -24,7 +24,7 @@ The plugin introduces the *!import* statement in your config's *nav* section. Yo
 ```yaml
 nav:
   - Home: 'index.md'
-  - MicroService: '!import {url}@{branch}?docs_dir={relative path}?multi_docs=false'
+  - MicroService: '!import {url}?branch={branch}?docs_dir={path}?multi_docs={True | False}'
 ```
 
 *MicroService mkdocs.yml*
@@ -38,8 +38,9 @@ nav:
 ### *!import* Statement Sections
 
 - **{url}**: Only *required* part of *!import* statement (e.g., `https://github.com/{user}/{repo name}`).
-- **@{branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
+- **?branch={branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
 - **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs* if not supplied.
+- **?multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#multiple-docs-directories-in-imported-repo)).
 
 > Things to Note:
 >
@@ -61,26 +62,29 @@ plugins:
       # (optional) tells multirepo what the temp directory should be called
       temp_dir: multirepo_docs
       repos:
+      repos:
         - section: Backstage
           import_url: 'https://github.com/backstage/backstage'
           # you can define the edit uri path
           edit_uri: /blob/master/
-          # you can also define where the docs are located in the repo. Default is docs
-          docs_dir: 'docs/*' # this can be a glob
         - section: Monorepo
           import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
           edit_uri: /blob/master/
         - section: 'Techdocs-cli'
-          import_url: 'https://github.com/backstage/techdocs-cli@main'
+          import_url: 'https://github.com/backstage/techdocs-cli?branch=main'
           edit_uri: /blob/main/
         - section: FastAPI
           import_url: 'https://github.com/tiangolo/fastapi'
-          docs_dir: docs/en/docs
+          docs_dir: docs/en/docs/*
+        - section: Monorepo Multi Docs
+          import_url: https://github.com/backstage/mkdocs-monorepo-plugin
+          multi_docs: True
+          docs_dir: sample_docs/*
 ```
 
 ## Multiple Docs Directories in Imported Repo
 
-If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site when `multi_docs` is set to `true`.
+If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site when `multi_docs` is set to `True`.
 
 Suppose *Microservice's* directory structure is this.
 

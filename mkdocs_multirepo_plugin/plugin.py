@@ -104,7 +104,8 @@ class MultirepoPlugin(BasePlugin):
                             import_stmt = parse_import(value)
                             repo = DocsRepo(
                                 section_name, import_stmt.get("url"), self.temp_dir, 
-                                import_stmt.get("docs_dir"), import_stmt.get("branch")
+                                import_stmt.get("docs_dir", "docs/*"), import_stmt.get("branch", "master"),
+                                bool(repo.get("multi_docs", False))
                                 )
                             if not repo.cloned:
                                 log.info(f"Multirepo plugin is importing docs for section {repo.name}")
@@ -122,8 +123,8 @@ class MultirepoPlugin(BasePlugin):
                     import_stmt = parse_repo_url(repo.get("import_url"))
                     edit_uri = repo.get("edit_uri")
                     repo = DocsRepo(
-                        repo.get("section"), import_stmt.get("url"), self.temp_dir, repo.get("docs_dir", "docs"), 
-                        import_stmt.get("branch"), edit_uri
+                        repo.get("section"), import_stmt.get("url"), self.temp_dir, repo.get("docs_dir", "docs/*"), 
+                        import_stmt.get("branch", "master"), edit_uri, bool(import_stmt.get("multi_docs", False))
                         )
                     if not repo.cloned:
                         log.info(f"Multirepo plugin is importing docs for section {repo.name}")
