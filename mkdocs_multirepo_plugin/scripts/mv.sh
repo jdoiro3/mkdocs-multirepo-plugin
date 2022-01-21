@@ -1,4 +1,4 @@
 #!/bin/bash
 
 mv "$1"/* .
-rm "$1"
+rm -rf $1
