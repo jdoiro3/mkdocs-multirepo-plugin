@@ -74,7 +74,7 @@ def git_supports_sparse_clone():
     return True
 
 
-def execute_bash_script(script: str, arguments: list, cwd: Path) -> subprocess.CompletedProcess:
+def execute_bash_script(script: str, arguments: list=[], cwd: Path=Path.cwd()) -> subprocess.CompletedProcess:
     extra_run_args = get_subprocess_run_extra_args()
     if platform == "linux" or platform == "linux2":
         process = subprocess.run(
@@ -83,7 +83,6 @@ def execute_bash_script(script: str, arguments: list, cwd: Path) -> subprocess.C
     else:
         git_folder = where_git()
         process = subprocess.run(
-            [str(git_folder / "bin" / "bash.exe"), script]+arguments, **extra_run_args,
-            cwd=cwd
+            [str(git_folder / "bin" / "bash.exe"), script]+arguments, cwd=cwd, **extra_run_args
         )
     return process

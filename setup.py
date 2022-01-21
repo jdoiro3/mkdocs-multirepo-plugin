@@ -9,7 +9,7 @@ setup(
     scripts=[
         'mkdocs_multirepo_plugin/scripts/sparse_clone.sh',
         'mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh',
-        'mkdocs_multirepo_plugin/scripts/transform_docs_dir.sh'],
+        'mkdocs_multirepo_plugin/scripts/mv.sh'],
     version="0.1.0",
     author="Joseph Doiron",
     author_email="josephdoiron1234@yahoo.com",

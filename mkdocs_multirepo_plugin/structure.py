@@ -33,7 +33,6 @@ def parse_repo_url(repo_url: str) -> Tuple[str, str]:
     for part in url_parts[1:]:
         k, v = part.split("=")
         import_parts[k] = v
-    print(import_parts)
     return import_parts
 
     
@@ -121,9 +120,10 @@ class DocsRepo(Repo):
             shutil.rmtree(str(self.location))
         self.sparse_clone([self.docs_dir])
         if self.multi_docs:
+            print("multi docs")
             self.transform_docs_dir()
         else:
-            execute_bash_script("transform_docs_dir.sh", [self.docs_dir.replace("/*", "")], self.location)
+            execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
 
     def load_config(self, yml_file) -> dict:
         config = super().load_config(yml_file)

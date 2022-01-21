@@ -85,12 +85,12 @@ class MultirepoPlugin(BasePlugin):
         # this should be a repo where we're importing docs from other repos
         else:
             repos = self.config.get("repos")
-            # make the temp_dir if it doesn't already exist
-            if not self.temp_dir.is_dir():
-                self.temp_dir.mkdir(exist_ok=True)
             # navigation isn't defined and repos aren't defined in plugin section
             if not config.get('nav') and not repos:
                 return config
+            # make the temp_dir if it doesn't already exist
+            if not self.temp_dir.is_dir():
+                self.temp_dir.mkdir(exist_ok=True)
             # nav takes precedence over repos
             if config.get('nav') and repos:
                 log.warning("Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence")
@@ -105,7 +105,7 @@ class MultirepoPlugin(BasePlugin):
                             repo = DocsRepo(
                                 section_name, import_stmt.get("url"), self.temp_dir, 
                                 import_stmt.get("docs_dir", "docs/*"), import_stmt.get("branch", "master"),
-                                bool(repo.get("multi_docs", False))
+                                bool(import_stmt.get("multi_docs", False))
                                 )
                             if not repo.cloned:
                                 log.info(f"Multirepo plugin is importing docs for section {repo.name}")
@@ -121,10 +121,11 @@ class MultirepoPlugin(BasePlugin):
             if repos:
                 for repo in repos:
                     import_stmt = parse_repo_url(repo.get("import_url"))
-                    edit_uri = repo.get("edit_uri")
                     repo = DocsRepo(
-                        repo.get("section"), import_stmt.get("url"), self.temp_dir, repo.get("docs_dir", "docs/*"), 
-                        import_stmt.get("branch", "master"), edit_uri, bool(import_stmt.get("multi_docs", False))
+                        repo.get("section"), import_stmt.get("url"), 
+                        self.temp_dir, repo.get("docs_dir", "docs/*"), 
+                        import_stmt.get("branch", "master"), repo.get("edit_uri"), 
+                        bool(repo.get("multi_docs", False))
                         )
                     if not repo.cloned:
                         log.info(f"Multirepo plugin is importing docs for section {repo.name}")

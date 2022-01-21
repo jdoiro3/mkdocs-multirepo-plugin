@@ -62,7 +62,6 @@ plugins:
       # (optional) tells multirepo what the temp directory should be called
       temp_dir: multirepo_docs
       repos:
-      repos:
         - section: Backstage
           import_url: 'https://github.com/backstage/backstage'
           # you can define the edit uri path
@@ -75,11 +74,11 @@ plugins:
           edit_uri: /blob/main/
         - section: FastAPI
           import_url: 'https://github.com/tiangolo/fastapi'
-          docs_dir: docs/en/docs/*
+          docs_dir: docs/en/docs/* # glob
         - section: Monorepo Multi Docs
           import_url: https://github.com/backstage/mkdocs-monorepo-plugin
           multi_docs: True
-          docs_dir: sample_docs/*
+          docs_dir: sample-docs/* # glob
 ```
 
 ## Multiple Docs Directories in Imported Repo
