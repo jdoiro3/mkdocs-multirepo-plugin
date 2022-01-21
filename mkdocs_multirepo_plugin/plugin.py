@@ -155,7 +155,7 @@ class MultirepoPlugin(BasePlugin):
                 if root_src_path in self.repos and f.page:
                     repo = self.repos.get(root_src_path)
                     src_path = remove_parents(f.src_path, 1)
-                    f.page.edit_url = repo.url + repo.edit_uri + repo.docs_dir + src_path
+                    f.page.edit_url = repo.url + repo.edit_uri + repo.docs_dir.replace("/*", "") + src_path
             return nav
         
 
