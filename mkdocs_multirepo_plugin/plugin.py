@@ -158,7 +158,7 @@ class MultirepoPlugin(BasePlugin):
                     if not repo.multi_docs:
                         f.page.edit_url = repo.url + repo.edit_uri + repo.docs_dir.replace("/*", "") + src_path
                     else:
-                        f.page.edit_url = repo.url + repo.edit_uri + src_path
+                        f.page.edit_url = repo.url + repo.edit_uri + repo.docs_dir.replace("/*", "") + src_path
             return nav
         
 
