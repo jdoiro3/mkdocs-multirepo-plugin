@@ -118,11 +118,15 @@ class DocsRepo(Repo):
         """imports the markdown documentation to be included in the site"""
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
-        self.sparse_clone([self.docs_dir])
         if self.multi_docs:
-            print("multi docs")
+            if self.docs_dir == "docs/*":
+                docs_dir = "docs"
+            else:
+                docs_dir = self.docs_dir
+            self.sparse_clone([docs_dir])
             self.transform_docs_dir()
         else:
+            self.sparse_clone([self.docs_dir])
             execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
 
     def load_config(self, yml_file) -> dict:
