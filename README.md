@@ -78,12 +78,14 @@ plugins:
         - section: Monorepo Multi Docs
           import_url: https://github.com/backstage/mkdocs-monorepo-plugin
           multi_docs: True
+          # Note: if multiple docs directories are not within a single root directory (e.g., sample-docs),
+          # you should change this value to 'docs'
           docs_dir: sample-docs/* # glob
 ```
 
 ## Multiple Docs Directories in Imported Repo
 
-If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site when `multi_docs` is set to `True`.
+If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site when `multi_docs` is set to `True`. Note that `docs_dir` should be set to `docs`.
 
 Suppose *Microservice's* directory structure is this.
 
