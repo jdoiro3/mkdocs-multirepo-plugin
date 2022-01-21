@@ -155,8 +155,10 @@ class MultirepoPlugin(BasePlugin):
                 if root_src_path in self.repos and f.page:
                     repo = self.repos.get(root_src_path)
                     src_path = remove_parents(f.src_path, 1)
-                    if not repo.multi_docs:
-                        f.page.edit_url = repo.url + repo.edit_uri + repo.docs_dir.replace("/*", "") + src_path
+                    if repo.multi_docs:
+                        # we need to map the updated (with no docs/) to the correct src_path for
+                        # page editing in the repo
+                        f.page.edit_url = repo.url + repo.edit_uri + repo.src_path_map.get(src_path, src_path)
                     else:
                         f.page.edit_url = repo.url + repo.edit_uri + repo.docs_dir.replace("/*", "") + src_path
             return nav

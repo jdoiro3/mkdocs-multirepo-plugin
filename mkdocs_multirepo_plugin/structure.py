@@ -99,6 +99,7 @@ class DocsRepo(Repo):
         self.docs_dir = docs_dir
         self.edit_uri = edit_uri or docs_dir
         self.multi_docs = multi_docs
+        self.src_path_map = {}
 
     def set_edit_uri(self, edit_uri):
         """sets the edit uri for the repo. Used for mkdocs pages"""
@@ -108,7 +109,12 @@ class DocsRepo(Repo):
         # remove docs nodes from the file tree
         for p in self.location.rglob("*"):
             if p.parent.name == "docs":
-                p.rename(p.parent.parent / p.name)
+                new_p = p.rename(p.parent.parent / p.name)
+                if p.suffix == ".md":
+                    # create a mapping from the old new src_path to the old for page edit_urls
+                    old_src_path = str(p).replace(str(self.location), "").replace("\\", "/")[1:]
+                    new_src_path = str(new_p).replace(str(self.location), "").replace("\\", "/")
+                    self.src_path_map[new_src_path] = old_src_path
         # delete all empty docs directories
         for p in self.location.rglob("*"):
             if p.name == "docs":
