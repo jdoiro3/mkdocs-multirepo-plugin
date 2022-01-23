@@ -19,6 +19,14 @@ class ImportDocsException(Exception):
 class GitException(Exception):
     pass
 
+def get_src_path_root(src_path: str) -> str:
+    """returns the root directory of a path (represented as a string)"""
+    if "\\" in src_path:
+        return src_path.split("\\", 1)[0]
+    elif "/" in src_path:
+        return src_path.split("/", 1)[0]
+    return src_path
+
 def get_subprocess_run_extra_args():
     if (version_info.major == 3 and version_info.minor > 6) or (version_info.major > 3):
         return {"capture_output": True, "text": True}
