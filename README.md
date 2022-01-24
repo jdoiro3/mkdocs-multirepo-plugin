@@ -81,7 +81,7 @@ plugins:
           docs_dir: sample-docs/* # glob
 ```
 
-## Multiple Docs Directories in Imported Repo (α Alpha)
+## α Multiple Docs Directories in Imported Repo (Alpha)
 
 If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site when `multi_docs` is set to `True`.
 
@@ -133,7 +133,7 @@ If you want to use the plugin within Azure Pipelines or Github Actions, you'll n
   displayName: 'Build MkDocs Site'
 ```
 
-## Development in Imported Repos (α Alpha)
+## α Development in Imported Repos (Alpha)
 
 For `mkdocs serve` to work properly in another repo (a repo that is imported into a main site), you will need to add the multirepo plugin within the *imported* repo, including the following configuration.
 
