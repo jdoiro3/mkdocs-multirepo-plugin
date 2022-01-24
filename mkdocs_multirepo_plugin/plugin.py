@@ -4,10 +4,9 @@ from mkdocs.config import config_options
 from mkdocs.theme import Theme
 from mkdocs.config import Config, defaults
 from .structure import (
-    Repo, DocsRepo, parse_import, 
-    parse_repo_url, get_src_path_root
+    Repo, DocsRepo, parse_import, parse_repo_url
     )
-from .util import ImportDocsException, log, remove_parents
+from .util import ImportDocsException, log, remove_parents, get_src_path_root
 from pathlib import Path
 from copy import deepcopy
 import shutil
@@ -154,13 +153,7 @@ class MultirepoPlugin(BasePlugin):
                 root_src_path = get_src_path_root(f.src_path)
                 if root_src_path in self.repos and f.page:
                     repo = self.repos.get(root_src_path)
-                    src_path = remove_parents(f.src_path, 1)
-                    if repo.multi_docs:
-                        # we need to map the updated (with no docs/) to the correct src_path for
-                        # page editing in the repo
-                        f.page.edit_url = repo.url + repo.edit_uri + repo.src_path_map.get(src_path, src_path)
-                    else:
-                        f.page.edit_url = repo.url + repo.edit_uri + repo.docs_dir.replace("/*", "") + src_path
+                    f.page.edit_url = repo.get_edit_url(f.src_path)
             return nav
         
 

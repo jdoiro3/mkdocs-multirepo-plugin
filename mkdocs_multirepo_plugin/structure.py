@@ -6,7 +6,7 @@ from pathlib import Path
 from mkdocs.utils import yaml_load
 from .util import (
     GitException, ImportDocsException, execute_bash_script,
-    git_supports_sparse_clone, get_src_path_root
+    git_supports_sparse_clone, remove_parents
 )
 
 def resolve_nav_paths(nav: list, section_name: str) -> None:
@@ -117,6 +117,13 @@ class DocsRepo(Repo):
         self.multi_docs = multi_docs
         self.src_path_map = {}
 
+
+    def get_edit_url(self, src_path):
+        src_path = remove_parents(src_path, 1)
+        if self.multi_docs:
+            return self.url + self.edit_uri + self.src_path_map.get(src_path, src_path)
+        return self.url + self.edit_uri + self.docs_dir.replace("/*", "") + src_path
+
     def set_edit_uri(self, edit_uri) -> None:
         """Sets the edit uri for the repo. Used for mkdocs pages"""
         self.edit_uri = edit_uri or self.docs_dir
@@ -136,6 +143,7 @@ class DocsRepo(Repo):
         for p in self.location.rglob("*"):
             if p.name == "docs":
                 shutil.rmtree(str(p))
+
     
     def import_docs(self, remove_existing=True) -> None:
         """Imports the markdown documentation to be included in the site"""
