@@ -140,11 +140,11 @@ class DocsRepo(Repo):
     def transform_docs_dir(self) -> None:
         """Moves all files within a docs directory to the parent directory, deleting the docs directory after."""
         # remove docs nodes from the file tree
-        print(f"transforming {self.name}...")
         for p in self.location.rglob("*"):
-            print(p.parent.name)
             if p.parent.name == "docs":
                 new_p = p.rename(p.parent.parent / p.name)
+                print(f"new_p: {new_p}")
+                print(f"removing {self.location} from new_p")
                 # create a mapping from the old new src_path to the old for page edit_urls
                 old_src_path = str(p).replace(str(self.location), "").replace("\\", "/")[1:]
                 new_src_path = str(new_p).replace(str(self.location), "").replace("\\", "/")
