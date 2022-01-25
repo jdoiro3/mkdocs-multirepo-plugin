@@ -142,13 +142,14 @@ class DocsRepo(Repo):
         # remove docs nodes from the file tree
         print(f"transforming {self.name}...")
         for p in self.location.rglob("*"):
-            print(p)
+            print(p.parent.name)
             if p.parent.name == "docs":
                 new_p = p.rename(p.parent.parent / p.name)
                 # create a mapping from the old new src_path to the old for page edit_urls
                 old_src_path = str(p).replace(str(self.location), "").replace("\\", "/")[1:]
                 new_src_path = str(new_p).replace(str(self.location), "").replace("\\", "/")
                 self.src_path_map[new_src_path] = old_src_path
+                print(self.src_path_map)
         # delete all empty docs directories
         for p in self.location.rglob("*"):
             if p.name == "docs":
