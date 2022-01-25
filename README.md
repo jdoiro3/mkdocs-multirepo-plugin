@@ -115,7 +115,9 @@ By default, this directory turns into this.
 │     index.md
 ```
 
-> Note: If using the nav *!import* statement, make sure the nav paths reflect the new directory structure, which doesn't include *docs* directories.
+> Note: 
+> - If using the nav *!import* statement, make sure the nav paths reflect the new directory structure, which doesn't include *docs* directories.
+> - *edit_urls* will still map to underlying markdown file based on the actual directory structure in the remote's repository.
 
 
 ## Use in CI/CD
