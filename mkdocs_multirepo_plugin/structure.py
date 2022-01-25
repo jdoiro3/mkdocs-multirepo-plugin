@@ -6,7 +6,7 @@ from pathlib import Path
 from mkdocs.utils import yaml_load
 from .util import (
     GitException, ImportDocsException, execute_bash_script,
-    git_supports_sparse_clone, remove_parents
+    git_supports_sparse_clone, remove_parents, version_info
 )
 
 def resolve_nav_paths(nav: list, section_name: str) -> None:
@@ -142,9 +142,10 @@ class DocsRepo(Repo):
         # remove docs nodes from the file tree
         for p in self.location.rglob("*"):
             if p.parent.name == "docs":
+                # python versions < 3.8 don't return the new path instance
                 new_p = p.rename(p.parent.parent / p.name)
-                print(f"new_p: {new_p}")
-                print(f"removing {self.location} from new_p")
+                if not new_p:
+                    new_p = p.parent.parent / p.name
                 # create a mapping from the old new src_path to the old for page edit_urls
                 old_src_path = str(p).replace(str(self.location), "").replace("\\", "/")[1:]
                 new_src_path = str(new_p).replace(str(self.location), "").replace("\\", "/")
