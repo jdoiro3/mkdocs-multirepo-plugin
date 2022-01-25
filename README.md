@@ -39,7 +39,7 @@ nav:
 
 - **{url}**: Only *required* part of *!import* statement (e.g., `https://github.com/{user}/{repo name}`).
 - **?branch={branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
-- **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs* if not supplied.
+- **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
 - **?multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#multiple-docs-directories-in-imported-repo)).
 
 > Things to Note:
