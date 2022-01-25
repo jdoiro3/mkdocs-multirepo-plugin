@@ -122,10 +122,14 @@ class DocsRepo(Repo):
         src_path = remove_parents(src_path, 1)
         if self.multi_docs:
             parent_path = str(Path(src_path).parent).replace("\\", "/")
+            print(f"Looking for path: {parent_path}...")
             if parent_path in self.src_path_map:
+                print(f"found {parent_path} in src_path_map")
                 src_path = Path(src_path)
                 return self.url + self.edit_uri + self.src_path_map.get(parent_path) + "/" + str(src_path.name)
             else:
+                print(f"didn't find {parent_path} in:")
+                print(self.src_path_map.keys())
                 return self.url + self.edit_uri + self.src_path_map.get(src_path, src_path)
         return self.url + self.edit_uri + self.docs_dir.replace("/*", "") + src_path
 

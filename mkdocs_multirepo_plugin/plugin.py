@@ -6,7 +6,7 @@ from mkdocs.config import Config, defaults
 from .structure import (
     Repo, DocsRepo, parse_import, parse_repo_url
     )
-from .util import ImportDocsException, log, remove_parents, get_src_path_root
+from .util import ImportDocsException, log, get_src_path_root
 from pathlib import Path
 from copy import deepcopy
 import shutil
