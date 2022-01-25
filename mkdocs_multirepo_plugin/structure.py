@@ -130,6 +130,7 @@ class DocsRepo(Repo):
             else:
                 print(f"didn't find {parent_path} in:")
                 print(self.src_path_map.keys())
+                print(f"Looking for {src_path} now")
                 return self.url + self.edit_uri + self.src_path_map.get(src_path, src_path)
         return self.url + self.edit_uri + self.docs_dir.replace("/*", "") + src_path
 
