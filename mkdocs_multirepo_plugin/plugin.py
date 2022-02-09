@@ -13,6 +13,7 @@ import shutil
 
 IMPORT_STATEMENT = "!import"
 
+
 class MultirepoPlugin(BasePlugin):
 
     config_scheme = (
@@ -32,56 +33,102 @@ class MultirepoPlugin(BasePlugin):
         self.temp_dir = None
         self.repos = {}
 
+    def handle_imported_repo(self, config: Config) -> Config:
+        """Imports necessary files for serving site in an imported repo"""
+        self.temp_dir.mkdir(exist_ok=True)
+        repo = Repo(
+            "importee", self.config.get("url"), self.config.get("branch"),
+            self.temp_dir
+        )
+        repo.import_config_files(self.config.get("dirs"))
+        new_config = repo.load_config(self.config.get("yml_file"))
+        # remove nav
+        if "nav" in new_config:
+            del new_config["nav"]
+        # update plugins
+        if "plugins" in new_config:
+            plugins_copy = deepcopy(new_config["plugins"])
+            for p in plugins_copy:
+                if "search" in p:
+                    log.info("removing search")
+                    new_config["plugins"].remove(p)
+                if "multirepo" in p:
+                    new_config["plugins"].remove(p)
+                    new_config["plugins"].append({"multirepo": {"imported_repo": True}})
+            # validate and provide PluginCollection object to config
+            plugins = config_options.Plugins()
+            plugin_collection = plugins.validate(new_config.get("plugins"))
+            new_config["plugins"] = plugin_collection
+        # update theme
+        if "theme" in new_config:
+            del new_config["theme"]["custom_dir"]
+            new_config["theme"] = Theme(
+                custom_dir=str(repo.location / self.config.get("custom_dir")),
+                **new_config["theme"]
+            )
+        # update this repo's config with the main repo's config
+        config.update(new_config)
+        # needs to be a dict
+        new_config = dict(config)
+        # update dev address
+        dev_addr = config_options.IpAddress()
+        addr = dev_addr.validate(new_config.get("dev_addr"))
+        config["dev_addr"] = (addr.host, addr.port)
+        # create new config object
+        config = Config(defaults.get_schema())
+        config.load_dict(new_config)
+        config.validate()
+        return config
+
+    def handle_nav_based_import(self, config: Config) -> Config:
+        """Imports documentation in other repos based on nav configuration"""
+        nav = config.get('nav')
+        for index, entry in enumerate(nav):
+            (section_name, value), = entry.items()
+            if type(value) is str:
+                if value.startswith(IMPORT_STATEMENT):
+                    import_stmt = parse_import(value)
+                    repo = DocsRepo(
+                        section_name, import_stmt.get("url"),
+                        self.temp_dir,
+                        import_stmt.get("docs_dir", "docs/*"),
+                        import_stmt.get("branch", "master"),
+                        bool(import_stmt.get("multi_docs", False))
+                    )
+                    if not repo.cloned:
+                        log.info(f"Multirepo plugin is importing docs for section {repo.name}")
+                        repo.import_docs(self.temp_dir)
+                    repo_config = repo.load_config("mkdocs.yml")
+                    if not repo_config.get("nav"):
+                        raise ImportDocsException(f"{repo.name}'s mkdocs.yml file doesn't have a nav section")
+                    repo.set_edit_uri(repo_config.get("edit_uri"))
+                    nav[index][section_name] = repo_config.get('nav')
+                    self.repos[repo.name] = repo
+        return config
+
+    def handle_repos_based_import(self, config: Config, repos: list) -> Config:
+        """Imports documentation in other repos based on repos configuration"""
+        for repo in repos:
+            import_stmt = parse_repo_url(repo.get("import_url"))
+            repo = DocsRepo(
+                repo.get("section"), import_stmt.get("url"),
+                self.temp_dir, repo.get("docs_dir", "docs/*"),
+                import_stmt.get("branch", "master"), repo.get("edit_uri"),
+                bool(repo.get("multi_docs", False))
+                )
+            if not repo.cloned:
+                log.info(f"Multirepo plugin is importing docs for section {repo.name}")
+                repo.import_docs(self.temp_dir)
+            self.repos[repo.name] = repo
+        return config
+
     def on_config(self, config: Config) -> Config:
 
         docs_dir = Path(config.get('docs_dir'))
         self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
 
         if self.config.get("imported_repo"):
-            self.temp_dir.mkdir(exist_ok=True)
-            repo = Repo(
-                "importee", self.config.get("url"), self.config.get("branch"),
-                self.temp_dir
-            )
-            repo.import_config_files(self.config.get("dirs"))
-            new_config = repo.load_config(self.config.get("yml_file"))
-            # remove nav
-            if "nav" in new_config:
-                del new_config["nav"]
-            # update plugins
-            if "plugins" in new_config:
-                plugins_copy = deepcopy(new_config["plugins"])
-                for p in plugins_copy:
-                    if "search" in p:
-                        log.info("removing search")
-                        new_config["plugins"].remove(p)
-                    if "multirepo" in p:
-                        new_config["plugins"].remove(p)
-                        new_config["plugins"].append({"multirepo": {"imported_repo": True}})
-                # validate and provide PluginCollection object to config
-                plugins = config_options.Plugins()
-                plugin_collection = plugins.validate(new_config.get("plugins"))
-                new_config["plugins"] = plugin_collection
-            # update theme
-            if "theme" in new_config:
-                del new_config["theme"]["custom_dir"]
-                new_config["theme"] = Theme(
-                        custom_dir = str(repo.location / self.config.get("custom_dir")),
-                        **new_config["theme"]
-                    )
-            # update this repo's config with the main repo's config
-            config.update(new_config)
-            new_config = dict(config) # needs to be a dict
-            # update dev address
-            dev_addr = config_options.IpAddress()
-            addr = dev_addr.validate(new_config.get("dev_addr"))
-            config["dev_addr"] = (addr.host, addr.port)
-            # create new config object
-            config = Config(defaults.get_schema())
-            config.load_dict(new_config)
-            config.validate()
-            return config
-        # this should be a repo where we're importing docs from other repos
+            return self.handle_imported_repo(config)
         else:
             repos = self.config.get("repos")
             # navigation isn't defined and repos aren't defined in plugin section
@@ -95,43 +142,10 @@ class MultirepoPlugin(BasePlugin):
                 log.warning("Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence")
             # nav takes precedence over repos
             if config.get("nav"):
-                nav = config.get('nav')
-                for index, entry in enumerate(nav):
-                    (section_name, value), = entry.items()
-                    if type(value) is str:
-                        if value.startswith(IMPORT_STATEMENT):
-                            import_stmt = parse_import(value)
-                            repo = DocsRepo(
-                                section_name, import_stmt.get("url"), self.temp_dir, 
-                                import_stmt.get("docs_dir", "docs/*"), import_stmt.get("branch", "master"),
-                                bool(import_stmt.get("multi_docs", False))
-                                )
-                            if not repo.cloned:
-                                log.info(f"Multirepo plugin is importing docs for section {repo.name}")
-                                repo.import_docs(self.temp_dir)
-                            repo_config = repo.load_config("mkdocs.yml")
-                            if not repo_config.get("nav"):
-                                raise ImportDocsException(f"{repo.name}'s mkdocs.yml file doesn't have a nav section")
-                            repo.set_edit_uri(repo_config.get("edit_uri"))
-                            nav[index][section_name] = repo_config.get('nav')
-                            self.repos[repo.name] = repo
-                return config
+                return self.handle_nav_based_import(config)
             # navigation isn't defined but plugin section has repos
             if repos:
-                for repo in repos:
-                    import_stmt = parse_repo_url(repo.get("import_url"))
-                    repo = DocsRepo(
-                        repo.get("section"), import_stmt.get("url"), 
-                        self.temp_dir, repo.get("docs_dir", "docs/*"), 
-                        import_stmt.get("branch", "master"), repo.get("edit_uri"), 
-                        bool(repo.get("multi_docs", False))
-                        )
-                    if not repo.cloned:
-                        log.info(f"Multirepo plugin is importing docs for section {repo.name}")
-                        repo.import_docs(self.temp_dir)
-                    self.repos[repo.name] = repo
-                return config
-
+                return self.handle_repos_based_import(config, repos)
 
     def on_files(self, files: Files, config: Config) -> Files:
         if self.config.get("imported_repo"):
@@ -144,7 +158,6 @@ class MultirepoPlugin(BasePlugin):
                 files.append(f)
             return files
 
-
     def on_nav(self, nav, config: Config, files: Files):
         if self.config.get("imported_repo"):
             return nav
@@ -155,15 +168,12 @@ class MultirepoPlugin(BasePlugin):
                     repo = self.repos.get(root_src_path)
                     f.page.edit_url = repo.get_edit_url(f.src_path)
             return nav
-        
 
     def on_post_build(self, config: Config) -> None:
         if self.config.get("imported_repo") and self.config.get("cleanup"):
-            shutil.rmtree("temp_dir")
+            shutil.rmtree(str(self.temp_dir))
         else:
             if self.temp_dir and self.config.get("cleanup"):
                 temp_dir = self.config.get("temp_dir")
                 log.info(f"Multirepo plugin is cleaning up {temp_dir}/")
                 shutil.rmtree(str(self.temp_dir))
-        
-        

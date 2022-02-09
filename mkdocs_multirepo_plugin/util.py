@@ -1,9 +1,8 @@
 from pathlib import Path
 from sys import platform, version_info
 import subprocess
-import logging 
+import logging
 from mkdocs.utils import warning_filter
-from typing import Tuple
 from collections import namedtuple
 from re import search
 
@@ -13,11 +12,14 @@ GitVersion = namedtuple("GitVersion", "major minor")
 log = logging.getLogger("mkdocs.plugins." + __name__)
 log.addFilter(warning_filter)
 
+
 class ImportDocsException(Exception):
     pass
 
+
 class GitException(Exception):
     pass
+
 
 def get_src_path_root(src_path: str) -> str:
     """returns the root directory of a path (represented as a string)"""
@@ -27,10 +29,12 @@ def get_src_path_root(src_path: str) -> str:
         return src_path.split("/", 1)[0]
     return src_path
 
+
 def get_subprocess_run_extra_args():
     if (version_info.major == 3 and version_info.minor > 6) or (version_info.major > 3):
         return {"capture_output": True, "text": True}
     return {"stdout": subprocess.PIPE, "stderr": subprocess.PIPE}
+
 
 def remove_parents(path, num_to_remove) -> str:
     parts = Path(path).parts
@@ -39,13 +43,14 @@ def remove_parents(path, num_to_remove) -> str:
     parts_to_keep = parts[num_to_remove:]
     return '/' + str(Path(*parts_to_keep)).replace('\\', '/')
 
+
 def where_git() -> Path:
     extra_run_args = get_subprocess_run_extra_args()
     output = (
-        subprocess.run(["where","git"], **extra_run_args)
+        subprocess.run(["where", "git"], **extra_run_args)
         .stdout
-        .replace("\r", "") # remove carrage return
-        .split("\n")[0] # handle multiple locations of git.exe
+        .replace("\r", "")  # remove carrage return
+        .split("\n")[0]  # handle multiple locations of git.exe
     )
     if "INFO" in output:
         # see if a git install is located in the default location
@@ -59,6 +64,7 @@ def where_git() -> Path:
     else:
         return Path(output).parent.parent
 
+
 def git_version() -> GitVersion:
     extra_run_args = get_subprocess_run_extra_args()
     if platform == "linux" or platform == "linux2":
@@ -71,7 +77,7 @@ def git_version() -> GitVersion:
     stdout = output.stdout
     if isinstance(stdout, bytes):
         stdout = output.stdout.decode()
-    version = search('([\d.]+)', stdout).group(1).split(".")[:2]
+    version = search(r'([\d.]+)', stdout).group(1).split(".")[:2]
     return GitVersion(int(version[0]), int(version[1]))
 
 
@@ -82,7 +88,7 @@ def git_supports_sparse_clone():
     return True
 
 
-def execute_bash_script(script: str, arguments: list=[], cwd: Path=Path.cwd()) -> subprocess.CompletedProcess:
+def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> subprocess.CompletedProcess:
     extra_run_args = get_subprocess_run_extra_args()
     if platform == "linux" or platform == "linux2":
         process = subprocess.run(

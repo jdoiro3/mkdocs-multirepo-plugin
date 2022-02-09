@@ -1,13 +1,13 @@
 from typing import Tuple
-import re
 import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
 from .util import (
-    GitException, ImportDocsException, execute_bash_script,
-    git_supports_sparse_clone, remove_parents, version_info
+    ImportDocsException, execute_bash_script,
+    git_supports_sparse_clone, remove_parents
 )
+
 
 def resolve_nav_paths(nav: list, section_name: str) -> None:
     """Adds the section_name to the begining of all paths in a MkDocs nav object"""
@@ -18,6 +18,7 @@ def resolve_nav_paths(nav: list, section_name: str) -> None:
         else:
             nav[index][key] = str(section_name / Path(value)).replace("\\", "/")
 
+
 def parse_repo_url(repo_url: str) -> dict:
     """Parses !import statement urls"""
     url_parts = repo_url.split("?")
@@ -27,7 +28,7 @@ def parse_repo_url(repo_url: str) -> dict:
         import_parts[k] = v
     return import_parts
 
-    
+
 def parse_import(import_stmt: str) -> Tuple[str, str]:
     """Parses !import statements"""
     import_url = import_stmt.split(" ", 1)[1]
@@ -70,7 +71,7 @@ class Repo:
         if process.returncode >= 1:
             raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
         return process
-    
+
     def import_config_files(self, dirs: list) -> subprocess.CompletedProcess:
         """Imports directories needed for building the site
         the list of dirs might include: mkdocs.yml, overrides/*, etc"""
@@ -93,6 +94,7 @@ class Repo:
         else:
             raise ImportDocsException("docs must be imported before loading yaml")
 
+
 class DocsRepo(Repo):
     """Represents a Git repository, containing documentation.
 
@@ -108,15 +110,16 @@ class DocsRepo(Repo):
                             wants to be pulled into the site.
     """
 
-    def __init__(self, name: str, url: str, temp_dir: Path, 
-        docs_dir: str="docs/*", branch: str="master", edit_uri: str=None, multi_docs: bool=False
-        ):
+    def __init__(
+        self, name: str, url: str, temp_dir: Path,
+        docs_dir: str = "docs/*", branch: str = "master",
+        edit_uri: str = None, multi_docs: bool = False
+    ):
         super().__init__(name, url, branch, temp_dir)
         self.docs_dir = docs_dir
         self.edit_uri = edit_uri or docs_dir
         self.multi_docs = multi_docs
         self.src_path_map = {}
-
 
     def get_edit_url(self, src_path):
         src_path = remove_parents(src_path, 1)
@@ -151,7 +154,6 @@ class DocsRepo(Repo):
             if p.name == "docs":
                 shutil.rmtree(str(p))
 
-    
     def import_docs(self, remove_existing=True) -> None:
         """Imports the markdown documentation to be included in the site"""
         if self.location.is_dir() and remove_existing:
