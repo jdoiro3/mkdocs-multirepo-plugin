@@ -1,5 +1,5 @@
 ##
-# Install the mkdocs-monorepo-plugin locally on test run.
+# Install the mkdocs-multirepo-plugin locally on test run.
 #
 pip install -e . --quiet >&2
 
