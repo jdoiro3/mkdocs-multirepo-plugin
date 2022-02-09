@@ -1,15 +1,16 @@
 from setuptools import find_packages
 from setuptools import setup
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+with open("README.md", "r") as f:
+    long_description = f.read()
 
 setup(
     name="mkdocs-multirepo-plugin",
     scripts=[
         'mkdocs_multirepo_plugin/scripts/sparse_clone.sh',
         'mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh',
-        'mkdocs_multirepo_plugin/scripts/mv.sh'],
+        'mkdocs_multirepo_plugin/scripts/mv.sh'
+        ],
     version="0.1.0",
     author="Joseph Doiron",
     author_email="josephdoiron1234@yahoo.com",
@@ -18,8 +19,12 @@ setup(
     long_description_content_type="text/markdown",
     url="",
     license="MIT",
-    packages=find_packages(),
-    install_requires=["mkdocs>=1.0.4"],
+    packages=find_packages(
+        exclude=["tests"]
+        ),
+    install_requires=[
+        "mkdocs>=1.0.4"
+        ],
     extras_require={"test": ["pytest>=4.0", "pytest-cov"]},
     include_package_data=True,
     zip_safe=False,
@@ -29,16 +34,13 @@ setup(
         ]
     },
     classifiers=[
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        "Development Status :: 3 - Alpha",
+        "Programming Language :: Python",
         "Intended Audience :: Developers",
         "Topic :: Documentation",
+        "Operating System :: MacOS",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: POSIX :: Linux"
     ],
 )
 
