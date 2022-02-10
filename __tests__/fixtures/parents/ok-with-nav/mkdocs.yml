@@ -1,0 +1,9 @@
+site_name: Test
+
+nav:
+  - Home: index.md
+  - ImportedNav: ../imported/ok-with-nav
+  - ImportedNoNav: ../imported/ok-no-nav
+
+plugins:
+  - multirepo

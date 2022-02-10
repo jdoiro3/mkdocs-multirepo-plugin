@@ -1,0 +1,9 @@
+site_name: Test
+
+plugins:
+  - multirepo:
+      repos:
+        - section: ok-with-nav
+          import_url: ../../../imported/ok-with-nav
+        - section: ok-no-nav
+          import_url: ../../../imported/ok-no-nav

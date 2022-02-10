@@ -35,7 +35,6 @@ class MultirepoPlugin(BasePlugin):
 
     def handle_imported_repo(self, config: Config) -> Config:
         """Imports necessary files for serving site in an imported repo"""
-        self.temp_dir.mkdir(exist_ok=True)
         repo = Repo(
             "importee", self.config.get("url"), self.config.get("branch"),
             self.temp_dir
@@ -126,18 +125,14 @@ class MultirepoPlugin(BasePlugin):
 
         docs_dir = Path(config.get('docs_dir'))
         self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
-
+        if not self.temp_dir.is_dir():
+            self.temp_dir.mkdir()
         if self.config.get("imported_repo"):
             return self.handle_imported_repo(config)
         else:
             repos = self.config.get("repos")
-            # navigation isn't defined and repos aren't defined in plugin section
             if not config.get('nav') and not repos:
                 return config
-            # make the temp_dir if it doesn't already exist
-            if not self.temp_dir.is_dir():
-                self.temp_dir.mkdir(exist_ok=True)
-            # nav takes precedence over repos
             if config.get('nav') and repos:
                 log.warning("Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence")
             # nav takes precedence over repos
