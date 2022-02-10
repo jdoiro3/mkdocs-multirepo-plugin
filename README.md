@@ -9,7 +9,7 @@ Build documentation in multiple repos into one site.
 Install plugin using pip:
 
 ```
-pip install git+https://github.com/jdoiro3/mkdocs-multirepo-plugin
+pip install mkdocs-multirepo-plugin
 ```
 
 Next, add the plugin to your `mkdocs.yml`
