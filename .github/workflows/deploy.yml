@@ -3,7 +3,7 @@ name: Build, Test & Deploy
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - ".github/workflows/deploy.yml"
       - "setup.py"
@@ -18,18 +18,18 @@ jobs:
         python-version: [3, 3.6, 3.7]
         
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@master
+        uses: actions/setup-python@main
         with:
           python-version: ${{ matrix.python-version }}
       - name: Test
-        run: echo "TODO: add tests"
+        run: echo "Need to add tests"
 
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@master
         with:
