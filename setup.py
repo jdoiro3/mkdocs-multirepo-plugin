@@ -11,7 +11,7 @@ setup(
         'mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh',
         'mkdocs_multirepo_plugin/scripts/mv.sh'
         ],
-    version="0.1.0",
+    version="0.2.0",
     author="Joseph Doiron",
     author_email="josephdoiron1234@yahoo.com",
     description="Build documentation in multiple repos into one site.",
