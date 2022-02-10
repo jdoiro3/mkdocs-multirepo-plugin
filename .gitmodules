@@ -1,0 +1,15 @@
+[submodule "__tests__/fixtures/imported/error-no-docs-folder"]
+	path = __tests__/fixtures/imported/error-no-docs-folder
+	url = /home/joebob/Desktop/mkdocs-multirepo-plugin/__tests__/fixtures/imported-repo/error-no-docs-folder
+[submodule "__tests__/fixtures/imported/error-no-nav"]
+	path = __tests__/fixtures/imported/error-no-nav
+	url = /home/joebob/Desktop/mkdocs-multirepo-plugin/__tests__/fixtures/imported-repo/error-no-nav
+[submodule "__tests__/__tests__/fixtures/imported/error-no-yml-file"]
+	path = __tests__/__tests__/fixtures/imported/error-no-yml-file
+	url = /home/joebob/Desktop/mkdocs-multirepo-plugin/__tests__/fixtures/imported-repo/error-no-yml-file
+[submodule "__tests__/fixtures/imported/ok-no-nav"]
+	path = __tests__/fixtures/imported/ok-no-nav
+	url = /home/joebob/Desktop/mkdocs-multirepo-plugin/__tests__/fixtures/imported-repo/ok-no-nav
+[submodule "__tests__/fixtures/imported/ok-with-nav"]
+	path = __tests__/fixtures/imported/ok-with-nav
+	url = /home/joebob/Desktop/mkdocs-multirepo-plugin/__tests__/fixtures/imported-repo/ok-with-nav
