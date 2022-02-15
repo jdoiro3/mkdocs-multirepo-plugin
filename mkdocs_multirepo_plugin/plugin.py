@@ -4,12 +4,13 @@ from mkdocs.config import config_options
 from mkdocs.theme import Theme
 from mkdocs.config import Config, defaults
 from .structure import (
-    Repo, DocsRepo, parse_import, parse_repo_url
+    Repo, DocsRepo, parse_import, parse_repo_url, batch_import
     )
 from .util import ImportDocsException, log, get_src_path_root
 from pathlib import Path
 from copy import deepcopy
 import shutil
+import asyncio
 
 IMPORT_STATEMENT = "!import"
 
@@ -82,6 +83,7 @@ class MultirepoPlugin(BasePlugin):
     def handle_nav_based_import(self, config: Config) -> Config:
         """Imports documentation in other repos based on nav configuration"""
         nav = config.get('nav')
+        repo_instances = []
         for index, entry in enumerate(nav):
             (section_name, value), = entry.items()
             if type(value) is str:
@@ -94,19 +96,20 @@ class MultirepoPlugin(BasePlugin):
                         import_stmt.get("branch", "master"),
                         bool(import_stmt.get("multi_docs", False))
                     )
-                    if not repo.cloned:
-                        log.info(f"Multirepo plugin is importing docs for section {repo.name}")
-                        repo.import_docs(self.temp_dir)
-                    repo_config = repo.load_config("mkdocs.yml")
-                    if not repo_config.get("nav"):
-                        raise ImportDocsException(f"{repo.name}'s mkdocs.yml file doesn't have a nav section")
-                    repo.set_edit_uri(repo_config.get("edit_uri"))
-                    nav[index][section_name] = repo_config.get('nav')
-                    self.repos[repo.name] = repo
+                    repo_instances.append(repo)
+        asyncio.run(batch_import(repo_instances))
+        for repo in repo_instances:
+            repo_config = repo.load_config("mkdocs.yml")
+            if not repo_config.get("nav"):
+                raise ImportDocsException(f"{repo.name}'s mkdocs.yml file doesn't have a nav section")
+            repo.set_edit_uri(repo_config.get("edit_uri"))
+            nav[index][section_name] = repo_config.get('nav')
+            self.repos[repo.name] = repo
         return config
 
     def handle_repos_based_import(self, config: Config, repos: list) -> Config:
         """Imports documentation in other repos based on repos configuration"""
+        repo_instances = []
         for repo in repos:
             import_stmt = parse_repo_url(repo.get("import_url"))
             repo = DocsRepo(
@@ -115,9 +118,10 @@ class MultirepoPlugin(BasePlugin):
                 import_stmt.get("branch", "master"), repo.get("edit_uri"),
                 bool(repo.get("multi_docs", False))
                 )
-            if not repo.cloned:
-                log.info(f"Multirepo plugin is importing docs for section {repo.name}")
-                repo.import_docs(self.temp_dir)
+            repo_instances.append(repo)
+        asyncio.run(batch_import(repo_instances))
+        for repo in repo_instances:
+            log.info(f"Multirepo plugin is imported docs for section {repo.name}")
             self.repos[repo.name] = repo
         return config
 

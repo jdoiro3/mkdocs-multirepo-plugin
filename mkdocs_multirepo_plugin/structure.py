@@ -1,11 +1,13 @@
-from typing import Tuple
+from typing import Tuple, List
 import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
+from asyncio import gather
 from .util import (
     ImportDocsException, execute_bash_script,
-    git_supports_sparse_clone, remove_parents
+    git_supports_sparse_clone, remove_parents,
+    execute_bash_script_async
 )
 
 
@@ -72,6 +74,18 @@ class Repo:
             raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
         return process
 
+    async def sparse_clone_async(self, dirs: list) -> Tuple[str, str]:
+        """sparse clones a Git repo asynchronously"""
+        args = [self.url, self.name, self.branch] + dirs + ["./mkdocs.yml"]
+        if git_supports_sparse_clone():
+            process = await execute_bash_script_async("sparse_clone.sh", args, self.temp_dir)
+        else:
+            process = await execute_bash_script_async("sparse_clone_old.sh", args, self.temp_dir)
+        stderr = process.stderr
+        if process.returncode >= 1:
+            raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
+        return process
+
     def import_config_files(self, dirs: list) -> subprocess.CompletedProcess:
         """Imports directories needed for building the site
         the list of dirs might include: mkdocs.yml, overrides/*, etc"""
@@ -121,6 +135,9 @@ class DocsRepo(Repo):
         self.multi_docs = multi_docs
         self.src_path_map = {}
 
+    def __str__(self):
+        return f"DocsRepo({self.name}, {self.url}, {self.location})"
+
     def get_edit_url(self, src_path):
         src_path = remove_parents(src_path, 1)
         if self.multi_docs:
@@ -169,9 +186,29 @@ class DocsRepo(Repo):
             self.sparse_clone([self.docs_dir])
             execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
 
+    async def import_docs_async(self, remove_existing=True) -> None:
+        """imports the markdown documentation to be included in the site asynchronously"""
+        if self.location.is_dir() and remove_existing:
+            shutil.rmtree(str(self.location))
+        if self.multi_docs:
+            if self.docs_dir == "docs/*":
+                docs_dir = "docs"
+            else:
+                docs_dir = self.docs_dir
+            await self.sparse_clone_async([docs_dir])
+            self.transform_docs_dir()
+        else:
+            await self.sparse_clone_async([self.docs_dir])
+            execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
+
     def load_config(self, yml_file) -> dict:
         """Loads the repo's mkdocs.yml configuration file or the same file with a different name"""
         config = super().load_config(yml_file)
         if 'nav' in config:
             resolve_nav_paths(config.get('nav'), self.name)
         return config
+
+
+async def batch_import(repos: List[DocsRepo]) -> None:
+    """Given a list of DocRepo instances, performs a batch import asynchronously"""
+    await gather(*(repo.import_docs_async() for repo in repos))

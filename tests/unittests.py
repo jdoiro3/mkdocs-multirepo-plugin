@@ -3,7 +3,7 @@ from mkdocs_multirepo_plugin import util
 from mkdocs_multirepo_plugin import structure
 
 
-class Tests(unittest.TestCase):
+class TestUtils(unittest.TestCase):
 
     def test_remove_parents(self):
         test_cases = [

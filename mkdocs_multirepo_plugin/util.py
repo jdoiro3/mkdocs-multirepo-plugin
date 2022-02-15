@@ -1,6 +1,8 @@
+from typing import Tuple
 from pathlib import Path
 from sys import platform, version_info
 import subprocess
+import asyncio
 import logging
 from mkdocs.utils import warning_filter
 from collections import namedtuple
@@ -89,6 +91,7 @@ def git_supports_sparse_clone():
 
 
 def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> subprocess.CompletedProcess:
+    """executes a bash script"""
     extra_run_args = get_subprocess_run_extra_args()
     if platform == "linux" or platform == "linux2":
         process = subprocess.run(
@@ -99,4 +102,20 @@ def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd(
         process = subprocess.run(
             [str(git_folder / "bin" / "bash.exe"), script]+arguments, cwd=cwd, **extra_run_args
         )
+    return process
+
+async def execute_bash_script_async(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> asyncio.subprocess.Process:
+    """executes a bash script in an asynchronously"""
+    if platform == "linux" or platform == "linux2":
+        cmd = " ".join(f'"{arg}"' for arg in ["bash", script]+arguments)
+        process = await asyncio.create_subprocess_shell(
+            cmd, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+    else:
+        git_folder = where_git()
+        cmd = " ".join(f'"{arg}"' for arg in [str(git_folder / "bin" / "bash.exe"), script]+arguments)
+        process = await asyncio.create_subprocess_shell(
+            cmd, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+    stdout, stderr = await process.communicate()
     return process
