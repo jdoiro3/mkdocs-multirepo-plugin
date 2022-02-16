@@ -66,8 +66,8 @@ setup() {
   for d in $fixturesDir/* ; do
       cd ${d}
       git init -q
-      git config --global user.email "testing@example.com"
-      git config --global user.name "Mr. Test"
+      git config user.email "testing@example.com"
+      git config user.name "Mr. Test"
       git add --all
       git commit -m "testing" -q
       cd ../
