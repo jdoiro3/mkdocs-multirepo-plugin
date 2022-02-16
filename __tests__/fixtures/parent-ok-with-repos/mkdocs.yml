@@ -1,0 +1,11 @@
+site_name: Test
+
+plugins:
+  - multirepo:
+      repos:
+        - section: ok-with-nav-simple
+          import_url: file://$(cd ../../ && pwd)/ok-with-nav-simple
+        - section: ok-no-nav
+          import_url: file://$(cd ../../ && pwd)/ok-no-nav
+        - section: ok-with-nav-complex
+          import_url: file://$(cd ../../ && pwd)/ok-with-nav-complex

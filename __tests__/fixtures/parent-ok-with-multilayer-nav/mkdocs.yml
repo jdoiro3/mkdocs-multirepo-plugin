@@ -1,0 +1,9 @@
+site_name: Test
+
+nav:
+  - Home: index.md
+  - ok-with-nav-simple: '!import file://$(cd ../../ && pwd)/ok-with-nav-simple'
+  - ok-with-nav-complex: '!import file://$(cd ../../ && pwd)/ok-with-nav-complex'
+
+plugins:
+  - multirepo

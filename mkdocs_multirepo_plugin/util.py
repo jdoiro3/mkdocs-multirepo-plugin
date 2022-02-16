@@ -1,6 +1,8 @@
+from typing import Dict, Any
 from pathlib import Path
 from sys import platform, version_info
 import subprocess
+import asyncio
 import logging
 from mkdocs.utils import warning_filter
 from collections import namedtuple
@@ -30,13 +32,13 @@ def get_src_path_root(src_path: str) -> str:
     return src_path
 
 
-def get_subprocess_run_extra_args():
+def get_subprocess_run_extra_args() -> Dict[str, Any]:
     if (version_info.major == 3 and version_info.minor > 6) or (version_info.major > 3):
         return {"capture_output": True, "text": True}
     return {"stdout": subprocess.PIPE, "stderr": subprocess.PIPE}
 
 
-def remove_parents(path, num_to_remove) -> str:
+def remove_parents(path: str, num_to_remove: int) -> str:
     parts = Path(path).parts
     if num_to_remove >= len(parts):
         raise ValueError(f"{num_to_remove} >= to path with {parts} parts.")
@@ -81,7 +83,7 @@ def git_version() -> GitVersion:
     return GitVersion(int(version[0]), int(version[1]))
 
 
-def git_supports_sparse_clone():
+def git_supports_sparse_clone() -> bool:
     git_v = git_version()
     if (git_v.major == 2 and git_v.minor < 25) or (git_v.major < 2):
         return False
@@ -89,6 +91,7 @@ def git_supports_sparse_clone():
 
 
 def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> subprocess.CompletedProcess:
+    """executes a bash script"""
     extra_run_args = get_subprocess_run_extra_args()
     if platform == "linux" or platform == "linux2":
         process = subprocess.run(
@@ -100,3 +103,32 @@ def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd(
             [str(git_folder / "bin" / "bash.exe"), script]+arguments, cwd=cwd, **extra_run_args
         )
     return process
+
+
+async def execute_bash_script_async(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> asyncio.subprocess.Process:
+    """executes a bash script in an asynchronously"""
+    if platform == "linux" or platform == "linux2":
+        cmd = " ".join(f'"{arg}"' for arg in arguments)
+        cmd = f'bash {script} {cmd}'
+        process = await asyncio.create_subprocess_shell(
+            cmd, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+    else:
+        git_folder = where_git()
+        cmd = " ".join(f'"{arg}"' for arg in [str(git_folder / "bin" / "bash.exe"), script]+arguments)
+        process = await asyncio.create_subprocess_shell(
+            cmd, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+    stdout, stderr = await process.communicate()
+    stdout, stderr = stdout.decode(), stderr.decode()
+    if process.returncode == 1:
+        raise GitException(f"\n{stderr}\n")
+    return stdout
+
+
+def asyncio_run(futures) -> None:
+    if (version_info.major == 3 and version_info.minor > 6) or (version_info.major > 3):
+        asyncio.run(futures)
+    else:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(futures)
