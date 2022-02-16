@@ -78,13 +78,10 @@ class Repo:
         """sparse clones a Git repo asynchronously"""
         args = [self.url, self.name, self.branch] + dirs + ["./mkdocs.yml"]
         if git_supports_sparse_clone():
-            process = await execute_bash_script_async("sparse_clone.sh", args, self.temp_dir)
+            stdout = await execute_bash_script_async("sparse_clone.sh", args, self.temp_dir)
         else:
-            process = await execute_bash_script_async("sparse_clone_old.sh", args, self.temp_dir)
-        stderr = process.stderr
-        if process.returncode >= 1:
-            raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
-        return process
+            stdout = await execute_bash_script_async("sparse_clone_old.sh", args, self.temp_dir)
+        return stdout
 
     def import_config_files(self, dirs: list) -> subprocess.CompletedProcess:
         """Imports directories needed for building the site

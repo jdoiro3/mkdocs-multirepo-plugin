@@ -9,7 +9,7 @@ pip install -e . --quiet >&2
 #
 
 rootDir=$(pwd)
-parentsDir=${rootDir}/__tests__/fixtures/parents
+fixturesDir=${rootDir}/__tests__/fixtures
 
 debugger() {
   echo "--- STATUS ---"
@@ -53,19 +53,45 @@ assertFailedMkdocs() {
 #
 
 teardown() {
-  rm -rf ${parentsDir}/**/*/site
+  rm -rf ${fixturesDir}/parent-ok-with-repos/site
+  rm -rf ${fixturesDir}/parent-ok-with-nav/site
+  for d in $fixturesDir/* ; do
+      echo "removing $d/.git"
+      rm -rf $d/.git
+  done
+}
+
+setup() {
+  echo "Turning imported fixtures into Git Repos for Testing-------->"
+  for d in $fixturesDir/* ; do
+      cd ${d}
+      git init -q
+      git config --global user.email "testing@example.com"
+      git config --global user.name "Mr. Test"
+      git add --all
+      git commit -m "testing" -q
+      cd ../
+  done
 }
 
 ##
 # Test suites.
 #
 
-@test "builds a mkdocs site with an imported repo with a repos section" {
-  cd ${parentsDir}
-  run mkdocs build --config-file=ok-with-repos/mkdocs.yml
+@test "builds a mkdocs site with multirepo repos section" {
+  cd ${fixturesDir}
+  run mkdocs build --config-file=parent-ok-with-repos/mkdocs.yml
   debugger
-  run cat ok-with-repos/site/ok-with-nav/index.html
+  run cat parent-ok-with-repos/site/ok-with-nav/index.html
   [[ "$output" == *"I'm an okay setup with a nav section in my docs/mkdocs.yml file."* ]]
-  run cat ok-with-repos/site/ok-no-nav/index.html
+  run cat parent-ok-with-repos/site/ok-no-nav/index.html
   [[ "$output" == *"I'm an okay setup with no nav configured in the imported repo."* ]]
+}
+
+@test "builds a mkdocs site with multirepo nav section" {
+  cd ${fixturesDir}
+  run mkdocs build --config-file=parent-ok-with-nav/mkdocs.yml
+  debugger
+  run cat parent-ok-with-nav/site/ok-with-nav/index.html
+  [[ "$output" == *"I'm an okay setup with a nav section in my docs/mkdocs.yml file."* ]]
 }

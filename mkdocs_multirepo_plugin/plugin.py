@@ -6,11 +6,10 @@ from mkdocs.config import Config, defaults
 from .structure import (
     Repo, DocsRepo, parse_import, parse_repo_url, batch_import
     )
-from .util import ImportDocsException, log, get_src_path_root
+from .util import ImportDocsException, log, get_src_path_root, asyncio_run
 from pathlib import Path
 from copy import deepcopy
 import shutil
-import asyncio
 
 IMPORT_STATEMENT = "!import"
 
@@ -97,7 +96,7 @@ class MultirepoPlugin(BasePlugin):
                         bool(import_stmt.get("multi_docs", False))
                     )
                     repo_instances.append(repo)
-        asyncio.run(batch_import(repo_instances))
+        asyncio_run(batch_import(repo_instances))
         for repo in repo_instances:
             repo_config = repo.load_config("mkdocs.yml")
             if not repo_config.get("nav"):
@@ -105,6 +104,7 @@ class MultirepoPlugin(BasePlugin):
             repo.set_edit_uri(repo_config.get("edit_uri"))
             nav[index][section_name] = repo_config.get('nav')
             self.repos[repo.name] = repo
+            log.info(f"Multirepo plugin is imported docs for section {repo.name}")
         return config
 
     def handle_repos_based_import(self, config: Config, repos: list) -> Config:
@@ -119,10 +119,10 @@ class MultirepoPlugin(BasePlugin):
                 bool(repo.get("multi_docs", False))
                 )
             repo_instances.append(repo)
-        asyncio.run(batch_import(repo_instances))
+        asyncio_run(batch_import(repo_instances))
         for repo in repo_instances:
-            log.info(f"Multirepo plugin is imported docs for section {repo.name}")
             self.repos[repo.name] = repo
+            log.info(f"Multirepo plugin is imported docs for section {repo.name}")
         return config
 
     def on_config(self, config: Config) -> Config:

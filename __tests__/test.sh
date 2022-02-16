@@ -13,6 +13,7 @@ docker build -t mkdocs-multirepo-test-runner:$1 --quiet -f- . <<EOF
   FROM python:$1
   COPY ./requirements.txt /workspace/requirements.txt
   RUN apt-get -y update && apt-get -yyy install bats && apt-get -yyy install git
+  RUN pip install --upgrade pip
   RUN pip install -r /workspace/requirements.txt
   ENTRYPOINT ["bats"]
   CMD ["/workspace/__tests__/test.bats"]
