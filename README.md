@@ -6,8 +6,11 @@ Build documentation in multiple repos into one site.
 
 ## Features
 
-- **Fast**: Imported documentation is imported asynchronously, using [asyncio](https://docs.python.org/3/library/asyncio.html).
-- **Simple**: All configuration is done within the `plugins` or `nav` sections of your mkdocs.yml file.
+- **Distributed Documentation**: Keep docs close to the code but *findable* on one site.
+- **Seperates Concerns**: Separate documentation from all the other files that go into building your mkdocs site (e.g., theme overrides).
+- **Fast**: Documentation is imported asynchronously, using [asyncio](https://docs.python.org/3/library/asyncio.html).
+- **Simple**: All configuration is done within the `plugins` or `nav` sections of your *mkdocs.yml* file.
+- **Ready for Production**: The plugin can be used in a CI/CD pipeline.
 
 ## Setup
 
