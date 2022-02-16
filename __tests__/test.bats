@@ -82,16 +82,26 @@ setup() {
   cd ${fixturesDir}
   run mkdocs build --config-file=parent-ok-with-repos/mkdocs.yml
   debugger
-  run cat parent-ok-with-repos/site/ok-with-nav/index.html
-  [[ "$output" == *"I'm an okay setup with a nav section in my docs/mkdocs.yml file."* ]]
+  run cat parent-ok-with-repos/site/ok-with-nav-simple/index.html
+  [[ "$output" == *"Welcome to a simple repo."* ]]
   run cat parent-ok-with-repos/site/ok-no-nav/index.html
   [[ "$output" == *"I'm an okay setup with no nav configured in the imported repo."* ]]
+  run cat parent-ok-with-repos/site/ok-with-nav-complex/index.html
+  [[ "$output" == *"Welcome to a complex repo."* ]]
+  run cat parent-ok-with-repos/site/ok-with-nav-complex/section1/getting-started/index.html
+  [[ "$output" == *"Let's get started with section 1."* ]]
+  run cat parent-ok-with-repos/site/ok-with-nav-complex/section2/getting-started/index.html
+  [[ "$output" == *"Let's get started with section 2."* ]]
+  run cat parent-ok-with-repos/site/ok-with-nav-complex/section1/index.html
+  [[ "$output" == *"Welcome to section 1."* ]]
+  run cat parent-ok-with-repos/site/ok-with-nav-complex/section2/index.html
+  [[ "$output" == *"Welcome to section 2."* ]]
 }
 
 @test "builds a mkdocs site with multirepo nav section" {
   cd ${fixturesDir}
   run mkdocs build --config-file=parent-ok-with-nav/mkdocs.yml
   debugger
-  run cat parent-ok-with-nav/site/ok-with-nav/index.html
-  [[ "$output" == *"I'm an okay setup with a nav section in my docs/mkdocs.yml file."* ]]
+  run cat parent-ok-with-nav/site/ok-with-nav-simple/index.html
+  [[ "$output" == *"Welcome to a simple repo."* ]]
 }

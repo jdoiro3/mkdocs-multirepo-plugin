@@ -4,6 +4,11 @@
 
 Build documentation in multiple repos into one site.
 
+## Features
+
+- **Fast**: Imported documentation is imported asynchronously, using [asyncio](https://docs.python.org/3/library/asyncio.html).
+- **Simple**: All configuration is done within the `plugins` or `nav` sections of your mkdocs.yml file.
+
 ## Setup
 
 Install plugin using pip:
@@ -158,3 +163,27 @@ plugins:
 ```
 
 Engineers can now run `mkdocs serve` within their local repo, using the main site's configuration, custom theming and features.
+
+
+## Running Tests
+
+Tests were modeled off of the similar well maintained package: [mkdocs-monorepo-plugin](https://github.com/backstage/mkdocs-monorepo-plugin/blob/master/docs/CONTRIBUTING.md). To run the test suite you'll need:
+
+- Python
+- Git
+- Docker
+- MkDocs
+
+### Local Testing
+
+The command below will use Docker to run our test suites in numerous Python versions. It may take some time on first run, but should be very fast afterwards. When you're done, feel free to run `docker prune` to clear them from your local cache. We use the `slim` versions of the public `python` images from [Docker Hub](https://hub.docker.com).
+
+```
+$ ./__tests__/test.sh
+```
+
+For faster tests, you can opt to run in Python 3.7 rather than all supported Python versions:
+
+```
+$ PYTHON_37_ONLY=1 ./__tests__/test-local.sh
+```
