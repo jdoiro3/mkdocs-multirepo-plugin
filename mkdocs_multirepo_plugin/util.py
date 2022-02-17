@@ -105,7 +105,7 @@ def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd(
     return process
 
 
-async def execute_bash_script_async(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> asyncio.subprocess.Process:
+async def execute_bash_script_async(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
     """executes a bash script in an asynchronously"""
     if platform == "linux" or platform == "linux2":
         cmd = " ".join(f'"{arg}"' for arg in arguments)
