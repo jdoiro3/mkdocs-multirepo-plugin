@@ -35,7 +35,7 @@ nav:
   - MicroService: '!import {url}?branch={branch}?docs_dir={path}?multi_docs={True | False}'
 ```
 
-*MicroService mkdocs.yml*
+*MicroService mkdocs.yml (located within the docs directory)*
 ```yaml
 edit_uri: /blob/master/
 
@@ -64,11 +64,10 @@ If you'd prefer *MkDocs* to build the site nav based on the directory structure,
 
 ```yaml
 plugins:
+  - search
   - multirepo:
       # (optional) tells multirepo to cleanup the temporary directory after site is built.
       cleanup: true
-      # (optional) tells multirepo what the temp directory should be called
-      temp_dir: multirepo_docs
       repos:
         - section: Backstage
           import_url: 'https://github.com/backstage/backstage'
@@ -87,9 +86,21 @@ plugins:
           import_url: https://github.com/backstage/mkdocs-monorepo-plugin
           multi_docs: True
           docs_dir: sample-docs/* # glob
+        - section: 'Django REST'
+          import_url: 'https://github.com/encode/django-rest-framework'
+        - section: 'Cookiecutter Pypackage'
+          import_url: 'https://github.com/zillionare/cookiecutter-pypackage'
+        - section: 'Pydantic'
+          import_url: 'https://github.com/samuelcolvin/pydantic'
 ```
 
-## α Multiple Docs Directories in Imported Repo (Alpha)
+Once you're done configuring, run either `mkdocs serve` or `mkdocs build`. This will `import` the docs into a temporary directory and build the site.
+
+![example gif](assets/mkdocs-serve-example.gif)
+
+## Additional Features
+
+### α Multiple Docs Directories in Imported Repo (Alpha)
 
 If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site when `multi_docs` is set to `True`.
 
@@ -128,11 +139,11 @@ By default, this directory turns into this.
 > - *edit_urls* will still map to underlying markdown file based on the actual directory structure in the remote's repository.
 
 
-## Use in CI/CD
+### Use in CI/CD
 
 If you want to use the plugin within Azure Pipelines or Github Actions, you'll need to define an `AccessToken` environment variable for the `mkdocs build` step. The `AccessToken` should have access to `clone` all repos.
 
-### Azure Pipeline Step Example
+#### Azure Pipeline Step Example
 
 ```yaml
 - script: |
@@ -143,7 +154,7 @@ If you want to use the plugin within Azure Pipelines or Github Actions, you'll n
   displayName: 'Build MkDocs Site'
 ```
 
-## α Development in Imported Repos (Alpha)
+### α Development in Imported Repos (Alpha)
 
 For `mkdocs serve` to work properly in another repo (a repo that is imported into a main site), you will need to add the multirepo plugin within the *imported* repo, including the following configuration.
 
