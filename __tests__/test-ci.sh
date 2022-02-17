@@ -8,11 +8,11 @@ printf "flake8 count for max-complexity=10: "
 flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=setup.py,env
 
 # Running unit-tests
-python3 -m unittest tests.unittest
+python3 -m unittest tests.unittests
 
 # End-to-end testing via Bats (Bash automated tests)
 GITHUB_ACTIONS_E2E_PATH="/home/runner/work/mkdocs-multirepo-plugin/mkdocs_multirepo_plugin/__tests__/test.bats"
-LOCAL_E2E_PATH="./test.bats"
+LOCAL_E2E_PATH="./__tests__/test.bats"
 
 if [[ -f "$GITHUB_ACTIONS_E2E_PATH" ]]; then
     bats $GITHUB_ACTIONS_E2E_PATH
