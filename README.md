@@ -188,16 +188,20 @@ Tests were modeled off of the similar well maintained package: [mkdocs-monorepo-
 - Docker
 - MkDocs
 
-### Local Testing
+### Integration Testing
 
 The command below will use Docker to run our test suites in numerous Python versions. It may take some time on first run, but should be very fast afterwards. When you're done, feel free to run `docker prune` to clear them from your local cache. We use the `slim` versions of the public `python` images from [Docker Hub](https://hub.docker.com).
-
 ```
 $ ./__tests__/test.sh
 ```
-
 For faster tests, you can opt to run in Python 3.7 rather than all supported Python versions:
-
 ```
 $ PYTHON_37_ONLY=1 ./__tests__/test-local.sh
 ```
+
+### Unit Testing
+
+```
+$ python -m unittest tests.unittests
+```
+
