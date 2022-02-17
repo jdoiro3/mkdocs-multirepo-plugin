@@ -24,11 +24,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Bats
-        run: ./__tests__/setup-bats.sh
+        run: sudo ./__tests__/setup-bats.sh
       - name: Install Python dependencies
-        run: ./__tests__/setup-pip.sh
+        run: sudo ./__tests__/setup-pip.sh
       - name: Tests
-        run: ./__tests__/test-ci.sh
+        run: sudo ./__tests__/test-ci.sh
 
   publish:
     runs-on: ubuntu-latest
