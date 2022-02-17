@@ -18,13 +18,17 @@ jobs:
         python-version: [3, 3.6, 3.7]
         
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@master
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@main
+        uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Test
-        run: echo "Need to add tests"
+      - name: Install Bats
+        run: ./__tests__/setup-bats.sh
+      - name: Install Python dependencies
+        run: ./__tests__/setup-pip.sh
+      - name: Tests
+        run: ./__tests__/test-ci.sh
 
   publish:
     runs-on: ubuntu-latest
