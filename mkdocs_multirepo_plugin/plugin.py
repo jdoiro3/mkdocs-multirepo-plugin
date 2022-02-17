@@ -104,7 +104,6 @@ class MultirepoPlugin(BasePlugin):
             repo.set_edit_uri(repo_config.get("edit_uri"))
             nav[index][section_name] = repo_config.get('nav')
             self.repos[repo.name] = repo
-            log.info(f"Multirepo plugin is imported docs for section {repo.name}")
         return config
 
     def handle_repos_based_import(self, config: Config, repos: list) -> Config:
@@ -122,7 +121,6 @@ class MultirepoPlugin(BasePlugin):
         asyncio_run(batch_import(repo_instances))
         for repo in repo_instances:
             self.repos[repo.name] = repo
-            log.info(f"Multirepo plugin is imported docs for section {repo.name}")
         return config
 
     def on_config(self, config: Config) -> Config:
@@ -139,6 +137,7 @@ class MultirepoPlugin(BasePlugin):
                 return config
             if config.get('nav') and repos:
                 log.warning("Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence")
+            log.info("Multirepo plugin importing docs...")
             # nav takes precedence over repos
             if config.get("nav"):
                 return self.handle_nav_based_import(config)

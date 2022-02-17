@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Tuple, List
 import shutil
 import subprocess
@@ -9,6 +10,8 @@ from .util import (
     git_supports_sparse_clone, remove_parents,
     execute_bash_script_async
 )
+import asyncio
+import tqdm
 
 
 def resolve_nav_paths(nav: list, section_name: str) -> None:
@@ -183,7 +186,7 @@ class DocsRepo(Repo):
             self.sparse_clone([self.docs_dir])
             execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
 
-    async def import_docs_async(self, remove_existing=True) -> None:
+    async def import_docs_async(self, remove_existing=True) -> DocsRepo:
         """imports the markdown documentation to be included in the site asynchronously"""
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
@@ -197,6 +200,7 @@ class DocsRepo(Repo):
         else:
             await self.sparse_clone_async([self.docs_dir])
             execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
+        return self
 
     def load_config(self, yml_file) -> dict:
         """Loads the repo's mkdocs.yml configuration file or the same file with a different name"""
@@ -206,6 +210,10 @@ class DocsRepo(Repo):
         return config
 
 
-async def batch_import(repos: List[DocsRepo]) -> None:
+async def batch_import(repos: List) -> None:
     """Given a list of DocRepo instances, performs a batch import asynchronously"""
-    await gather(*(repo.import_docs_async() for repo in repos))
+    progress_bar = tqdm.tqdm(total=len(repos))
+    for import_async in asyncio.as_completed([repo.import_docs_async() for repo in repos]):
+        repo = await import_async
+        progress_bar.set_description(f"✅ Got {repo.name} Docs")
+        progress_bar.update()

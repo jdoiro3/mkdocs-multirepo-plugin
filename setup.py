@@ -24,7 +24,8 @@ setup(
         ),
     install_requires=[
         "mkdocs>=1.0.4",
-        "asyncio"
+        "asyncio",
+        "tqdm"
         ],
     extras_require={"test": ["pytest>=4.0", "pytest-cov"]},
     include_package_data=True,
