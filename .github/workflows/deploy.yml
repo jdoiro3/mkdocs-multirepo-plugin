@@ -8,6 +8,10 @@ on:
       - ".github/workflows/deploy.yml"
       - "setup.py"
       
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+      
 jobs:
   test:
     name: Test on Python ${{ matrix.python-version }}
