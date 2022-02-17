@@ -1,6 +1,9 @@
 # mkdocs-multirepo-plugin
 
+[![](https://github.com/jdoiro3/mkdocs-multirepo-plugin/workflows/Build%2C%20Test%20%26%20Deploy/badge.svg)](https://github.com/jdoiro3/mkdocs-multirepo-plugin/actions)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+![](https://img.shields.io/badge/lifecycle-beta-509bf5.svg)
+<img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mkdocs-multirepo-plugin?style=plastic">
 
 Build documentation in multiple repos into one site.
 
