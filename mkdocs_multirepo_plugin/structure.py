@@ -212,8 +212,9 @@ class DocsRepo(Repo):
 
 async def batch_import(repos: List) -> None:
     """Given a list of DocRepo instances, performs a batch import asynchronously"""
-    progress_bar = tqdm.tqdm(total=len(repos))
+    longest_desc = max([len(f"✅ Got {repo.name} Docs") for repo in repos])
+    progress_bar = tqdm.tqdm(total=len(repos), desc=" "*longest_desc)
     for import_async in asyncio.as_completed([repo.import_docs_async() for repo in repos]):
         repo = await import_async
-        progress_bar.set_description(f"✅ Got {repo.name} Docs")
+        progress_bar.set_description(f"✅ Got {repo.name} Docs".ljust(longest_desc))
         progress_bar.update()
