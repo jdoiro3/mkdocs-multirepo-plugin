@@ -5,16 +5,8 @@ import tempfile
 import pathlib
 import asyncio
 
-# See url for explanation: https://stackoverflow.com/questions/23033939/how-to-test-python-3-4-asyncio-code
-def async_test(f):
-    def wrapper(*args, **kwargs):
-        coro = asyncio.coroutine(f)
-        future = coro(*args, **kwargs)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(future)
-    return wrapper
 
-class BaseCase(unittest.TestCase):
+class BaseCase(unittest.IsolatedAsyncioTestCase):
 
     def assertDirExists(self, dir: pathlib.Path):
         if not dir.is_dir():
@@ -46,7 +38,6 @@ class TestUtil(BaseCase):
             with self.assertRaises(ValueError):
                 util.remove_parents(case[1], case[0])
 
-    @async_test
     async def test_execute_bash_script_async(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             args = ["https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "test_repo", "main", "docs/*"]
@@ -91,7 +82,6 @@ class TestStructure(BaseCase):
             parsed_url = structure.parse_repo_url(case[0])
             self.assertDictEqual(parsed_url, case[1])
 
-    @async_test
     async def test_repo_sparse_clone_async(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
@@ -108,7 +98,6 @@ class TestStructure(BaseCase):
             for file in expected_files:
                 self.assertFileExists(file)
 
-    @async_test
     async def test_load_config(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
