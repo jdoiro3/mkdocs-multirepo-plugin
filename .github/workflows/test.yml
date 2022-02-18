@@ -27,5 +27,7 @@ jobs:
         run: ./__tests__/setup-bats.sh
       - name: Install Python dependencies
         run: ./__tests__/setup-pip.sh
-      - name: Tests
+      - name: Unit Tests
+        run: python3 -m unittest tests.unittests
+      - name: Linter and Integration Tests
         run: ./__tests__/test-ci.sh
