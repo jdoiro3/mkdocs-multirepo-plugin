@@ -10,7 +10,6 @@ class BaseCase(unittest.IsolatedAsyncioTestCase):
 
     def assertDirExists(self, dir: pathlib.Path):
         if not dir.is_dir():
-            print([x for x in dir.parent.parent.iterdir() if x.is_dir()])
             raise AssertionError(f"Directory {str(dir)} doesn't exist.")
 
     def assertFileExists(self, path: pathlib.Path):
@@ -45,7 +44,6 @@ class TestUtil(BaseCase):
             temp_dir_path = pathlib.Path(temp_dir)
             await util.execute_bash_script_async("sparse_clone.sh", args, temp_dir_path)
             docs_dir = temp_dir_path / "test_repo" / "docs"
-            print(str(docs_dir))
             self.assertDirExists(docs_dir)
             expected_files = [
                 docs_dir / file for file in 
