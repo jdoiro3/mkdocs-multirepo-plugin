@@ -199,7 +199,7 @@ $ ./__tests__/test.sh
 ```
 For faster tests, you can opt to run in Python 3.7 rather than all supported Python versions:
 ```
-$ PYTHON_37_ONLY=1 ./__tests__/test-local.sh
+$ PYTHON_37_ONLY=1 ./__tests__/test.sh
 ```
 
 ### Unit Testing
