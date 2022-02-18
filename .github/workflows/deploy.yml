@@ -31,7 +31,9 @@ jobs:
         run: sudo ./__tests__/setup-bats.sh
       - name: Install Python dependencies
         run: sudo ./__tests__/setup-pip.sh
-      - name: Tests
+      - name: Unit Tests
+        run: python3 -m unittest tests.unittests
+      - name: Linting and Integration Tests
         run: sudo ./__tests__/test-ci.sh
 
   publish:
