@@ -99,7 +99,7 @@ plugins:
 
 Once you're done configuring, run either `mkdocs serve` or `mkdocs build`. This will `import` the docs into a temporary directory and build the site.
 
-![example gif](assets/mkdocs-serve-example.gif)
+![example gif](assets/example.gif)
 
 ## Additional Features
 
