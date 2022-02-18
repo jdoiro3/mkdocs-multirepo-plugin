@@ -1,5 +1,4 @@
-from __future__ import annotations
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 import shutil
 import subprocess
 from pathlib import Path
@@ -14,7 +13,7 @@ import asyncio
 import tqdm
 
 
-def resolve_nav_paths(nav: list, section_name: str) -> None:
+def resolve_nav_paths(nav: List[Dict], section_name: str) -> None:
     """Adds the section_name to the begining of all paths in a MkDocs nav object"""
     for index, entry in enumerate(nav):
         (key, value), = entry.items()
@@ -24,7 +23,7 @@ def resolve_nav_paths(nav: list, section_name: str) -> None:
             nav[index][key] = str(section_name / Path(value)).replace("\\", "/")
 
 
-def parse_repo_url(repo_url: str) -> dict:
+def parse_repo_url(repo_url: str) -> Dict[str, str]:
     """Parses !import statement urls"""
     url_parts = repo_url.split("?")
     import_parts = {"url": url_parts[0]}
@@ -65,7 +64,7 @@ class Repo:
             return True
         return False
 
-    def sparse_clone(self, dirs: list) -> subprocess.CompletedProcess:
+    def sparse_clone(self, dirs: List[str]) -> subprocess.CompletedProcess:
         """Sparse clones a repo, using dirs in sparse checkout set command"""
         args = [self.url, self.name, self.branch] + dirs + ["./mkdocs.yml"]
         if git_supports_sparse_clone():
@@ -77,7 +76,7 @@ class Repo:
             raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
         return process
 
-    async def sparse_clone_async(self, dirs: list) -> Tuple[str, str]:
+    async def sparse_clone_async(self, dirs: List[str]) -> Tuple[str, str]:
         """sparse clones a Git repo asynchronously"""
         args = [self.url, self.name, self.branch] + dirs + ["./mkdocs.yml"]
         if git_supports_sparse_clone():
@@ -86,7 +85,7 @@ class Repo:
             stdout = await execute_bash_script_async("sparse_clone_old.sh", args, self.temp_dir)
         return stdout
 
-    def import_config_files(self, dirs: list) -> subprocess.CompletedProcess:
+    def import_config_files(self, dirs: List[str]) -> subprocess.CompletedProcess:
         """Imports directories needed for building the site
         the list of dirs might include: mkdocs.yml, overrides/*, etc"""
         self.temp_dir.mkdir(exist_ok=True)
@@ -186,7 +185,7 @@ class DocsRepo(Repo):
             self.sparse_clone([self.docs_dir])
             execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
 
-    async def import_docs_async(self, remove_existing=True) -> DocsRepo:
+    async def import_docs_async(self, remove_existing=True) -> 'DocsRepo':
         """imports the markdown documentation to be included in the site asynchronously"""
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
@@ -202,7 +201,7 @@ class DocsRepo(Repo):
             execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
         return self
 
-    def load_config(self, yml_file) -> dict:
+    def load_config(self, yml_file) -> Dict:
         """Loads the repo's mkdocs.yml configuration file or the same file with a different name"""
         config = super().load_config(yml_file)
         if 'nav' in config:
