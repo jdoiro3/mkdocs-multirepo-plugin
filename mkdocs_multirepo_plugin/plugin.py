@@ -85,15 +85,13 @@ class MultirepoPlugin(BasePlugin):
         nav: List[Dict] = config.get('nav')
         docs_repo_objs: List[DocsRepo] = []
         nav_transforms: List[Tuple[int, str]] = []
+        # find nav entries with !import statements and collect data
         for index, entry in enumerate(nav):
             (section_name, value), = entry.items()
             if type(value) is str:
                 if value.startswith(IMPORT_STATEMENT):
                     import_stmt = parse_import(value)
-                    repo = DocsRepo(
-                        section_name, import_stmt.get("url"),
-                        self.temp_dir,
-                        import_stmt.get("docs_dir", "docs/*"),
+                    repo = DocsRepo(section_name, import_stmt.get("url"), self.temp_dir, import_stmt.get("docs_dir", "docs/*"),
                         import_stmt.get("branch", "master"),
                         bool(import_stmt.get("multi_docs", False))
                     )
@@ -101,6 +99,7 @@ class MultirepoPlugin(BasePlugin):
                     # need to collect nav data for transoming nav after batch docs import
                     nav_transforms.append((index, section_name))
         asyncio_run(batch_import(docs_repo_objs))
+        # transform nav sections with imported repo navs
         for index, repo in enumerate(docs_repo_objs):
             # get the imported repo's config, which should have a nav section
             repo_config = repo.load_config("mkdocs.yml")
