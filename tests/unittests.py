@@ -10,7 +10,7 @@ class BaseCase(unittest.IsolatedAsyncioTestCase):
 
     def assertDirExists(self, dir: pathlib.Path):
         if not dir.is_dir():
-            print([x for x in dir.parent.iterdir() if x.is_dir()])
+            print([x for x in dir.parent.parent.iterdir() if x.is_dir()])
             raise AssertionError(f"Directory {str(dir)} doesn't exist.")
 
     def assertFileExists(self, path: pathlib.Path):
