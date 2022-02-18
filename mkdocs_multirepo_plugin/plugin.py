@@ -1,3 +1,4 @@
+from typing import List, Tuple, Dict
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
 from mkdocs.config import config_options
@@ -30,8 +31,8 @@ class MultirepoPlugin(BasePlugin):
     )
 
     def __init__(self):
-        self.temp_dir = None
-        self.repos = {}
+        self.temp_dir: Path = None
+        self.repos: Dict[str, DocsRepo] = {}
 
     def handle_imported_repo(self, config: Config) -> Config:
         """Imports necessary files for serving site in an imported repo"""
@@ -81,8 +82,9 @@ class MultirepoPlugin(BasePlugin):
 
     def handle_nav_based_import(self, config: Config) -> Config:
         """Imports documentation in other repos based on nav configuration"""
-        nav = config.get('nav')
-        repo_instances = []
+        nav: List[Dict] = config.get('nav')
+        docs_repo_objs: List[DocsRepo] = []
+        nav_transforms: List[Tuple[int, str]] = []
         for index, entry in enumerate(nav):
             (section_name, value), = entry.items()
             if type(value) is str:
@@ -95,20 +97,24 @@ class MultirepoPlugin(BasePlugin):
                         import_stmt.get("branch", "master"),
                         bool(import_stmt.get("multi_docs", False))
                     )
-                    repo_instances.append(repo)
-        asyncio_run(batch_import(repo_instances))
-        for repo in repo_instances:
+                    docs_repo_objs.append(repo)
+                    # need to collect nav data for transoming nav after batch docs import
+                    nav_transforms.append((index, section_name))
+        asyncio_run(batch_import(docs_repo_objs))
+        for index, repo in enumerate(docs_repo_objs):
+            # get the imported repo's config, which should have a nav section
             repo_config = repo.load_config("mkdocs.yml")
             if not repo_config.get("nav"):
                 raise ImportDocsException(f"{repo.name}'s mkdocs.yml file doesn't have a nav section")
             repo.set_edit_uri(repo_config.get("edit_uri"))
-            nav[index][section_name] = repo_config.get('nav')
+            nav_index, section_name = nav_transforms[index]
+            nav[nav_index][section_name] = repo_config.get('nav')
             self.repos[repo.name] = repo
         return config
 
     def handle_repos_based_import(self, config: Config, repos: list) -> Config:
         """Imports documentation in other repos based on repos configuration"""
-        repo_instances = []
+        docs_repo_objs = []
         for repo in repos:
             import_stmt = parse_repo_url(repo.get("import_url"))
             repo = DocsRepo(
@@ -117,9 +123,9 @@ class MultirepoPlugin(BasePlugin):
                 import_stmt.get("branch", "master"), repo.get("edit_uri"),
                 bool(repo.get("multi_docs", False))
                 )
-            repo_instances.append(repo)
-        asyncio_run(batch_import(repo_instances))
-        for repo in repo_instances:
+            docs_repo_objs.append(repo)
+        asyncio_run(batch_import(docs_repo_objs))
+        for repo in docs_repo_objs:
             self.repos[repo.name] = repo
         return config
 
