@@ -1,6 +1,8 @@
 # mkdocs-multirepo-plugin
 
 [![](https://github.com/jdoiro3/mkdocs-multirepo-plugin/workflows/Tests/badge.svg)](https://github.com/jdoiro3/mkdocs-multirepo-plugin/actions)
+[![](https://github.com/jdoiro3/mkdocs-multirepo-plugin/workflows/Build%2C%20Test%20%26%20Deploy/badge.svg)](https://github.com/jdoiro3/mkdocs-multirepo-plugin/actions)
+[![PyPI](https://img.shields.io/pypi/v/mkdocs-multirepo-plugin)](https://pypi.org/project/mkdocs-multirepo-plugin/)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 ![](https://img.shields.io/badge/lifecycle-beta-509bf5.svg)
 <img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mkdocs-multirepo-plugin?style=plastic">
