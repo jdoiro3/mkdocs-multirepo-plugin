@@ -96,7 +96,7 @@ class MultirepoPlugin(BasePlugin):
                         bool(import_stmt.get("multi_docs", False))
                     )
                     docs_repo_objs.append(repo)
-                    # need to collect nav data for transoming nav after batch docs import
+                    # need to collect nav data for transforming nav after batch docs import
                     nav_transforms.append((index, section_name))
         asyncio_run(batch_import(docs_repo_objs))
         # transform nav sections with imported repo navs
@@ -129,7 +129,6 @@ class MultirepoPlugin(BasePlugin):
         return config
 
     def on_config(self, config: Config) -> Config:
-
         docs_dir = Path(config.get('docs_dir'))
         self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
         if not self.temp_dir.is_dir():

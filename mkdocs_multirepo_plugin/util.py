@@ -10,6 +10,7 @@ from re import search
 
 # used for getting Git version
 GitVersion = namedtuple("GitVersion", "major minor")
+LINUX_LIKE_PLATFORMS = ["linux", "linux2", "darwin"]
 
 log = logging.getLogger("mkdocs.plugins." + __name__)
 log.addFilter(warning_filter)
@@ -69,7 +70,7 @@ def where_git() -> Path:
 
 def git_version() -> GitVersion:
     extra_run_args = get_subprocess_run_extra_args()
-    if platform == "linux" or platform == "linux2":
+    if platform in LINUX_LIKE_PLATFORMS:
         output = subprocess.run(["git", "--version"], **extra_run_args)
     else:
         git_folder = where_git()
@@ -90,22 +91,7 @@ def git_supports_sparse_clone() -> bool:
     return True
 
 
-def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> subprocess.CompletedProcess:
-    """executes a bash script"""
-    extra_run_args = get_subprocess_run_extra_args()
-    if platform == "linux" or platform == "linux2":
-        process = subprocess.run(
-            ["bash", script]+arguments, cwd=cwd, **extra_run_args
-        )
-    else:
-        git_folder = where_git()
-        process = subprocess.run(
-            [str(git_folder / "bin" / "bash.exe"), script]+arguments, cwd=cwd, **extra_run_args
-        )
-    return process
-
-
-async def execute_bash_script_async(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
+async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
     """executes a bash script in an asynchronously"""
     if platform == "linux" or platform == "linux2":
         cmd = " ".join(f'"{arg}"' for arg in arguments)

@@ -5,9 +5,8 @@ from pathlib import Path
 from mkdocs.utils import yaml_load
 from asyncio import gather
 from .util import (
-    ImportDocsException, execute_bash_script,
-    git_supports_sparse_clone, remove_parents,
-    execute_bash_script_async
+    ImportDocsException, git_supports_sparse_clone, 
+    remove_parents, execute_bash_script
 )
 import asyncio
 import tqdm
@@ -64,25 +63,13 @@ class Repo:
             return True
         return False
 
-    def sparse_clone(self, dirs: List[str]) -> subprocess.CompletedProcess:
-        """Sparse clones a repo, using dirs in sparse checkout set command"""
-        args = [self.url, self.name, self.branch] + dirs + ["./mkdocs.yml"]
-        if git_supports_sparse_clone():
-            process = execute_bash_script("sparse_clone.sh", args, self.temp_dir)
-        else:
-            process = execute_bash_script("sparse_clone_old.sh", args, self.temp_dir)
-        stderr = process.stderr
-        if process.returncode >= 1:
-            raise ImportDocsException(f"Error occurred cloning {self.name}.\nSTDERR\n{stderr}")
-        return process
-
-    async def sparse_clone_async(self, dirs: List[str]) -> Tuple[str, str]:
+    async def sparse_clone(self, dirs: List[str]) -> Tuple[str, str]:
         """sparse clones a Git repo asynchronously"""
         args = [self.url, self.name, self.branch] + dirs + ["./mkdocs.yml"]
         if git_supports_sparse_clone():
-            stdout = await execute_bash_script_async("sparse_clone.sh", args, self.temp_dir)
+            stdout = await execute_bash_script("sparse_clone.sh", args, self.temp_dir)
         else:
-            stdout = await execute_bash_script_async("sparse_clone_old.sh", args, self.temp_dir)
+            stdout = await execute_bash_script("sparse_clone_old.sh", args, self.temp_dir)
         return stdout
 
     def import_config_files(self, dirs: List[str]) -> subprocess.CompletedProcess:
@@ -170,22 +157,7 @@ class DocsRepo(Repo):
             if p.name == "docs":
                 shutil.rmtree(str(p))
 
-    def import_docs(self, remove_existing=True) -> None:
-        """Imports the markdown documentation to be included in the site"""
-        if self.location.is_dir() and remove_existing:
-            shutil.rmtree(str(self.location))
-        if self.multi_docs:
-            if self.docs_dir == "docs/*":
-                docs_dir = "docs"
-            else:
-                docs_dir = self.docs_dir
-            self.sparse_clone([docs_dir])
-            self.transform_docs_dir()
-        else:
-            self.sparse_clone([self.docs_dir])
-            execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
-
-    async def import_docs_async(self, remove_existing=True) -> 'DocsRepo':
+    async def import_docs(self, remove_existing=True) -> 'DocsRepo':
         """imports the markdown documentation to be included in the site asynchronously"""
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
@@ -194,10 +166,10 @@ class DocsRepo(Repo):
                 docs_dir = "docs"
             else:
                 docs_dir = self.docs_dir
-            await self.sparse_clone_async([docs_dir])
+            await self.sparse_clone([docs_dir])
             self.transform_docs_dir()
         else:
-            await self.sparse_clone_async([self.docs_dir])
+            await self.sparse_clone([self.docs_dir])
             execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
         return self
 
@@ -213,7 +185,7 @@ async def batch_import(repos: List) -> None:
     """Given a list of DocRepo instances, performs a batch import asynchronously"""
     longest_desc = max([len(f"✅ Got {repo.name} Docs") for repo in repos])
     progress_bar = tqdm.tqdm(total=len(repos), desc=" "*longest_desc)
-    for import_async in asyncio.as_completed([repo.import_docs_async() for repo in repos]):
+    for import_async in asyncio.as_completed([repo.import_docs() for repo in repos]):
         repo = await import_async
         progress_bar.set_description(f"✅ Got {repo.name} Docs".ljust(longest_desc))
         progress_bar.update()

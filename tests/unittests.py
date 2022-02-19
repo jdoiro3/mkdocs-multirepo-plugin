@@ -38,11 +38,11 @@ class TestUtil(BaseCase):
             with self.assertRaises(ValueError):
                 util.remove_parents(case[1], case[0])
 
-    async def test_execute_bash_script_async(self):
+    async def test_execute_bash_script(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             args = ["https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "test_repo", "main", "docs/*"]
             temp_dir_path = pathlib.Path(temp_dir)
-            await util.execute_bash_script_async("sparse_clone.sh", args, temp_dir_path)
+            await util.execute_bash_script("sparse_clone.sh", args, temp_dir_path)
             docs_dir = temp_dir_path / "test_repo" / "docs"
             self.assertDirExists(docs_dir)
             expected_files = [
@@ -81,13 +81,13 @@ class TestStructure(BaseCase):
             parsed_url = structure.parse_repo_url(case[0])
             self.assertDictEqual(parsed_url, case[1])
 
-    async def test_repo_sparse_clone_async(self):
+    async def test_repo_sparse_clone(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
             repo = structure.Repo("test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
                 temp_dir_path
                 )
-            await repo.sparse_clone_async(["docs/*"])
+            await repo.sparse_clone(["docs/*"])
             docs_dir = pathlib.Path(repo.location) / "docs"
             self.assertDirExists(docs_dir)
             expected_files = [
@@ -103,7 +103,7 @@ class TestStructure(BaseCase):
             repo = structure.Repo("test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
                 temp_dir_path
                 )
-            await repo.sparse_clone_async(["docs/*"])
+            await repo.sparse_clone(["docs/*"])
             docs_dir = pathlib.Path(repo.location) / "docs"
             self.assertDirExists(docs_dir)
             expected_files = [
