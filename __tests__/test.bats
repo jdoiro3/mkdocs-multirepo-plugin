@@ -55,6 +55,7 @@ assertFailedMkdocs() {
 teardown() {
   rm -rf ${fixturesDir}/parent-ok-with-repos/site
   rm -rf ${fixturesDir}/parent-ok-with-nav/site
+  rm -rf ${fixturesDir}/parent-ok-with-nav-github/site
   for d in $fixturesDir/* ; do
       echo "removing $d/.git"
       rm -rf $d/.git
