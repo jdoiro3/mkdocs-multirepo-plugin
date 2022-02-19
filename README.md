@@ -17,6 +17,13 @@ Build documentation in multiple repos into one site.
 - **Simple**: All configuration is done within the `plugins` or `nav` sections of your *mkdocs.yml* file.
 - **Ready for Production**: The plugin can be used in a CI/CD pipeline.
 
+## OS Support
+
+![Mac OS](https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+
 ## Setup
 
 Install plugin using pip:
