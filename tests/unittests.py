@@ -3,7 +3,6 @@ from mkdocs_multirepo_plugin import util
 from mkdocs_multirepo_plugin import structure
 import tempfile
 import pathlib
-import asyncio
 
 
 class BaseCase(unittest.IsolatedAsyncioTestCase):
@@ -46,7 +45,7 @@ class TestUtil(BaseCase):
             docs_dir = temp_dir_path / "test_repo" / "docs"
             self.assertDirExists(docs_dir)
             expected_files = [
-                docs_dir / file for file in 
+                docs_dir / file for file in
                 ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
                 ]
             for file in expected_files:
@@ -84,14 +83,15 @@ class TestStructure(BaseCase):
     async def test_repo_sparse_clone(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
-            repo = structure.Repo("test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
+            repo = structure.Repo(
+                "test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
                 temp_dir_path
-                )
+            )
             await repo.sparse_clone(["docs/*"])
             docs_dir = pathlib.Path(repo.location) / "docs"
             self.assertDirExists(docs_dir)
             expected_files = [
-                docs_dir / file for file in 
+                docs_dir / file for file in
                 ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
                 ]
             for file in expected_files:
@@ -100,23 +100,24 @@ class TestStructure(BaseCase):
     async def test_load_config(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
-            repo = structure.Repo("test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
+            repo = structure.Repo(
+                "test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
                 temp_dir_path
                 )
             await repo.sparse_clone(["docs/*"])
             docs_dir = pathlib.Path(repo.location) / "docs"
             self.assertDirExists(docs_dir)
             expected_files = [
-                docs_dir / file for file in 
+                docs_dir / file for file in
                 ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
                 ]
             for file in expected_files:
                 self.assertFileExists(file)
             yml_dict = repo.load_config("docs/mkdocs.yml")
             self.assertDictEqual(
-                yml_dict, 
+                yml_dict,
                 {
-                    'edit_uri': '/blob/master/', 
+                    'edit_uri': '/blob/master/',
                     'nav': [
                         {'Home': 'index.md'}, {'Page1': 'page1.md'}, {'Page2': 'page2.md'}
                         ]
@@ -125,11 +126,11 @@ class TestStructure(BaseCase):
             with self.assertRaises(structure.ImportDocsException):
                 yml_dict = repo.load_config("")
             with self.assertRaises(structure.ImportDocsException):
-                repo = structure.Repo("test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
-                temp_dir_path
+                repo = structure.Repo(
+                    "test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
+                    temp_dir_path
                 )
                 yml_dict = repo.load_config("")
-
 
 
 if __name__ == '__main__':

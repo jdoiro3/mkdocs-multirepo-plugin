@@ -9,9 +9,9 @@ setup(
     scripts=[
         'mkdocs_multirepo_plugin/scripts/sparse_clone.sh',
         'mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh',
-        'mkdocs_multirepo_plugin/scripts/mv.sh'
+        'mkdocs_multirepo_plugin/scripts/mv_docs_up.sh'
         ],
-    version="0.2.7",
+    version="0.2.8",
     author="Joseph Doiron",
     author_email="josephdoiron1234@yahoo.com",
     description="Build documentation in multiple repos into one site.",

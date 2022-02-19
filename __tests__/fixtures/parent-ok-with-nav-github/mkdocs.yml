@@ -1,0 +1,10 @@
+site_name: Test
+
+nav:
+  - Home: index.md
+  - Home2: index.md
+  - DemoRepo: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=main'
+  - DemoRepo2: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=main'
+
+plugins:
+  - multirepo

@@ -91,7 +91,9 @@ class MultirepoPlugin(BasePlugin):
             if type(value) is str:
                 if value.startswith(IMPORT_STATEMENT):
                     import_stmt = parse_import(value)
-                    repo = DocsRepo(section_name, import_stmt.get("url"), self.temp_dir, import_stmt.get("docs_dir", "docs/*"),
+                    repo = DocsRepo(
+                        section_name, import_stmt.get("url"),
+                        self.temp_dir, import_stmt.get("docs_dir", "docs/*"),
                         import_stmt.get("branch", "master"),
                         bool(import_stmt.get("multi_docs", False))
                     )

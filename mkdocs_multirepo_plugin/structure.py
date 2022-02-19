@@ -3,9 +3,8 @@ import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
-from asyncio import gather
 from .util import (
-    ImportDocsException, git_supports_sparse_clone, 
+    ImportDocsException, git_supports_sparse_clone,
     remove_parents, execute_bash_script
 )
 import asyncio
@@ -170,7 +169,7 @@ class DocsRepo(Repo):
             self.transform_docs_dir()
         else:
             await self.sparse_clone([self.docs_dir])
-            execute_bash_script("mv.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
+            await execute_bash_script("mv_docs_up.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
         return self
 
     def load_config(self, yml_file) -> Dict:

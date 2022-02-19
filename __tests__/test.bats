@@ -78,30 +78,43 @@ setup() {
 # Test suites.
 #
 
-@test "builds a mkdocs site with multirepo repos section" {
+@test "builds a mkdocs site with repos section" {
   cd ${fixturesDir}
-  run mkdocs build --config-file=parent-ok-with-repos/mkdocs.yml
+  parent="parent-ok-with-repos"
+  run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
-  run cat parent-ok-with-repos/site/ok-with-nav-simple/index.html
+  run cat $parent/site/ok-with-nav-simple/index.html
   [[ "$output" == *"Welcome to a simple repo."* ]]
-  run cat parent-ok-with-repos/site/ok-no-nav/index.html
+  run cat $parent/site/ok-no-nav/index.html
   [[ "$output" == *"I'm an okay setup with no nav configured in the imported repo."* ]]
-  run cat parent-ok-with-repos/site/ok-with-nav-complex/index.html
+  run cat $parent/site/ok-with-nav-complex/index.html
   [[ "$output" == *"Welcome to a complex repo."* ]]
-  run cat parent-ok-with-repos/site/ok-with-nav-complex/section1/getting-started/index.html
+  run cat $parent/site/ok-with-nav-complex/section1/getting-started/index.html
   [[ "$output" == *"Let's get started with section 1."* ]]
-  run cat parent-ok-with-repos/site/ok-with-nav-complex/section2/getting-started/index.html
+  run cat $parent/site/ok-with-nav-complex/section2/getting-started/index.html
   [[ "$output" == *"Let's get started with section 2."* ]]
-  run cat parent-ok-with-repos/site/ok-with-nav-complex/section1/index.html
+  run cat $parent/site/ok-with-nav-complex/section1/index.html
   [[ "$output" == *"Welcome to section 1."* ]]
-  run cat parent-ok-with-repos/site/ok-with-nav-complex/section2/index.html
+  run cat $parent/site/ok-with-nav-complex/section2/index.html
   [[ "$output" == *"Welcome to section 2."* ]]
 }
 
-@test "builds a mkdocs site with multirepo nav section" {
+@test "builds a mkdocs site with nav section" {
   cd ${fixturesDir}
-  run mkdocs build --config-file=parent-ok-with-nav/mkdocs.yml
+  parent="parent-ok-with-nav"
+  run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
-  run cat parent-ok-with-nav/site/ok-with-nav-simple/index.html
+  run cat $parent/site/ok-with-nav-simple/index.html
   [[ "$output" == *"Welcome to a simple repo."* ]]
+}
+
+@test "Github test: builds a mkdocs site with multiple imports in nav section" {
+  cd ${fixturesDir}
+  parent="parent-ok-with-nav-github"
+  run mkdocs build --config-file=$parent/mkdocs.yml
+  debugger
+  run cat $parent/site/DemoRepo/index.html
+  [[ "$output" == *"Wow, isn't that really cool. It's all done in one line."* ]]
+  run cat $parent/site/DemoRepo2/index.html
+  [[ "$output" == *"Wow, isn't that really cool. It's all done in one line."* ]]
 }
