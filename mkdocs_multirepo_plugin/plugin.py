@@ -5,7 +5,7 @@ from mkdocs.config import config_options
 from mkdocs.theme import Theme
 from mkdocs.config import Config, config_options
 from .structure import (
-    Repo, DocsRepo, parse_import, parse_repo_url, batch_import
+    Repo, DocsRepo, parse_import, parse_repo_url, batch_import, resolve_nav_paths
     )
 from .util import ImportDocsException, log, get_src_path_root, asyncio_run
 from pathlib import Path
@@ -54,9 +54,8 @@ class MultirepoPlugin(BasePlugin):
         shutil.copytree(str(parent_repo.location / "docs"), str(temp_dir / "docs"), dirs_exist_ok=True)
 
         new_config = parent_repo.load_config(self.config.get("yml_file"))
-        # remove nav
+        # remove parent nav
         if "nav" in new_config:
-            log.info("Multirepo removing the nav section")
             del new_config["nav"]
         # update plugins
         if "plugins" in new_config:
@@ -81,6 +80,9 @@ class MultirepoPlugin(BasePlugin):
             )
         # update docs dir to point to temp_dir
         new_config["docs_dir"] = str(temp_dir / "docs")
+        # resolve the nav paths
+        if config.get("nav"):
+            resolve_nav_paths(config.get("nav"), self.config.get("section_name"))
         # update this repo's config with the main repo's config
         config.update(new_config)
         # update markdown externsions
