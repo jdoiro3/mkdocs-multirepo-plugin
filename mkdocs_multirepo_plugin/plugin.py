@@ -56,13 +56,14 @@ class MultirepoPlugin(BasePlugin):
         new_config = parent_repo.load_config(self.config.get("yml_file"))
         # remove nav
         if "nav" in new_config:
+            log.info("Multirepo removing the nav section")
             del new_config["nav"]
         # update plugins
         if "plugins" in new_config:
             plugins_copy = deepcopy(new_config["plugins"])
             for p in plugins_copy:
                 if "search" in p:
-                    log.info("removing search")
+                    log.info("Multirepo removing search")
                     new_config["plugins"].remove(p)
                 if "multirepo" in p:
                     new_config["plugins"].remove(p)
