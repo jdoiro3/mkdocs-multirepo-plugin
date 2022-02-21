@@ -178,19 +178,22 @@ For `mkdocs serve` to work properly in an imported repo (a repo that is imported
 plugins:
   multirepo:
     imported_repo: true
-    url: {url to parent repo}
-    section_name: Microservice
+    url: https://github.com/squidfunk/mkdocs-material
+    section_name: Backstage
     # directories and files needed for building the site
     # any path in docs will be included. For example, index.md is the
     # homepage of the parent site
-    dirs: ["overrides/*", "mkdocs.yml", "docs/index.md"]
-    custom_dir: overrides # overrides directory
+    dirs: ["material/*", "mkdocs.yml", "docs/index.md"]
+    custom_dir: material
     yml_file: mkdocs.yml # this can also be a relative path
     branch: master
 ```
 
 Writers can now run `mkdocs serve` within their local repo, using the main site's configuration, custom theming and features. This means all development is distributed, without technical writers having to switch repos.
 
+![imported repo serve example](assets/imported-repo-serve.gif)
+
+![site image](assets/backstage-material-theme.png)
 
 ## Running Tests
 
