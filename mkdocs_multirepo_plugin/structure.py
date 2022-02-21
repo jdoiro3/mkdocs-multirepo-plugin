@@ -71,11 +71,11 @@ class Repo:
             stdout = await execute_bash_script("sparse_clone_old.sh", args, self.temp_dir)
         return stdout
 
-    def import_config_files(self, dirs: List[str]) -> subprocess.CompletedProcess:
+    async def import_config_files(self, dirs: List[str]) -> subprocess.CompletedProcess:
         """Imports directories needed for building the site
         the list of dirs might include: mkdocs.yml, overrides/*, etc"""
         self.temp_dir.mkdir(exist_ok=True)
-        return self.sparse_clone(dirs)
+        return await self.sparse_clone(dirs)
 
     def delete_repo(self) -> None:
         """Deletes the repo from the temp directory"""
