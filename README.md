@@ -166,30 +166,34 @@ If you want to use the plugin within Azure Pipelines or Github Actions, you'll n
   displayName: 'Build MkDocs Site'
 ```
 
-### α Development in Imported Repos (Alpha)
+### β Development in Imported Repos (Beta)
 
-For `mkdocs serve` to work properly in another repo (a repo that is imported into a main site), you will need to add the multirepo plugin within the *imported* repo, including the following configuration.
+For `mkdocs serve` to work properly in an imported repo (a repo that is imported in the parent site), *you will need to add the multirepo plugin within the imported repo as well as the parent repo*, including the following configuration.
 
 > Notes:
-> - You will also need to have `plugins` the main repo (the repo what imports other repos) uses installed within your local `venv`.
+> - You will also need to have `plugins` and `packages` the parent repo uses installed within your local `venv`.
 > - See documentation on the [set](https://git-scm.com/docs/git-sparse-checkout#Documentation/git-sparse-checkout.txt-emsetem) git command for `sparse-checkout` if you are confused with what `dirs` can contain.
 
 ```yml
-site_name: My Docs
-
 plugins:
   multirepo:
     imported_repo: true
-    url: [url to main repo]
+    url: https://github.com/squidfunk/mkdocs-material
+    section_name: Backstage
     # directories and files needed for building the site
-    dirs: ["overrides/*", "mkdocs.yml"]
-    custom_dir: overrides # overrides directory
+    # any path in docs will be included. For example, index.md is the
+    # homepage of the parent site
+    dirs: ["material/*", "mkdocs.yml", "docs/index.md"]
+    custom_dir: material
     yml_file: mkdocs.yml # this can also be a relative path
-    branch: dev
+    branch: master
 ```
 
-Engineers can now run `mkdocs serve` within their local repo, using the main site's configuration, custom theming and features.
+Writers can now run `mkdocs serve` within their local repo, using the main site's configuration, custom theming and features. This means all development is distributed, without technical writers having to switch repos.
 
+![imported repo serve example](assets/imported-repo-serve.gif)
+
+![site image](assets/backstage-material-theme.png)
 
 ## Running Tests
 

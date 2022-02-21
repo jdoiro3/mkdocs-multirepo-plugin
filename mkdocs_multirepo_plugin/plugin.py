@@ -3,14 +3,15 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
 from mkdocs.config import config_options
 from mkdocs.theme import Theme
-from mkdocs.config import Config, defaults
+from mkdocs.config import Config, config_options
 from .structure import (
-    Repo, DocsRepo, parse_import, parse_repo_url, batch_import
+    Repo, DocsRepo, parse_import, parse_repo_url, batch_import, resolve_nav_paths
     )
 from .util import ImportDocsException, log, get_src_path_root, asyncio_run
 from pathlib import Path
 from copy import deepcopy
 import shutil
+import tempfile
 
 IMPORT_STATEMENT = "!import"
 
@@ -27,22 +28,33 @@ class MultirepoPlugin(BasePlugin):
         ("yml_file", config_options.Type(str, default=None)),
         ("imported_repo", config_options.Type(bool, default=False)),
         ("dirs", config_options.Type(list, default=[])),
-        ("branch", config_options.Type(str, default=None))
+        ("branch", config_options.Type(str, default=None)),
+        ("section_name", config_options.Type(str, default="Imported Docs"))
     )
 
     def __init__(self):
         self.temp_dir: Path = None
         self.repos: Dict[str, DocsRepo] = {}
 
+    def set_temp_dir(self, dir):
+        self.temp_dir = dir
+
+    def setup_imported_repo(self, config: Config):
+        temp_dir = tempfile.mkdtemp(prefix="multirepo_")
+        temp_section_dir = Path(temp_dir) / "docs" / self.config.get("section_name")
+        temp_section_dir.mkdir(parents=True)
+        shutil.copytree(config.get('docs_dir'), str(temp_section_dir), dirs_exist_ok=True)
+        return temp_dir
+
     def handle_imported_repo(self, config: Config) -> Config:
         """Imports necessary files for serving site in an imported repo"""
-        repo = Repo(
-            "importee", self.config.get("url"), self.config.get("branch"),
-            self.temp_dir
-        )
-        repo.import_config_files(self.config.get("dirs"))
-        new_config = repo.load_config(self.config.get("yml_file"))
-        # remove nav
+        temp_dir = Path(self.setup_imported_repo(config))
+        parent_repo = Repo("importee", self.config.get("url"), self.config.get("branch"), temp_dir)
+        asyncio_run(parent_repo.import_config_files(self.config.get("dirs")))
+        shutil.copytree(str(parent_repo.location / "docs"), str(temp_dir / "docs"), dirs_exist_ok=True)
+
+        new_config = parent_repo.load_config(self.config.get("yml_file"))
+        # remove parent nav
         if "nav" in new_config:
             del new_config["nav"]
         # update plugins
@@ -50,35 +62,37 @@ class MultirepoPlugin(BasePlugin):
             plugins_copy = deepcopy(new_config["plugins"])
             for p in plugins_copy:
                 if "search" in p:
-                    log.info("removing search")
+                    log.info("Multirepo removing search")
                     new_config["plugins"].remove(p)
                 if "multirepo" in p:
                     new_config["plugins"].remove(p)
-                    new_config["plugins"].append({"multirepo": {"imported_repo": True}})
             # validate and provide PluginCollection object to config
             plugins = config_options.Plugins()
             plugin_collection = plugins.validate(new_config.get("plugins"))
+            plugin_collection["multirepo"] = self
             new_config["plugins"] = plugin_collection
         # update theme
         if "theme" in new_config:
             del new_config["theme"]["custom_dir"]
             new_config["theme"] = Theme(
-                custom_dir=str(repo.location / self.config.get("custom_dir")),
+                custom_dir=str(parent_repo.location / self.config.get("custom_dir")),
                 **new_config["theme"]
             )
+        # update docs dir to point to temp_dir
+        new_config["docs_dir"] = str(temp_dir / "docs")
+        # resolve the nav paths
+        if config.get("nav"):
+            resolve_nav_paths(config.get("nav"), self.config.get("section_name"))
         # update this repo's config with the main repo's config
         config.update(new_config)
-        # needs to be a dict
-        new_config = dict(config)
+        # update markdown externsions
+        option = config_options.MarkdownExtensions()
+        config['markdown_extensions'] = option.validate(config['markdown_extensions'])
         # update dev address
         dev_addr = config_options.IpAddress()
-        addr = dev_addr.validate(new_config.get("dev_addr"))
+        addr = dev_addr.validate(new_config.get("dev_addr") or '127.0.0.1:8000')
         config["dev_addr"] = (addr.host, addr.port)
-        # create new config object
-        config = Config(defaults.get_schema())
-        config.load_dict(new_config)
-        config.validate()
-        return config
+        return config, temp_dir
 
     def handle_nav_based_import(self, config: Config) -> Config:
         """Imports documentation in other repos based on nav configuration"""
@@ -131,13 +145,15 @@ class MultirepoPlugin(BasePlugin):
         return config
 
     def on_config(self, config: Config) -> Config:
-        docs_dir = Path(config.get('docs_dir'))
-        self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
-        if not self.temp_dir.is_dir():
-            self.temp_dir.mkdir()
         if self.config.get("imported_repo"):
-            return self.handle_imported_repo(config)
+            config, temp_dir = self.handle_imported_repo(config)
+            self.set_temp_dir(temp_dir)
+            return config
         else:
+            docs_dir = Path(config.get('docs_dir'))
+            self.set_temp_dir(docs_dir.parent / self.config.get("temp_dir"))
+            if not self.temp_dir.is_dir():
+                self.temp_dir.mkdir()
             repos = self.config.get("repos")
             if not config.get('nav') and not repos:
                 return config
@@ -174,10 +190,14 @@ class MultirepoPlugin(BasePlugin):
             return nav
 
     def on_post_build(self, config: Config) -> None:
-        if self.config.get("imported_repo") and self.config.get("cleanup"):
+        if self.config.get("imported_repo"):
+            config["docs_dir"] = "docs"
             shutil.rmtree(str(self.temp_dir))
-        else:
-            if self.temp_dir and self.config.get("cleanup"):
-                temp_dir = self.config.get("temp_dir")
-                log.info(f"Multirepo plugin is cleaning up {temp_dir}/")
-                shutil.rmtree(str(self.temp_dir))
+        elif self.temp_dir and self.config.get("cleanup"):
+            temp_dir = self.config.get("temp_dir")
+            log.info(f"Multirepo plugin is cleaning up {temp_dir}/")
+            shutil.rmtree(str(self.temp_dir))
+
+    def on_build_error(self, error):
+        if self.temp_dir:
+            shutil.rmtree(str(self.temp_dir))

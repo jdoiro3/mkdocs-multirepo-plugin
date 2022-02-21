@@ -11,7 +11,7 @@ setup(
         'mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh',
         'mkdocs_multirepo_plugin/scripts/mv_docs_up.sh'
         ],
-    version="0.2.9",
+    version="0.3.0",
     author="Joseph Doiron",
     author_email="josephdoiron1234@yahoo.com",
     description="Build documentation in multiple repos into one site.",
@@ -27,7 +27,6 @@ setup(
         "asyncio",
         "tqdm"
         ],
-    extras_require={"test": ["pytest>=4.0", "pytest-cov"]},
     include_package_data=True,
     zip_safe=False,
     entry_points={
