@@ -88,7 +88,7 @@ class MultirepoPlugin(BasePlugin):
         config['markdown_extensions'] = option.validate(config['markdown_extensions'])
         # update dev address
         dev_addr = config_options.IpAddress()
-        addr = dev_addr.validate(new_config.get("dev_addr"))
+        addr = dev_addr.validate(new_config.get("dev_addr") or '127.0.0.1:8000')
         config["dev_addr"] = (addr.host, addr.port)
         return config, temp_dir
 
