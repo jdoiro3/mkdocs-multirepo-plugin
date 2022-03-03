@@ -9,6 +9,8 @@
 
 Build documentation in multiple repos into one site.
 
+[Buy me a 🍺](https://www.buymeacoffee.com/jdoiro)
+
 ## Features
 
 - **Distributed Documentation**: Keep docs close to the code but *findable* on one site.
