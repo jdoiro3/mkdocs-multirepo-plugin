@@ -7,8 +7,8 @@ shift 3
 dirs=( "$@" )
 
 
-mkdir $name # make the section directory
-cd $name 
+mkdir "$name" # make the section directory
+cd "$name"
 # initialize git
 git init
 
@@ -23,4 +23,4 @@ do
    printf "${dir}\n">> .git/info/sparse-checkout
 done
 git checkout $branch
-#rm -rf .git
+rm -rf .git

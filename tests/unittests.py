@@ -3,6 +3,7 @@ from mkdocs_multirepo_plugin import util
 from mkdocs_multirepo_plugin import structure
 import tempfile
 import pathlib
+from typing import List
 
 
 class BaseCase(unittest.IsolatedAsyncioTestCase):
@@ -14,6 +15,21 @@ class BaseCase(unittest.IsolatedAsyncioTestCase):
     def assertFileExists(self, path: pathlib.Path):
         if not path.is_file():
             raise AssertionError(f"File {str(path)} doesn't exist.")
+
+    async def run_script_test(self, script: str, section: str):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            args = ["https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", section, "main", "docs/*"]
+            temp_dir_path = pathlib.Path(temp_dir)
+            await util.execute_bash_script(script, args, temp_dir_path)
+            self.assertDirExists(temp_dir_path / section)
+            docs_dir = temp_dir_path / section / "docs"
+            self.assertDirExists(docs_dir)
+            expected_files = [
+                docs_dir / file for file in
+                ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
+                ]
+            for file in expected_files:
+                self.assertFileExists(file)
 
 
 class TestUtil(BaseCase):
@@ -37,19 +53,17 @@ class TestUtil(BaseCase):
             with self.assertRaises(ValueError):
                 util.remove_parents(case[1], case[0])
 
-    async def test_execute_bash_script(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
-            args = ["https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "test_repo", "main", "docs/*"]
-            temp_dir_path = pathlib.Path(temp_dir)
-            await util.execute_bash_script("sparse_clone.sh", args, temp_dir_path)
-            docs_dir = temp_dir_path / "test_repo" / "docs"
-            self.assertDirExists(docs_dir)
-            expected_files = [
-                docs_dir / file for file in
-                ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
-                ]
-            for file in expected_files:
-                self.assertFileExists(file)
+    async def test_sparse_clone(self):
+        await self.run_script_test("sparse_clone.sh", "test_docs")
+
+    async def test_sparse_clone_old(self):
+        await self.run_script_test("sparse_clone_old.sh", "test_docs")
+
+    async def test_section_with_spaces(self):
+        await self.run_script_test("sparse_clone.sh", "has spaces")
+    
+    async def test_section_with_spaces_old(self):
+        await self.run_script_test("sparse_clone_old.sh", "has spaces")
 
 
 class TestStructure(BaseCase):
@@ -80,7 +94,7 @@ class TestStructure(BaseCase):
             parsed_url = structure.parse_repo_url(case[0])
             self.assertDictEqual(parsed_url, case[1])
 
-    async def test_repo_sparse_clone(self):
+    async def test_sparse_clone(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
             repo = structure.Repo(
@@ -88,7 +102,30 @@ class TestStructure(BaseCase):
                 temp_dir_path
             )
             await repo.sparse_clone(["docs/*"])
+            # make sure repo location is correct
+            self.assertEqual(repo.location, pathlib.Path(temp_dir) / "test_repo")
             docs_dir = pathlib.Path(repo.location) / "docs"
+            self.assertDirExists(docs_dir)
+            expected_files = [
+                docs_dir / file for file in
+                ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
+                ]
+            for file in expected_files:
+                self.assertFileExists(file)
+
+    async def test_sparse_clone_with_section_spaces(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_dir_path = pathlib.Path(temp_dir)
+            repo = structure.Repo(
+                "test repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
+                temp_dir_path
+            )
+            await repo.sparse_clone(["docs/*"])
+            # make sure the repo locaton is correct
+            self.assertEqual(repo.location, pathlib.Path(temp_dir) / "test repo")
+            # make sure directory with spaces exists
+            self.assertDirExists(repo.location)
+            docs_dir = repo.location / "docs"
             self.assertDirExists(docs_dir)
             expected_files = [
                 docs_dir / file for file in
