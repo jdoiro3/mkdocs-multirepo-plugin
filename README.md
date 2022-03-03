@@ -218,6 +218,7 @@ $ PYTHON_37_ONLY=1 ./__tests__/test.sh
 ### Unit Testing
 
 ```
+$ pip install -r requirements.txt
 $ python -m unittest tests.unittests
 ```
 
