@@ -135,7 +135,7 @@ class MultirepoPlugin(BasePlugin):
             repo = DocsRepo(
                 repo.get("section"), import_stmt.get("url"),
                 self.temp_dir, repo.get("docs_dir", "docs/*"),
-                import_stmt.get("branch", "master"), repo.get("edit_uri"),
+                repo.get("branch", "master"), repo.get("edit_uri"),
                 bool(repo.get("multi_docs", False))
                 )
             docs_repo_objs.append(repo)
