@@ -1,0 +1,8 @@
+site_name: Test
+
+nav:
+  - Home: index.md
+  - Section: '!import file://$(cd ../../ && pwd)/ok-with-diff-config-name-and-location?config=multirepo.yml'
+
+plugins:
+  - multirepo

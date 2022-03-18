@@ -3,7 +3,6 @@ from mkdocs_multirepo_plugin import util
 from mkdocs_multirepo_plugin import structure
 import tempfile
 import pathlib
-from typing import List
 
 
 class BaseCase(unittest.IsolatedAsyncioTestCase):
@@ -18,7 +17,10 @@ class BaseCase(unittest.IsolatedAsyncioTestCase):
 
     async def run_script_test(self, script: str, section: str):
         with tempfile.TemporaryDirectory() as temp_dir:
-            args = ["https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", section, "main", "docs/*"]
+            args = [
+                "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1",
+                section, "main", "docs/*", "mkdocs.yml"
+                ]
             temp_dir_path = pathlib.Path(temp_dir)
             await util.execute_bash_script(script, args, temp_dir_path)
             self.assertDirExists(temp_dir_path / section)
@@ -61,7 +63,7 @@ class TestUtil(BaseCase):
 
     async def test_section_with_spaces(self):
         await self.run_script_test("sparse_clone.sh", "has spaces")
-    
+
     async def test_section_with_spaces_old(self):
         await self.run_script_test("sparse_clone_old.sh", "has spaces")
 
@@ -88,7 +90,8 @@ class TestStructure(BaseCase):
             (f"{base_url}?branch=master", {"url": base_url, "branch": "master"}),
             (f"{base_url}?branch=main?multi_docs=true", {"url": base_url, "branch": "main", "multi_docs": "true"}),
             (f"{base_url}?multi_docs=false?branch=main", {"url": base_url, "multi_docs": "false", "branch": "main"}),
-            (f"{base_url}?docs_dir=fldr/docs/*", {"url": base_url, "docs_dir": "fldr/docs/*"})
+            (f"{base_url}?docs_dir=fldr/docs/*", {"url": base_url, "docs_dir": "fldr/docs/*"}),
+            (f"{base_url}?multi_docs=false?branch=main?config=multirepo.yml", {"url": base_url, "multi_docs": "false", "branch": "main", "config": "multirepo.yml"}),
         ]
         for case in repo_url_cases:
             parsed_url = structure.parse_repo_url(case[0])

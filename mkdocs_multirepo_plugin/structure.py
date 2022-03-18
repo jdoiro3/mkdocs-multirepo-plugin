@@ -64,7 +64,7 @@ class Repo:
 
     async def sparse_clone(self, dirs: List[str]) -> Tuple[str, str]:
         """sparse clones a Git repo asynchronously"""
-        args = [self.url, self.name, self.branch] + dirs + ["./mkdocs.yml"]
+        args = [self.url, self.name, self.branch] + dirs
         if git_supports_sparse_clone():
             stdout = await execute_bash_script("sparse_clone.sh", args, self.temp_dir)
         else:
@@ -81,15 +81,17 @@ class Repo:
         """Deletes the repo from the temp directory"""
         shutil.rmtree(str(self.location))
 
-    def load_config(self, yml_file: str) -> dict:
-        """Loads the mkdocs config yaml file into a dictionary"""
+    def load_config(self, yml_file: str = "mkdocs.yml") -> dict:
+        """Loads the config yaml file into a dictionary"""
         if self.cloned:
+            # If the config file is within the docs directory, it will be moved to the parent
+            # directory (see scripts/mv_docs_up.sh) which is the location.
             config_file = self.location / Path(yml_file)
             if config_file.is_file():
                 with open(config_file, "rb") as f:
                     return yaml_load(f)
             else:
-                raise ImportDocsException(f"{self.name} does not have a mkdocs.yml at {str(config_file)}")
+                raise ImportDocsException(f"{self.name} doesn't have {yml_file} at {str(config_file)}")
         else:
             raise ImportDocsException("docs must be imported before loading yaml")
 
@@ -105,20 +107,23 @@ class DocsRepo(Repo):
         location (pathlib.Path): The location of the local repo on the filesystem.
         docs_dir (str): The location of the documentation, which can be a glob. Default is "docs/*".
         edit_uri (str): The edit_uri used for MkDocs.
+        config (str): The filename and extension for the yaml configuration file. Default is "mkdocs.yml".
         multi_docs (bool): If this is True, it means the repo has multiple docs directories that the user
                             wants to be pulled into the site.
     """
 
     def __init__(
         self, name: str, url: str, temp_dir: Path,
-        docs_dir: str = "docs/*", branch: str = "master",
-        edit_uri: str = None, multi_docs: bool = False
+        docs_dir: str = "docs/*", branch: str = "main",
+        edit_uri: str = None, multi_docs: bool = False,
+        config: str = "mkdocs.yml"
     ):
         super().__init__(name, url, branch, temp_dir)
         self.docs_dir = docs_dir
         self.edit_uri = edit_uri or docs_dir
         self.multi_docs = multi_docs
         self.src_path_map = {}
+        self.config = config
 
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
@@ -165,16 +170,16 @@ class DocsRepo(Repo):
                 docs_dir = "docs"
             else:
                 docs_dir = self.docs_dir
-            await self.sparse_clone([docs_dir])
+            await self.sparse_clone([docs_dir, self.config])
             self.transform_docs_dir()
         else:
-            await self.sparse_clone([self.docs_dir])
+            await self.sparse_clone([self.docs_dir, self.config])
             await execute_bash_script("mv_docs_up.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
         return self
 
-    def load_config(self, yml_file) -> Dict:
-        """Loads the repo's mkdocs.yml configuration file or the same file with a different name"""
-        config = super().load_config(yml_file)
+    def load_config(self) -> Dict:
+        """Loads the repo's multirepo config file"""
+        config = super().load_config(self.config)
         if 'nav' in config:
             resolve_nav_paths(config.get('nav'), self.name)
         return config

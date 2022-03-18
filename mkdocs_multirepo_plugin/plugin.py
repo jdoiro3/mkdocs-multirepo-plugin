@@ -1,7 +1,6 @@
 from typing import List, Tuple, Dict
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
-from mkdocs.config import config_options
 from mkdocs.theme import Theme
 from mkdocs.config import Config, config_options
 from .structure import (
@@ -14,6 +13,7 @@ import shutil
 import tempfile
 
 IMPORT_STATEMENT = "!import"
+DEFAULT_BRANCH = "master"
 
 
 class MultirepoPlugin(BasePlugin):
@@ -104,23 +104,24 @@ class MultirepoPlugin(BasePlugin):
             (section_name, value), = entry.items()
             if type(value) is str:
                 if value.startswith(IMPORT_STATEMENT):
-                    import_stmt = parse_import(value)
+                    import_stmt: Dict[str, str] = parse_import(value)
                     repo = DocsRepo(
-                        section_name, import_stmt.get("url"),
-                        self.temp_dir, import_stmt.get("docs_dir", "docs/*"),
-                        import_stmt.get("branch", "master"),
-                        bool(import_stmt.get("multi_docs", False))
+                        name=section_name, url=import_stmt.get("url"),
+                        temp_dir=self.temp_dir, docs_dir=import_stmt.get("docs_dir", "docs/*"),
+                        branch=import_stmt.get("branch", DEFAULT_BRANCH),
+                        multi_docs=bool(import_stmt.get("multi_docs", False)),
+                        config=import_stmt.get("config", "mkdocs.yml")
                     )
                     docs_repo_objs.append(repo)
-                    # need to collect nav data for transforming nav after batch docs import
+                    # need to collect nav data for transforming nav after importing docs asyncroniously
                     nav_transforms.append((index, section_name))
         asyncio_run(batch_import(docs_repo_objs))
         # transform nav sections with imported repo navs
         for index, repo in enumerate(docs_repo_objs):
             # get the imported repo's config, which should have a nav section
-            repo_config = repo.load_config("mkdocs.yml")
+            repo_config = repo.load_config()
             if not repo_config.get("nav"):
-                raise ImportDocsException(f"{repo.name}'s mkdocs.yml file doesn't have a nav section")
+                raise ImportDocsException(f"{repo.name}'s {repo.config} file doesn't have a nav section")
             repo.set_edit_uri(repo_config.get("edit_uri"))
             nav_index, section_name = nav_transforms[index]
             nav[nav_index][section_name] = repo_config.get('nav')
@@ -135,7 +136,7 @@ class MultirepoPlugin(BasePlugin):
             repo = DocsRepo(
                 repo.get("section"), import_stmt.get("url"),
                 self.temp_dir, repo.get("docs_dir", "docs/*"),
-                import_stmt.get("branch", "master"), repo.get("edit_uri"),
+                import_stmt.get("branch", DEFAULT_BRANCH), repo.get("edit_uri"),
                 bool(repo.get("multi_docs", False))
                 )
             docs_repo_objs.append(repo)
@@ -175,7 +176,8 @@ class MultirepoPlugin(BasePlugin):
             temp_config["docs_dir"] = self.temp_dir
             other_repo_files = get_files(temp_config)
             for f in other_repo_files:
-                files.append(f)
+                if f.is_documentation_page():
+                    files.append(f)
             return files
 
     def on_nav(self, nav, config: Config, files: Files):

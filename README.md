@@ -46,10 +46,10 @@ The plugin introduces the *!import* statement in your config's *nav* section. Yo
 ```yaml
 nav:
   - Home: 'index.md'
-  - MicroService: '!import {url}?branch={branch}?docs_dir={path}?multi_docs={True | False}'
+  - MicroService: '!import {url}?branch={branch}?docs_dir={path}?multi_docs={True | False}?config={filename}.yml'
 ```
 
-*MicroService mkdocs.yml (located within the docs directory)*
+*MicroService mkdocs.yml (located within the docs directory or the parent directory)*
 ```yaml
 edit_uri: /blob/master/
 
@@ -63,6 +63,7 @@ nav:
 - **?branch={branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
 - **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
 - **?multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
+- **?config={filename}.yml**: This parameter lets you tell *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
 
 > Things to Note:
 >

@@ -1,0 +1,10 @@
+site_name: Test
+
+nav:
+  - Home: index.md
+  - ok-nav-simple: '!import file://$(cd ../../ && pwd)/ok-nav-simple'
+
+plugins:
+  - multirepo
+
+
