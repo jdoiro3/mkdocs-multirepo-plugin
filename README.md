@@ -201,7 +201,7 @@ Writers can now run `mkdocs serve` within their local repo, using the main site'
 
 ## Running Tests
 
-Tests were modeled off of the similar well maintained package: [mkdocs-monorepo-plugin](https://github.com/backstage/mkdocs-monorepo-plugin/blob/master/docs/CONTRIBUTING.md). To run the test suite you'll need:
+Tests were modeled off of [mkdocs-monorepo-plugin](https://github.com/backstage/mkdocs-monorepo-plugin/blob/master/docs/CONTRIBUTING.md). To run the test suite you'll need:
 
 - Python
 - Git
