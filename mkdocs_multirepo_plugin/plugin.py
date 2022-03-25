@@ -101,16 +101,18 @@ class MultirepoPlugin(BasePlugin):
         nav_imports = get_import_stmts(nav, self.temp_dir, DEFAULT_BRANCH)
         repos = [nav_import.repo for nav_import in nav_imports]
         asyncio_run(batch_import(repos))
-        for index, repo in enumerate(repos):
+        for nav_import, repo in zip(nav_imports, repos):
             repo_config = repo.load_config()
             if not repo_config.get("nav"):
                 raise ImportDocsException(f"{repo.name}'s {repo.config} file doesn't have a nav section")
             repo.set_edit_uri(repo_config.get("edit_uri"))
-            nav_imports[index].set_section_value(repo_config.get("nav"))
+            # Change the section title value from '!import {url}' to the imported repo's nav
+            # Note: this changes config.nav in place
+            nav_import.set_section_value(repo_config.get("nav"))
             self.repos[repo.name] = repo
         return config
        
-    def handle_repos_based_import(self, config: Config, repos: list) -> Config:
+    def handle_repos_based_import(self, config: Config, repos: List[DocsRepo]) -> Config:
         """Imports documentation in other repos based on repos configuration"""
         docs_repo_objs = []
         for repo in repos:

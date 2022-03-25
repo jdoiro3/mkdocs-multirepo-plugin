@@ -38,6 +38,13 @@ def parse_import(import_stmt: str) -> Tuple[str, str]:
 
 
 class NavImport:
+    """Represents a nav import statement (e.g., section: '!import {url}').
+    
+    Attributes:
+        section (str): The nav section title.
+        nav_entry_ptr (dict): A reference to the dictionary, within the nav, that holds this section.
+        repo (DocsRepo): The docs repo object created after parsing the import statement.
+    """
 
     def __init__(self, section, nav_entry_ptr, repo):
         self.section = section
@@ -52,8 +59,11 @@ class NavImport:
 
 
 def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str) -> List[NavImport]:
-    """"""
-    imports = []
+    """Searches through the nav and finds import statements, returning a list of NavImport objects.
+    The NavImport object contains, among other things, a reference to the dictionary in the nav that
+    allows later updates to this nav entry in place.
+    """
+    imports: List[NavImport] = []
     for index, entry in enumerate(nav):
         (section, value), = entry.items()
         if type(value) is list:
@@ -162,6 +172,20 @@ class DocsRepo(Repo):
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
 
+    def __eq__(self, other):
+        if isinstance(other, DocsRepo):
+            return (
+                (self.name == other.name) and 
+                (self.url == other.url) and 
+                (self.temp_dir == other.temp_dir) and 
+                (self.docs_dir == other.docs_dir) and 
+                (self.branch == other.branch) and
+                (self.edit_uri == other.edit_uri) and
+                (self.multi_docs == other.multi_docs) and
+                (self.config == other.config)
+            )
+        return False
+
     def get_edit_url(self, src_path):
         src_path = remove_parents(src_path, 1)
         if self.multi_docs:
@@ -219,8 +243,10 @@ class DocsRepo(Repo):
         return config
 
 
-async def batch_import(repos: List) -> None:
+async def batch_import(repos: List[DocsRepo]) -> None:
     """Given a list of DocRepo instances, performs a batch import asynchronously"""
+    if not repos:
+        return None
     longest_desc = max([len(f"✅ Got {repo.name} Docs") for repo in repos])
     progress_bar = tqdm.tqdm(total=len(repos), desc=" "*longest_desc)
     for import_async in asyncio.as_completed([repo.import_docs() for repo in repos]):
