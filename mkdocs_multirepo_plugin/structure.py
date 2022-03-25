@@ -1,4 +1,4 @@
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Union
 import shutil
 import subprocess
 from pathlib import Path
@@ -35,6 +35,40 @@ def parse_import(import_stmt: str) -> Tuple[str, str]:
     """Parses !import statements"""
     import_url = import_stmt.split(" ", 1)[1]
     return parse_repo_url(import_url)
+
+
+class NavImport:
+
+    def __init__(self, section, nav_entry_ptr, repo):
+        self.section = section
+        self.nav_entry_ptr = nav_entry_ptr
+        self.repo = repo
+    
+    def set_section_value(self, new_val: Union[List, str]) -> None:
+        if isinstance(new_val, str) or isinstance(new_val, list):
+            self.nav_entry_ptr[self.section] = new_val
+            return
+        raise ValueError(f"new_val must be either a list or a str, not {type(new_val)}")
+
+
+def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str) -> List[NavImport]:
+    """"""
+    imports = []
+    for index, entry in enumerate(nav):
+        (section, value), = entry.items()
+        if type(value) is list:
+            imports += get_import_stmts(value, temp_dir, default_branch)
+        elif value.startswith("!import"):
+            import_stmt: Dict[str, str] = parse_import(value)
+            repo = DocsRepo(
+                        name=section, url=import_stmt.get("url"),
+                        temp_dir=temp_dir, docs_dir=import_stmt.get("docs_dir", "docs/*"),
+                        branch=import_stmt.get("branch", default_branch),
+                        multi_docs=bool(import_stmt.get("multi_docs", False)),
+                        config=import_stmt.get("config", "mkdocs.yml")
+                    )
+            imports.append(NavImport(section, nav[index], repo))
+    return imports
 
 
 class Repo:
