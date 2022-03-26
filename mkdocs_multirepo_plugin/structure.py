@@ -210,7 +210,7 @@ class DocsRepo(Repo):
                 new_p = p.rename(p.parent.parent / p.name)
                 if not new_p:
                     new_p = p.parent.parent / p.name
-                # create a mapping from the old new src_path to the old for page edit_urls
+                # create a mapping from the old src_path to the old for page edit_urls
                 old_src_path = str(p).replace(str(self.location), "").replace("\\", "/")[1:]
                 new_src_path = str(new_p).replace(str(self.location), "").replace("\\", "/")
                 self.src_path_map[new_src_path] = old_src_path
