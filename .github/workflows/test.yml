@@ -20,16 +20,12 @@ jobs:
       steps:
         - uses: actions/checkout@master
         - name: Set up Python ${{ matrix.python-version }}
-          uses: actions/setup-python@main
+          uses: actions/setup-python@master
           with:
             python-version: ${{ matrix.python-version }}
-        - name: Create Python Venv
-          run: python3 -m venv env
         - name: Install Bats
           run: sudo ./__tests__/setup-bats.sh
         - name: Install Python dependencies
-          run: |
-               source env/bin/activate
-               ./__tests__/setup-pip.sh
+          run: sudo ./__tests__/setup-pip.sh
         - name: Linter, Integration and Unit Tests
           run: sudo ./__tests__/test-ci.sh
