@@ -22,6 +22,7 @@ jobs:
           run: ./__tests__/test-unittest-ci.sh
 
   integration-tests:
+      needs: unit-tests
       name: Integration Tests on Python ${{ matrix.python-version }}
       runs-on: ubuntu-latest
 
