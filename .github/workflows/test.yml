@@ -30,6 +30,6 @@ jobs:
         - name: Install Python dependencies
           run: |
                source env/bin/activate
-               sudo ./__tests__/setup-pip.sh
+               ./__tests__/setup-pip.sh
         - name: Linter, Integration and Unit Tests
           run: sudo ./__tests__/test-ci.sh
