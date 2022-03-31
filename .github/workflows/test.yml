@@ -9,8 +9,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-      name: Test on Python ${{ matrix.python-version }}
+  unit-tests:
+      name: Unit Tests
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - name: Set up Python 3
+          uses: actions/setup-python@v3
+        - name: Install Python dependencies
+          run: ./__tests__/setup-pip.sh
+        - name: Linter and Unit Tests
+          run: ./__tests__/test-unittest-ci.sh
+
+  integration-tests:
+      name: Integration Tests on Python ${{ matrix.python-version }}
       runs-on: ubuntu-latest
 
       strategy:
@@ -19,8 +31,6 @@ jobs:
 
       steps:
         - uses: actions/checkout@v3
-          with:
-            ref: dev
         - name: Set up Python ${{ matrix.python-version }}
           uses: actions/setup-python@v3
           with:
@@ -31,5 +41,3 @@ jobs:
           run: ./__tests__/setup-pip.sh
         - name: Integration Tests
           run: ./__tests__/test-bats-ci.sh
-        - name: Linter and Unit Tests
-          run: ./__tests__/test-unittest-ci.sh
