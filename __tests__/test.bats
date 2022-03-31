@@ -139,6 +139,22 @@ setup() {
   [[ "$output" == *"Welcome to section 1."* ]]
   run cat $parent/site/ok-nav-complex/section2/index.html
   [[ "$output" == *"Welcome to section 2."* ]]
+  # testing subsection import
+  run cat $parent/site/ok-nav-simple2/index.html
+  [[ "$output" == *"Welcome to a simple repo."* ]]
+  run cat $parent/site/ok-nav-complex2/index.html
+  [[ "$output" == *"Welcome to a complex repo."* ]]
+  run cat $parent/site/ok-nav-complex2/section1/getting-started/index.html
+  [[ "$output" == *"Let's get started with section 1."* ]]
+  run cat $parent/site/ok-nav-complex2/section2/getting-started/index.html
+  [[ "$output" == *"Let's get started with section 2."* ]]
+  run cat $parent/site/ok-nav-complex2/section1/index.html
+  [[ "$output" == *"Welcome to section 1."* ]]
+  run cat $parent/site/ok-nav-complex2/section2/index.html
+  [[ "$output" == *"Welcome to section 2."* ]]
+  # testing an import within multiple subsections
+  run cat $parent/site/ok-nav-simple3/index.html
+  [[ "$output" == *"Welcome to a simple repo."* ]]
 }
 
 @test "Github Tests: builds a mkdocs site with multiple imports in nav section" {
