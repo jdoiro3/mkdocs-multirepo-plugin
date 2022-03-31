@@ -26,10 +26,10 @@ jobs:
           with:
             python-version: ${{ matrix.python-version }}
         - name: Install Bats
-          run: sudo ./__tests__/setup-bats.sh
+          run: ./__tests__/setup-bats.sh
         - name: Install Python dependencies
-          run: sudo ./__tests__/setup-pip.sh
+          run: ./__tests__/setup-pip.sh
         - name: Integration Tests
-          run: sudo ./__tests__/test-bats-ci.sh
+          run: ./__tests__/test-bats-ci.sh
         - name: Linter and Unit Tests
-          run: sudo ./__tests__/test-unittest-ci.sh
+          run: ./__tests__/test-unittest-ci.sh
