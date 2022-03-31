@@ -27,5 +27,7 @@ jobs:
           run: sudo ./__tests__/setup-bats.sh
         - name: Install Python dependencies
           run: sudo ./__tests__/setup-pip.sh
-        - name: Linter, Integration and Unit Tests
-          run: sudo ./__tests__/test-ci.sh
+        - name: Linter and Unit Tests
+          run: sudo ./__tests__/test-unittest-ci.sh
+        - name: Integration Tests
+          run: sudo ./__tests__/test-bats-ci.sh
