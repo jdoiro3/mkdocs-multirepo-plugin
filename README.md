@@ -63,11 +63,11 @@ nav:
 - **?branch={branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
 - **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
 - **?multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
-- **?config={filename}.yml**: This parameter lets you tell *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
+- **?config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
 
 > Things to Note:
 >
-> - If using *!import* in the *nav*, the repo's docs folder must have a *mkdocs.yml* file with a *nav* section.
+> - If using *!import* in the *nav*, the imported repo must have a *mkdocs.yml* (or another filename with a *?config={filename}.yml*) file with a *nav* section located in either the *docs* directory or the root directory.
 > - *nav* takes precedence over *repos* (see below).
 > - *{path}* can also be a [glob](https://en.wikipedia.org/wiki/Glob_(programming)) (e.g., `docs/*`).
 
@@ -92,6 +92,7 @@ plugins:
           import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
           edit_uri: /blob/master/
         - section: 'Techdocs-cli'
+          # note that the branch is still specified in the url
           import_url: 'https://github.com/backstage/techdocs-cli?branch=main'
           edit_uri: /blob/main/
         - section: FastAPI
@@ -200,7 +201,7 @@ Writers can now run `mkdocs serve` within their local repo, using the main site'
 
 ## Running Tests
 
-Tests were modeled off of the similar well maintained package: [mkdocs-monorepo-plugin](https://github.com/backstage/mkdocs-monorepo-plugin/blob/master/docs/CONTRIBUTING.md). To run the test suite you'll need:
+Tests were modeled off of [mkdocs-monorepo-plugin](https://github.com/backstage/mkdocs-monorepo-plugin/blob/master/docs/CONTRIBUTING.md). To run the test suite you'll need:
 
 - Python
 - Git
