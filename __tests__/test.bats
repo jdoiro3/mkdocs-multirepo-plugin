@@ -38,7 +38,13 @@ outputContains() {
 
 assertFileExists() {
   run cat $1
-  [ "$status" -eq 0 ]
+  if [ "$status" -eq 0 ]
+  then
+    return 0
+  else
+    find $parent/site
+    return 1
+  fi
 }
 
 assertFileDoesntExist() {
@@ -118,6 +124,7 @@ setup() {
   parent="parent-with-nav"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
+  assertFileExists $parent/site/ok-nav-simple/index.html
   run cat $parent/site/ok-nav-simple/index.html
   outputContains "Welcome to a simple repo."
 }
@@ -127,6 +134,7 @@ setup() {
   parent="parent-config-test"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
+  assertFileExists $parent/site/section/index.html
   run cat $parent/site/section/index.html
   outputContains "I'm okay even though my config file is outside the docs folder and is called multirepo.yml"
 }
