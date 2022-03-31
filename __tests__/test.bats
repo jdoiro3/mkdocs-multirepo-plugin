@@ -24,6 +24,18 @@ debugger() {
   echo "--------------"
 }
 
+outputContains() {
+  if [[ "$output" == *"$1"* ]]
+  then 
+    return 0
+  else
+    echo "Output does not contain '$1'"
+    echo "--- OUTPUT ---"
+    echo "$output"
+    return 1
+  fi
+}
+
 assertFileExists() {
   run cat $1
   [ "$status" -eq 0 ]
@@ -59,15 +71,12 @@ assertFailedMkdocs() {
 
 teardown() {
   for d in $fixturesDir/* ; do
-      echo "removing $d/.git"
       rm -rf $d/.git
-      echo "removing $d/site"
       rm -rf ${d}/site
   done
 }
 
 setup() {
-  echo "Turning imported fixtures into Git Repos for Testing-------->"
   for d in $fixturesDir/* ; do
       cd ${d}
       git init -q
@@ -89,19 +98,19 @@ setup() {
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
   run cat $parent/site/ok-nav-simple/index.html
-  [[ "$output" == *"Welcome to a simple repo."* ]]
+  outputContains "Welcome to a simple repo."
   run cat $parent/site/ok-no-nav/index.html
-  [[ "$output" == *"I'm an okay setup with no nav configured in the imported repo."* ]]
+  outputContains "I'm an okay setup with no nav configured in the imported repo."
   run cat $parent/site/ok-nav-complex/index.html
-  [[ "$output" == *"Welcome to a complex repo."* ]]
+  outputContains "Welcome to a complex repo."
   run cat $parent/site/ok-nav-complex/section1/getting-started/index.html
-  [[ "$output" == *"Let's get started with section 1."* ]]
+  outputContains "Let's get started with section 1."
   run cat $parent/site/ok-nav-complex/section2/getting-started/index.html
-  [[ "$output" == *"Let's get started with section 2."* ]]
+  outputContains "Let's get started with section 2."
   run cat $parent/site/ok-nav-complex/section1/index.html
-  [[ "$output" == *"Welcome to section 1."* ]]
+  outputContains "Welcome to section 1."
   run cat $parent/site/ok-nav-complex/section2/index.html
-  [[ "$output" == *"Welcome to section 2."* ]]
+  outputContains "Welcome to section 2."
 }
 
 @test "Local Repo Test: builds a mkdocs site with nav section" {
@@ -110,7 +119,7 @@ setup() {
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
   run cat $parent/site/ok-nav-simple/index.html
-  [[ "$output" == *"Welcome to a simple repo."* ]]
+  outputContains "Welcome to a simple repo."
 }
 
 @test "Local Repo Test: builds a mkdocs site with a different config file name and location" {
@@ -119,7 +128,7 @@ setup() {
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
   run cat $parent/site/section/index.html
-  [[ "$output" == *"I'm okay even though my config file is outside the docs folder and is called multirepo.yml"* ]]
+  outputContains "I'm okay even though my config file is outside the docs folder and is called multirepo.yml"
 }
 
 @test "Local Repo Test: builds a mkdocs site with multiple imports in nav section" {
@@ -128,33 +137,33 @@ setup() {
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
   run cat $parent/site/ok-nav-simple/index.html
-  [[ "$output" == *"Welcome to a simple repo."* ]]
+  outputContains "Welcome to a simple repo."
   run cat $parent/site/ok-nav-complex/index.html
-  [[ "$output" == *"Welcome to a complex repo."* ]]
+  outputContains "Welcome to a complex repo."
   run cat $parent/site/ok-nav-complex/section1/getting-started/index.html
-  [[ "$output" == *"Let's get started with section 1."* ]]
+  outputContains "Let's get started with section 1."
   run cat $parent/site/ok-nav-complex/section2/getting-started/index.html
-  [[ "$output" == *"Let's get started with section 2."* ]]
+  outputContains "Let's get started with section 2."
   run cat $parent/site/ok-nav-complex/section1/index.html
-  [[ "$output" == *"Welcome to section 1."* ]]
+  outputContains "Welcome to section 1."
   run cat $parent/site/ok-nav-complex/section2/index.html
-  [[ "$output" == *"Welcome to section 2."* ]]
+  outputContains "Welcome to section 2."
   # testing subsection import
   run cat $parent/site/ok-nav-simple2/index.html
-  [[ "$output" == *"Welcome to a simple repo."* ]]
+  outputContains "Welcome to a simple repo."
   run cat $parent/site/ok-nav-complex2/index.html
-  [[ "$output" == *"Welcome to a complex repo."* ]]
+  outputContains "Welcome to a complex repo."
   run cat $parent/site/ok-nav-complex2/section1/getting-started/index.html
-  [[ "$output" == *"Let's get started with section 1."* ]]
+  outputContains "Let's get started with section 1."
   run cat $parent/site/ok-nav-complex2/section2/getting-started/index.html
-  [[ "$output" == *"Let's get started with section 2."* ]]
+  outputContains "Let's get started with section 2."
   run cat $parent/site/ok-nav-complex2/section1/index.html
-  [[ "$output" == *"Welcome to section 1."* ]]
+  outputContains "Welcome to section 1."
   run cat $parent/site/ok-nav-complex2/section2/index.html
-  [[ "$output" == *"Welcome to section 2."* ]]
+  outputContains "Welcome to section 2."
   # testing an import within multiple subsections
   run cat $parent/site/ok-nav-simple3/index.html
-  [[ "$output" == *"Welcome to a simple repo."* ]]
+  outputContains "Welcome to a simple repo."
 }
 
 @test "Github Tests: builds a mkdocs site with multiple imports in nav section" {
@@ -163,9 +172,9 @@ setup() {
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
   run cat $parent/site/DemoRepo/index.html
-  [[ "$output" == *"Wow, isn't that really cool. It's all done in one line."* ]]
+  outputContains "Wow, isn't that really cool. It's all done in one line."
   run cat $parent/site/DemoRepo2/index.html
-  [[ "$output" == *"Wow, isn't that really cool. It's all done in one line."* ]]
+  outputContains "Wow, isn't that really cool. It's all done in one line."
 }
 
 @test "Github Tests: Make sure imported repo's mkdocs.yml isn't in build output" {
