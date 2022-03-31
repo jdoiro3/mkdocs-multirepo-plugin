@@ -23,9 +23,13 @@ jobs:
           uses: actions/setup-python@master
           with:
             python-version: ${{ matrix.python-version }}
+        - name: Create Python Venv
+          run: python3 -m venv env
         - name: Install Bats
           run: sudo ./__tests__/setup-bats.sh
         - name: Install Python dependencies
-          run: sudo ./__tests__/setup-pip.sh
+          run: |
+               source env/bin/activate
+               sudo ./__tests__/setup-pip.sh
         - name: Linter, Integration and Unit Tests
           run: sudo ./__tests__/test-ci.sh
