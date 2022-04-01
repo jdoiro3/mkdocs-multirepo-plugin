@@ -1,7 +1,7 @@
 import unittest
 from mkdocs_multirepo_plugin import util
 from mkdocs_multirepo_plugin import structure
-import tempfile
+from aiofiles import tempfile
 import pathlib
 
 
@@ -16,7 +16,7 @@ class BaseCase(unittest.IsolatedAsyncioTestCase):
             raise AssertionError(f"File {str(path)} doesn't exist.")
 
     async def run_script_test(self, script: str, section: str):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        async with tempfile.TemporaryDirectory() as temp_dir:
             args = [
                 "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1",
                 section, "main", "docs/*", "mkdocs.yml"
@@ -98,7 +98,7 @@ class TestStructure(BaseCase):
             self.assertDictEqual(parsed_url, case[1])
 
     async def test_sparse_clone(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        async with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
             repo = structure.Repo(
                 "test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
@@ -117,7 +117,7 @@ class TestStructure(BaseCase):
                 self.assertFileExists(file)
 
     async def test_sparse_clone_with_section_spaces(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        async with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
             repo = structure.Repo(
                 "test repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
@@ -138,7 +138,7 @@ class TestStructure(BaseCase):
                 self.assertFileExists(file)
 
     async def test_load_config(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        async with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
             repo = structure.Repo(
                 "test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
