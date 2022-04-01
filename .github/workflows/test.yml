@@ -17,9 +17,9 @@ jobs:
         - name: Set up Python 3
           uses: actions/setup-python@v3
         - name: Install Python dependencies
-          run: ./__tests__/setup-pip.sh
+          run: sudo ./__tests__/setup-pip.sh
         - name: Linter
-          run: ./__tests__/linter.sh
+          run: sudo ./__tests__/linter.sh
         - name: Unittests
           run: sudo python3 -m unittest tests.unittests -v
 
