@@ -21,7 +21,7 @@ jobs:
         - name: Linter
           run: ./__tests__/linter.sh
         - name: Unittests
-          run: python3 -m unittest tests.unittests
+          run: python3 -m unittest tests.unittests -v
 
   integration-tests:
       needs: unit-tests
