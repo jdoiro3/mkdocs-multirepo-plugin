@@ -7,9 +7,12 @@ import pathlib
 
 class BaseCase(unittest.IsolatedAsyncioTestCase):
 
-    def assertDirExists(self, dir: pathlib.Path, output: str = ""):
+    def assertDirExists(self, dir: pathlib.Path):
         if not dir.is_dir():
-            raise AssertionError(f"Directory {str(dir)} doesn't exist.\n{output}")
+            contents = []
+            for p in dir.parent.rglob("*"):
+                contents.append(p.name)
+            raise AssertionError(f"Directory {str(dir)} doesn't exist.\n{contents}")
 
     def assertFileExists(self, path: pathlib.Path):
         if not path.is_file():
@@ -22,10 +25,10 @@ class BaseCase(unittest.IsolatedAsyncioTestCase):
                 section, "main", "docs/*", "mkdocs.yml"
                 ]
             temp_dir_path = pathlib.Path(temp_dir)
-            stdout = await util.execute_bash_script(script, args, temp_dir_path)
+            await util.execute_bash_script(script, args, temp_dir_path)
             self.assertDirExists(temp_dir_path / section)
             docs_dir = temp_dir_path / section / "docs"
-            self.assertDirExists(docs_dir, stdout)
+            self.assertDirExists(docs_dir)
             expected_files = [
                 docs_dir / file for file in
                 ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
