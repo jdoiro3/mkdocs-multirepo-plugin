@@ -100,7 +100,6 @@ class TestStructure(BaseCase):
             parsed_url = structure.parse_repo_url(case[0])
             self.assertDictEqual(parsed_url, case[1])
 
-    """
     async def test_sparse_clone(self):
         async with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
@@ -175,7 +174,6 @@ class TestStructure(BaseCase):
                     temp_dir_path
                 )
                 yml_dict = repo.load_config("")
-    """
 
 
 if __name__ == '__main__':
