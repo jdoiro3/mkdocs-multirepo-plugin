@@ -17,6 +17,7 @@ class BaseCase(unittest.IsolatedAsyncioTestCase):
 
     async def run_script_test(self, script: str, section: str):
         async with tempfile.TemporaryDirectory() as temp_dir:
+            self.assertDirExists(temp_dir)
             args = [
                 "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1",
                 section, "main", "docs/*", "mkdocs.yml"
