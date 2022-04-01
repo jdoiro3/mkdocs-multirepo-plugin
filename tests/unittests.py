@@ -17,16 +17,15 @@ class BaseCase(unittest.IsolatedAsyncioTestCase):
 
     async def run_script_test(self, script: str, section: str):
         async with tempfile.TemporaryDirectory() as temp_dir:
-            self.assertDirExists(pathlib.Path(temp_dir))
             args = [
                 "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1",
                 section, "main", "docs/*", "mkdocs.yml"
                 ]
             temp_dir_path = pathlib.Path(temp_dir)
             stdout = await util.execute_bash_script(script, args, temp_dir_path)
-            self.assertDirExists(temp_dir_path / section, stdout)
+            self.assertDirExists(temp_dir_path / section)
             docs_dir = temp_dir_path / section / "docs"
-            self.assertDirExists(docs_dir)
+            self.assertDirExists(docs_dir, stdout)
             expected_files = [
                 docs_dir / file for file in
                 ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
