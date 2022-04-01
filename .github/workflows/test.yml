@@ -14,16 +14,12 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v3
-        - name: Set up Python 3.7
+        - name: Setup Python
           uses: actions/setup-python@v3
-          with:
-            python-version: '3.7'
         - name: Install Python dependencies
-          run: sudo ./__tests__/setup-pip.sh
-        - name: Linter
-          run: sudo ./__tests__/linter.sh
-        - name: Unittests
-          run: sudo python3 -m unittest tests.unittests -v
+          run: ./__tests__/setup-pip.sh
+        - name: Linter and Unittests 
+          run: ./__tests__/unittests.sh
 
   integration-tests:
       needs: unit-tests
