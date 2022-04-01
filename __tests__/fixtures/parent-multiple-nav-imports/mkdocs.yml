@@ -2,8 +2,15 @@ site_name: Test
 
 nav:
   - Home: index.md
-  - ok-nav-simple: '!import file://$(cd ../../ && pwd)/ok-nav-simple'
-  - ok-nav-complex: '!import file://$(cd ../../ && pwd)/ok-nav-complex'
+  - ok-nav-simple: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
+  - ok-nav-complex: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-complex'
+  - section:
+    - ok-nav-simple2: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
+    - ok-nav-complex2: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-complex'
+  - deepImport:
+    - subsection1:
+      - subsection2:
+        - ok-nav-simple3: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
 
 plugins:
   - multirepo

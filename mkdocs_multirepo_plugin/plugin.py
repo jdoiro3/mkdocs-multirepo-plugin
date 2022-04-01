@@ -4,7 +4,8 @@ from mkdocs.structure.files import get_files, Files
 from mkdocs.theme import Theme
 from mkdocs.config import Config, config_options
 from .structure import (
-    Repo, DocsRepo, parse_import, parse_repo_url, batch_import, resolve_nav_paths
+    Repo, DocsRepo, parse_import, parse_repo_url, batch_import, resolve_nav_paths,
+    get_import_stmts
     )
 from .util import ImportDocsException, log, get_src_path_root, asyncio_run
 from pathlib import Path
@@ -97,47 +98,30 @@ class MultirepoPlugin(BasePlugin):
     def handle_nav_based_import(self, config: Config) -> Config:
         """Imports documentation in other repos based on nav configuration"""
         nav: List[Dict] = config.get('nav')
-        docs_repo_objs: List[DocsRepo] = []
-        nav_transforms: List[Tuple[int, str]] = []
-        # find nav entries with !import statements and collect data
-        for index, entry in enumerate(nav):
-            (section_name, value), = entry.items()
-            if type(value) is str:
-                if value.startswith(IMPORT_STATEMENT):
-                    import_stmt: Dict[str, str] = parse_import(value)
-                    repo = DocsRepo(
-                        name=section_name, url=import_stmt.get("url"),
-                        temp_dir=self.temp_dir, docs_dir=import_stmt.get("docs_dir", "docs/*"),
-                        branch=import_stmt.get("branch", DEFAULT_BRANCH),
-                        multi_docs=bool(import_stmt.get("multi_docs", False)),
-                        config=import_stmt.get("config", "mkdocs.yml")
-                    )
-                    docs_repo_objs.append(repo)
-                    # need to collect nav data for transforming nav after importing docs asyncroniously
-                    nav_transforms.append((index, section_name))
-        asyncio_run(batch_import(docs_repo_objs))
-        # transform nav sections with imported repo navs
-        for index, repo in enumerate(docs_repo_objs):
-            # get the imported repo's config, which should have a nav section
+        nav_imports = get_import_stmts(nav, self.temp_dir, DEFAULT_BRANCH)
+        repos = [nav_import.repo for nav_import in nav_imports]
+        asyncio_run(batch_import(repos))
+        for nav_import, repo in zip(nav_imports, repos):
             repo_config = repo.load_config()
             if not repo_config.get("nav"):
                 raise ImportDocsException(f"{repo.name}'s {repo.config} file doesn't have a nav section")
             repo.set_edit_uri(repo_config.get("edit_uri"))
-            nav_index, section_name = nav_transforms[index]
-            nav[nav_index][section_name] = repo_config.get('nav')
+            # Change the section title value from '!import {url}' to the imported repo's nav
+            # Note: this changes config.nav in place
+            nav_import.set_section_value(repo_config.get("nav"))
             self.repos[repo.name] = repo
         return config
-
-    def handle_repos_based_import(self, config: Config, repos: list) -> Config:
+       
+    def handle_repos_based_import(self, config: Config, repos: List[DocsRepo]) -> Config:
         """Imports documentation in other repos based on repos configuration"""
         docs_repo_objs = []
         for repo in repos:
             import_stmt = parse_repo_url(repo.get("import_url"))
             repo = DocsRepo(
-                repo.get("section"), import_stmt.get("url"),
-                self.temp_dir, repo.get("docs_dir", "docs/*"),
-                import_stmt.get("branch", DEFAULT_BRANCH), repo.get("edit_uri"),
-                bool(repo.get("multi_docs", False))
+                name=repo.get("section"), url=import_stmt.get("url"),
+                temp_dir=self.temp_dir, docs_dir=repo.get("docs_dir", "docs/*"),
+                branch=import_stmt.get("branch", DEFAULT_BRANCH), edit_uri=repo.get("edit_uri"),
+                multi_docs=bool(repo.get("multi_docs", False))
                 )
             docs_repo_objs.append(repo)
         asyncio_run(batch_import(docs_repo_objs))

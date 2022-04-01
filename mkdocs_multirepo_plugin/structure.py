@@ -1,4 +1,4 @@
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Union
 import shutil
 import subprocess
 from pathlib import Path
@@ -35,6 +35,50 @@ def parse_import(import_stmt: str) -> Tuple[str, str]:
     """Parses !import statements"""
     import_url = import_stmt.split(" ", 1)[1]
     return parse_repo_url(import_url)
+
+
+class NavImport:
+    """Represents a nav import statement (e.g., section: '!import {url}').
+    
+    Attributes:
+        section (str): The nav section title.
+        nav_entry_ptr (dict): A reference to the dictionary, within the nav, that holds this section.
+        repo (DocsRepo): The docs repo object created after parsing the import statement.
+    """
+
+    def __init__(self, section, nav_entry_ptr, repo):
+        self.section = section
+        self.nav_entry_ptr = nav_entry_ptr
+        self.repo = repo
+    
+    def set_section_value(self, new_val: Union[List, str]) -> None:
+        if isinstance(new_val, str) or isinstance(new_val, list):
+            self.nav_entry_ptr[self.section] = new_val
+            return
+        raise ValueError(f"new_val must be either a list or a str, not {type(new_val)}")
+
+
+def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str) -> List[NavImport]:
+    """Searches through the nav and finds import statements, returning a list of NavImport objects.
+    The NavImport object contains, among other things, a reference to the dictionary in the nav that
+    allows later updates to this nav entry in place.
+    """
+    imports: List[NavImport] = []
+    for index, entry in enumerate(nav):
+        (section, value), = entry.items()
+        if type(value) is list:
+            imports += get_import_stmts(value, temp_dir, default_branch)
+        elif value.startswith("!import"):
+            import_stmt: Dict[str, str] = parse_import(value)
+            repo = DocsRepo(
+                        name=section, url=import_stmt.get("url"),
+                        temp_dir=temp_dir, docs_dir=import_stmt.get("docs_dir", "docs/*"),
+                        branch=import_stmt.get("branch", default_branch),
+                        multi_docs=bool(import_stmt.get("multi_docs", False)),
+                        config=import_stmt.get("config", "mkdocs.yml")
+                    )
+            imports.append(NavImport(section, nav[index], repo))
+    return imports
 
 
 class Repo:
@@ -128,6 +172,20 @@ class DocsRepo(Repo):
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
 
+    def __eq__(self, other):
+        if isinstance(other, DocsRepo):
+            return (
+                (self.name == other.name) and 
+                (self.url == other.url) and 
+                (self.temp_dir == other.temp_dir) and 
+                (self.docs_dir == other.docs_dir) and 
+                (self.branch == other.branch) and
+                (self.edit_uri == other.edit_uri) and
+                (self.multi_docs == other.multi_docs) and
+                (self.config == other.config)
+            )
+        return False
+
     def get_edit_url(self, src_path):
         src_path = remove_parents(src_path, 1)
         if self.multi_docs:
@@ -152,7 +210,7 @@ class DocsRepo(Repo):
                 new_p = p.rename(p.parent.parent / p.name)
                 if not new_p:
                     new_p = p.parent.parent / p.name
-                # create a mapping from the old new src_path to the old for page edit_urls
+                # create a mapping from the old src_path to the old for page edit_urls
                 old_src_path = str(p).replace(str(self.location), "").replace("\\", "/")[1:]
                 new_src_path = str(new_p).replace(str(self.location), "").replace("\\", "/")
                 self.src_path_map[new_src_path] = old_src_path
@@ -185,8 +243,10 @@ class DocsRepo(Repo):
         return config
 
 
-async def batch_import(repos: List) -> None:
+async def batch_import(repos: List[DocsRepo]) -> None:
     """Given a list of DocRepo instances, performs a batch import asynchronously"""
+    if not repos:
+        return None
     longest_desc = max([len(f"✅ Got {repo.name} Docs") for repo in repos])
     progress_bar = tqdm.tqdm(total=len(repos), desc=" "*longest_desc)
     for import_async in asyncio.as_completed([repo.import_docs() for repo in repos]):

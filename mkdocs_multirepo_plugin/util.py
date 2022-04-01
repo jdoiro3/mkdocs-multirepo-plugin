@@ -94,16 +94,14 @@ def git_supports_sparse_clone() -> bool:
 async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
     """executes a bash script in an asynchronously"""
     if platform in LINUX_LIKE_PLATFORMS:
-        cmd = " ".join(f'"{arg}"' for arg in arguments)
-        cmd = f'bash {script} {cmd}'
-        process = await asyncio.create_subprocess_shell(
-            cmd, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        process = await asyncio.create_subprocess_exec(
+            'bash', script, *arguments, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
     else:
         git_folder = where_git()
-        cmd = " ".join(f'"{arg}"' for arg in [str(git_folder / "bin" / "bash.exe"), script]+arguments)
-        process = await asyncio.create_subprocess_shell(
-            cmd, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        process = await asyncio.create_subprocess_exec(
+            str(git_folder / "bin" / "bash.exe"), script, *arguments,
+            cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
     stdout, stderr = await process.communicate()
     stdout, stderr = stdout.decode(), stderr.decode()

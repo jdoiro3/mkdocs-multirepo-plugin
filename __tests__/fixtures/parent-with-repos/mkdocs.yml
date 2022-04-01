@@ -4,8 +4,8 @@ plugins:
   - multirepo:
       repos:
         - section: ok-nav-simple
-          import_url: file://$(cd ../../ && pwd)/ok-nav-simple
+          import_url: https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple
         - section: ok-no-nav
-          import_url: file://$(cd ../../ && pwd)/ok-no-nav
+          import_url: https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-no-nav
         - section: ok-nav-complex
-          import_url: file://$(cd ../../ && pwd)/ok-nav-complex
+          import_url: https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-complex
