@@ -18,8 +18,10 @@ jobs:
           uses: actions/setup-python@v3
         - name: Install Python dependencies
           run: ./__tests__/setup-pip.sh
-        - name: Linter and Unit Tests
-          run: ./__tests__/test-unittest-ci.sh
+        - name: Linter
+          run: ./__tests__/linter.sh
+        - name: Unittests
+          run: python3 -m unittest tests.unittests
 
   integration-tests:
       needs: unit-tests
