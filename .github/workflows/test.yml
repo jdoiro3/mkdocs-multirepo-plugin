@@ -14,8 +14,10 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v3
-        - name: Set up Python 3
+        - name: Set up Python 3.7
           uses: actions/setup-python@v3
+          with:
+            python-version: '3.7'
         - name: Install Python dependencies
           run: sudo ./__tests__/setup-pip.sh
         - name: Linter
