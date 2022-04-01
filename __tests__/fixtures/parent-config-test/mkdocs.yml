@@ -2,7 +2,7 @@ site_name: Test
 
 nav:
   - Home: index.md
-  - section: '!import file://$(cd ../../ && pwd)/ok-with-diff-config-name-and-location?config=multirepo.yml'
+  - section: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-with-diff-config-nm-and-loc?config=multirepo.yml'
 
 plugins:
   - multirepo

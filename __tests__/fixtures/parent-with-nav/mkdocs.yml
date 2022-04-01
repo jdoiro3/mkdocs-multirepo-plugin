@@ -2,7 +2,7 @@ site_name: Test
 
 nav:
   - Home: index.md
-  - ok-nav-simple: '!import file://$(cd ../../ && pwd)/ok-nav-simple'
+  - ok-nav-simple: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
 
 plugins:
   - multirepo

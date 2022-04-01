@@ -77,20 +77,7 @@ assertFailedMkdocs() {
 
 teardown() {
   for d in $fixturesDir/* ; do
-      rm -rf $d/.git
       rm -rf ${d}/site
-  done
-}
-
-setup() {
-  for d in $fixturesDir/* ; do
-      cd ${d}
-      git init -q
-      git config user.email "testing@example.com"
-      git config user.name "Mr. Test"
-      git add --all
-      git commit -m "testing" -q
-      cd ../
   done
 }
 
@@ -98,7 +85,7 @@ setup() {
 # Test suites.
 #
 
-@test "Local Repo Test: builds a mkdocs site with repos section" {
+@test "builds a mkdocs site with repos section" {
   cd ${fixturesDir}
   parent="parent-with-repos"
   run mkdocs build --config-file=$parent/mkdocs.yml
@@ -119,7 +106,7 @@ setup() {
   outputContains "Welcome to section 2."
 }
 
-@test "Local Repo Test: builds a mkdocs site with nav section" {
+@test "builds a mkdocs site with nav section" {
   cd ${fixturesDir}
   parent="parent-with-nav"
   run mkdocs build --config-file=$parent/mkdocs.yml
@@ -129,7 +116,7 @@ setup() {
   outputContains "Welcome to a simple repo."
 }
 
-@test "Local Repo Test: builds a mkdocs site with a different config file name and location" {
+@test "builds a mkdocs site with a different config file name and location" {
   cd ${fixturesDir}
   parent="parent-config-test"
   run mkdocs build --config-file=$parent/mkdocs.yml
@@ -139,7 +126,7 @@ setup() {
   outputContains "I'm okay even though my config file is outside the docs folder and is called multirepo.yml"
 }
 
-@test "Local Repo Test: builds a mkdocs site with multiple imports in nav section" {
+@test "builds a mkdocs site with multiple imports in nav section" {
   cd ${fixturesDir}
   parent="parent-multiple-nav-imports"
   run mkdocs build --config-file=$parent/mkdocs.yml
@@ -174,20 +161,9 @@ setup() {
   outputContains "Welcome to a simple repo."
 }
 
-@test "Github Tests: builds a mkdocs site with multiple imports in nav section" {
+@test "Make sure imported repo's mkdocs.yml isn't in build output" {
   cd ${fixturesDir}
-  parent="parent-multiple-nav-imports-github"
-  run mkdocs build --config-file=$parent/mkdocs.yml
-  debugger
-  run cat $parent/site/DemoRepo/index.html
-  outputContains "Wow, isn't that really cool. It's all done in one line."
-  run cat $parent/site/DemoRepo2/index.html
-  outputContains "Wow, isn't that really cool. It's all done in one line."
-}
-
-@test "Github Tests: Make sure imported repo's mkdocs.yml isn't in build output" {
-  cd ${fixturesDir}
-  parent="parent-confirm-no-mkdocs.yml-github"
+  parent="parent-confirm-no-mkdocs.yml"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
   assertFileDoesntExist $parent/site/DemoRepo/mkdocs.yml
