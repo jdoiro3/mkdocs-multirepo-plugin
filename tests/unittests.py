@@ -3,7 +3,13 @@ from mkdocs_multirepo_plugin import util
 from mkdocs_multirepo_plugin import structure
 from aiofiles import tempfile
 import pathlib
+import subprocess
+import sys
 
+try:
+    import mkdocs_multirepo_plugin
+except:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "."])
 
 class BaseCase(unittest.IsolatedAsyncioTestCase):
 
