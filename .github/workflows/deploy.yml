@@ -22,14 +22,12 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: '3.7'
-      - name: Install Git
-        run: sudo apt-get install git
       - name: Install Python dependencies
-        run: sudo ./__tests__/setup-pip.sh
+        run: ./__tests__/setup-pip.sh
       - name: Linter
-        run: sudo ./__tests__/linter.sh
+        run: ./__tests__/linter.sh
       - name: Unittests
-        run: sudo python3 -m unittest tests.unittests -v
+        run: python3 -m unittest tests.unittests -v
 
   integration-tests:
     needs: unit-tests
