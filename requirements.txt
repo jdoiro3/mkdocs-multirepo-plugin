@@ -14,7 +14,7 @@ mkdocs-material-extensions==1.0.3
 packaging==21.3
 pycodestyle==2.8.0
 pyflakes==2.4.0
-Pygments==2.11.2
+Pygments
 pymdown-extensions==9.3
 pyparsing==3.0.7
 python-dateutil==2.8.2
