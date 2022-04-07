@@ -1,4 +1,4 @@
-aiofiles==0.8.0
+aiofiles
 click==8.1.2
 flake8
 ghp-import==2.0.2
