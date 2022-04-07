@@ -1,5 +1,5 @@
 aiofiles
-click==8.1.2
+click
 flake8
 ghp-import==2.0.2
 importlib-metadata==4.11.3
