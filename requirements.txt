@@ -2,7 +2,7 @@ aiofiles
 click
 flake8
 ghp-import==2.0.2
-importlib-metadata==4.11.3
+importlib-metadata
 Jinja2==3.0.3
 Markdown==3.3.6
 MarkupSafe==2.1.1
