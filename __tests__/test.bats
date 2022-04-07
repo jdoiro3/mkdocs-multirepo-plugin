@@ -116,6 +116,16 @@ teardown() {
   outputContains "Welcome to a simple repo."
 }
 
+@test "builds a mkdocs site with nav section using material's indexes nav" {
+  cd ${fixturesDir}
+  parent="parent-with-indexes-nav"
+  run mkdocs build --config-file=$parent/mkdocs.yml
+  debugger
+  assertFileExists $parent/site/ok-nav-simple/index.html
+  run cat $parent/site/ok-nav-simple/index.html
+  outputContains "Welcome to a simple repo."
+}
+
 @test "builds a mkdocs site with a different config file name and location" {
   cd ${fixturesDir}
   parent="parent-config-test"

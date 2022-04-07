@@ -1,10 +1,10 @@
-from typing import List, Tuple, Dict
+from typing import List, Dict
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import get_files, Files
 from mkdocs.theme import Theme
 from mkdocs.config import Config, config_options
 from .structure import (
-    Repo, DocsRepo, parse_import, parse_repo_url, batch_import, resolve_nav_paths,
+    Repo, DocsRepo, parse_repo_url, batch_import, resolve_nav_paths,
     get_import_stmts
     )
 from .util import ImportDocsException, log, get_src_path_root, asyncio_run
@@ -111,7 +111,7 @@ class MultirepoPlugin(BasePlugin):
             nav_import.set_section_value(repo_config.get("nav"))
             self.repos[repo.name] = repo
         return config
-       
+
     def handle_repos_based_import(self, config: Config, repos: List[DocsRepo]) -> Config:
         """Imports documentation in other repos based on repos configuration"""
         docs_repo_objs = []

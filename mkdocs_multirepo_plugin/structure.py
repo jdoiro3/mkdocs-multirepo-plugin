@@ -39,7 +39,7 @@ def parse_import(import_stmt: str) -> Tuple[str, str]:
 
 class NavImport:
     """Represents a nav import statement (e.g., section: '!import {url}').
-    
+
     Attributes:
         section (str): The nav section title.
         nav_entry_ptr (dict): A reference to the dictionary, within the nav, that holds this section.
@@ -50,7 +50,7 @@ class NavImport:
         self.section = section
         self.nav_entry_ptr = nav_entry_ptr
         self.repo = repo
-    
+
     def set_section_value(self, new_val: Union[List, str]) -> None:
         if isinstance(new_val, str) or isinstance(new_val, list):
             self.nav_entry_ptr[self.section] = new_val
@@ -65,6 +65,8 @@ def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str) -> Li
     """
     imports: List[NavImport] = []
     for index, entry in enumerate(nav):
+        if isinstance(entry, str):
+            continue
         (section, value), = entry.items()
         if type(value) is list:
             imports += get_import_stmts(value, temp_dir, default_branch)
@@ -175,10 +177,10 @@ class DocsRepo(Repo):
     def __eq__(self, other):
         if isinstance(other, DocsRepo):
             return (
-                (self.name == other.name) and 
-                (self.url == other.url) and 
-                (self.temp_dir == other.temp_dir) and 
-                (self.docs_dir == other.docs_dir) and 
+                (self.name == other.name) and
+                (self.url == other.url) and
+                (self.temp_dir == other.temp_dir) and
+                (self.docs_dir == other.docs_dir) and
                 (self.branch == other.branch) and
                 (self.edit_uri == other.edit_uri) and
                 (self.multi_docs == other.multi_docs) and
