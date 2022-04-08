@@ -1,0 +1,10 @@
+site_name: Test
+
+nav:
+  - Home: index.md
+  - ok-with-images: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-with-images'
+
+plugins:
+  - multirepo
+
+

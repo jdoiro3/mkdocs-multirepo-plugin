@@ -3,12 +3,21 @@ import shutil
 import subprocess
 from pathlib import Path
 from mkdocs.utils import yaml_load
+from mkdocs.structure.files import File
 from .util import (
     ImportDocsException, git_supports_sparse_clone,
     remove_parents, execute_bash_script
 )
 import asyncio
 import tqdm
+import os
+
+
+def is_yaml_file(file: File) -> bool:
+    return os.path.splitext(file.src_path)[1] in (
+        ".yaml",
+        ".yml"
+    )
 
 
 def resolve_nav_paths(nav: List[Dict], section_name: str) -> None:

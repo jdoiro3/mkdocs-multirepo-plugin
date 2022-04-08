@@ -5,9 +5,12 @@ from mkdocs.theme import Theme
 from mkdocs.config import Config, config_options
 from .structure import (
     Repo, DocsRepo, parse_repo_url, batch_import, resolve_nav_paths,
-    get_import_stmts
+    get_import_stmts, is_yaml_file
     )
-from .util import ImportDocsException, log, get_src_path_root, asyncio_run
+from .util import (
+    ImportDocsException, log, get_src_path_root, 
+    asyncio_run
+)
 from pathlib import Path
 from copy import deepcopy
 import shutil
@@ -160,7 +163,7 @@ class MultirepoPlugin(BasePlugin):
             temp_config["docs_dir"] = self.temp_dir
             other_repo_files = get_files(temp_config)
             for f in other_repo_files:
-                if f.is_documentation_page():
+                if not is_yaml_file(f):
                     files.append(f)
             return files
 

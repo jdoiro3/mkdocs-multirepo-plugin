@@ -13,15 +13,13 @@ fixturesDir=${rootDir}/__tests__/fixtures
 
 debugger() {
   echo "--- STATUS ---"
-  if [ $status -eq 0 ]
-  then
+  if [ $status -eq 0 ]; then
     echo "Successful Status Code ($status)"
   else
     echo "Failed Status Code ($status)"
   fi
   echo "--- OUTPUT ---"
   echo $output
-  echo "--------------"
 }
 
 outputContains() {
@@ -37,19 +35,22 @@ outputContains() {
 }
 
 assertFileExists() {
-  run cat $1
-  if [ "$status" -eq 0 ]
-  then
+  if test -f "$1"; then
     return 0
   else
+    echo "$1 does not exist"
+    echo "--- Site Directory Contents ---"
     find $parent/site
     return 1
   fi
 }
 
 assertFileDoesntExist() {
-  run cat $1
-  [ "$status" -eq 1 ]
+  if ! test -f "$1"; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 assertFileContains() {
@@ -85,89 +86,89 @@ teardown() {
 # Test suites.
 #
 
-@test "builds a mkdocs site with repos section" {
+@test "Build a mkdocs site with repos section" {
   cd ${fixturesDir}
   parent="parent-with-repos"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
-  run cat $parent/site/ok-nav-simple/index.html
+  run cat "$parent/site/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
-  run cat $parent/site/ok-no-nav/index.html
+  run cat "$parent/site/ok-no-nav/index.html"
   outputContains "I'm an okay setup with no nav configured in the imported repo."
-  run cat $parent/site/ok-nav-complex/index.html
+  run cat "$parent/site/ok-nav-complex/index.html"
   outputContains "Welcome to a complex repo."
-  run cat $parent/site/ok-nav-complex/section1/getting-started/index.html
+  run cat "$parent/site/ok-nav-complex/section1/getting-started/index.html"
   outputContains "Let's get started with section 1."
-  run cat $parent/site/ok-nav-complex/section2/getting-started/index.html
+  run cat "$parent/site/ok-nav-complex/section2/getting-started/index.html"
   outputContains "Let's get started with section 2."
-  run cat $parent/site/ok-nav-complex/section1/index.html
+  run cat "$parent/site/ok-nav-complex/section1/index.html"
   outputContains "Welcome to section 1."
-  run cat $parent/site/ok-nav-complex/section2/index.html
+  run cat "$parent/site/ok-nav-complex/section2/index.html"
   outputContains "Welcome to section 2."
 }
 
-@test "builds a mkdocs site with nav section" {
+@test "Build a mkdocs site with nav section" {
   cd ${fixturesDir}
   parent="parent-with-nav"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
-  assertFileExists $parent/site/ok-nav-simple/index.html
-  run cat $parent/site/ok-nav-simple/index.html
+  assertFileExists "$parent/site/ok-nav-simple/index.html"
+  run cat "$parent/site/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
 }
 
-@test "builds a mkdocs site with nav section using material's indexes nav" {
+@test "Build a mkdocs site with nav section using material's indexes nav" {
   cd ${fixturesDir}
   parent="parent-with-indexes-nav"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
-  assertFileExists $parent/site/ok-nav-simple/index.html
-  run cat $parent/site/ok-nav-simple/index.html
+  assertFileExists "$parent/site/ok-nav-simple/index.html"
+  run cat "$parent/site/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
 }
 
-@test "builds a mkdocs site with a different config file name and location" {
+@test "Build a mkdocs site with a different config file name and location" {
   cd ${fixturesDir}
   parent="parent-config-test"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
-  assertFileExists $parent/site/section/index.html
-  run cat $parent/site/section/index.html
+  assertFileExists "$parent/site/section/index.html"
+  run cat "$parent/site/section/index.html"
   outputContains "I'm okay even though my config file is outside the docs folder and is called multirepo.yml"
 }
 
-@test "builds a mkdocs site with multiple imports in nav section" {
+@test "Build a mkdocs site with multiple imports in nav section" {
   cd ${fixturesDir}
   parent="parent-multiple-nav-imports"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
-  run cat $parent/site/ok-nav-simple/index.html
+  run cat "$parent/site/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
-  run cat $parent/site/ok-nav-complex/index.html
+  run cat "$parent/site/ok-nav-complex/index.html"
   outputContains "Welcome to a complex repo."
-  run cat $parent/site/ok-nav-complex/section1/getting-started/index.html
+  run cat "$parent/site/ok-nav-complex/section1/getting-started/index.html"
   outputContains "Let's get started with section 1."
-  run cat $parent/site/ok-nav-complex/section2/getting-started/index.html
+  run cat "$parent/site/ok-nav-complex/section2/getting-started/index.html"
   outputContains "Let's get started with section 2."
-  run cat $parent/site/ok-nav-complex/section1/index.html
+  run cat "$parent/site/ok-nav-complex/section1/index.html"
   outputContains "Welcome to section 1."
-  run cat $parent/site/ok-nav-complex/section2/index.html
+  run cat "$parent/site/ok-nav-complex/section2/index.html"
   outputContains "Welcome to section 2."
   # testing subsection import
-  run cat $parent/site/ok-nav-simple2/index.html
+  run cat "$parent/site/ok-nav-simple2/index.html"
   outputContains "Welcome to a simple repo."
-  run cat $parent/site/ok-nav-complex2/index.html
+  run cat "$parent/site/ok-nav-complex2/index.html"
   outputContains "Welcome to a complex repo."
-  run cat $parent/site/ok-nav-complex2/section1/getting-started/index.html
+  run cat "$parent/site/ok-nav-complex2/section1/getting-started/index.html"
   outputContains "Let's get started with section 1."
-  run cat $parent/site/ok-nav-complex2/section2/getting-started/index.html
+  run cat "$parent/site/ok-nav-complex2/section2/getting-started/index.html"
   outputContains "Let's get started with section 2."
-  run cat $parent/site/ok-nav-complex2/section1/index.html
+  run cat "$parent/site/ok-nav-complex2/section1/index.html"
   outputContains "Welcome to section 1."
-  run cat $parent/site/ok-nav-complex2/section2/index.html
+  run cat "$parent/site/ok-nav-complex2/section2/index.html"
   outputContains "Welcome to section 2."
   # testing an import within multiple subsections
-  run cat $parent/site/ok-nav-simple3/index.html
+  run cat "$parent/site/ok-nav-simple3/index.html"
   outputContains "Welcome to a simple repo."
 }
 
@@ -176,5 +177,13 @@ teardown() {
   parent="parent-confirm-no-mkdocs.yml"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
-  assertFileDoesntExist $parent/site/DemoRepo/mkdocs.yml
+  assertFileDoesntExist "$parent/site/DemoRepo/mkdocs.yml"
+}
+
+@test "Make sure imported repo's with images are included in build output" {
+  cd ${fixturesDir}
+  parent="parent-with-imported-images"
+  run mkdocs build --config-file=$parent/mkdocs.yml
+  debugger
+  assertFileExists "$parent/site/ok-with-images/assets/images/zelda-dark-world.png"
 }
