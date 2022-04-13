@@ -43,6 +43,16 @@ plugins:
 
 The plugin introduces the *!import* statement in your config's *nav* section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
 
+<details><summary><b>!import Statement Sections</b></summary>
+  
+  - **{url}**: Only *required* part of *!import* statement (e.g., `https://github.com/{user}/{repo name}`).
+  - **?branch={branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
+  - **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
+  - **?multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
+  - **?config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
+
+</details>
+
 ```yaml
 nav:
   - Home: 'index.md'
@@ -56,14 +66,6 @@ edit_uri: /blob/master/
 nav:
   - Home: index.md
 ```
-
-### *!import* Statement Sections
-
-- **{url}**: Only *required* part of *!import* statement (e.g., `https://github.com/{user}/{repo name}`).
-- **?branch={branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
-- **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
-- **?multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
-- **?config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
 
 > Things to Note:
 >
