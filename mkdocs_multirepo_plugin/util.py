@@ -7,6 +7,7 @@ import logging
 from mkdocs.utils import warning_filter
 from collections import namedtuple
 from re import search
+import os
 
 # used for getting Git version
 GitVersion = namedtuple("GitVersion", "major minor")
@@ -93,6 +94,14 @@ def git_supports_sparse_clone() -> bool:
 
 async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
     """executes a bash script in an asynchronously"""
+    try:
+        token = os.environ['AccessToken']
+        #Insert the PAT after the url scheme
+        schemeIndex = arguments[0].find("://") + 3 #The search string is 3 characters long; insert at the end of that
+        arguments[0] = arguments[0][:schemeIndex] + token + "@" + arguments[0][schemeIndex:]
+    except KeyError:
+        pass
+    
     if platform in LINUX_LIKE_PLATFORMS:
         process = await asyncio.create_subprocess_exec(
             'bash', script, *arguments, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
