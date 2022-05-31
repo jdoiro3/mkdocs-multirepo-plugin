@@ -17,7 +17,7 @@ Build documentation in multiple repos into one site.
 - **Seperates Concerns**: Separate documentation from other files that go into building your mkdocs site (e.g., theme overrides).
 - **Fast**: Documentation is imported asynchronously, using [asyncio](https://docs.python.org/3/library/asyncio.html).
 - **Simple**: All configuration is done within the `plugins` or `nav` sections of your *mkdocs.yml* file.
-- **Ready for Production**: The plugin can be used in a CI/CD pipeline.
+- **Use in Production**: The plugin can be used in a CI/CD pipeline.
 
 ## OS Support
 
@@ -25,6 +25,13 @@ Build documentation in multiple repos into one site.
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+
+## Dependencies
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) 
+
+> Newer versions of Git preferred.
 
 ## Setup
 
@@ -43,6 +50,16 @@ plugins:
 
 The plugin introduces the *!import* statement in your config's *nav* section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
 
+<details><summary><b>!import Statement Sections</b></summary>
+  
+  - **{url}**: Only *required* part of *!import* statement (e.g., `https://github.com/{user}/{repo name}`).
+  - **?branch={branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
+  - **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
+  - **?multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
+  - **?config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
+
+</details>
+
 ```yaml
 nav:
   - Home: 'index.md'
@@ -56,14 +73,6 @@ edit_uri: /blob/master/
 nav:
   - Home: index.md
 ```
-
-### *!import* Statement Sections
-
-- **{url}**: Only *required* part of *!import* statement (e.g., `https://github.com/{user}/{repo name}`).
-- **?branch={branch}**: Tells *multirepo* what branch to use. Defaults to *master* if not supplied.
-- **?docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
-- **?multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
-- **?config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
 
 > Things to Note:
 >
