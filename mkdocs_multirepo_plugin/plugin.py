@@ -8,7 +8,7 @@ from .structure import (
     get_import_stmts, is_yaml_file
     )
 from .util import (
-    ImportDocsException, log, get_src_path_root, 
+    ImportDocsException, log, get_src_path_root,
     asyncio_run
 )
 from pathlib import Path

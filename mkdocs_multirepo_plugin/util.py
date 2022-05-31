@@ -96,12 +96,12 @@ async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Pat
     """executes a bash script in an asynchronously"""
     try:
         token = os.environ['AccessToken']
-        #Insert the PAT after the url scheme
-        schemeIndex = arguments[0].find("://") + 3 #The search string is 3 characters long; insert at the end of that
+        # Insert the PAT after the url scheme
+        schemeIndex = arguments[0].find("://") + 3  # The search string is 3 characters long; insert at the end of that
         arguments[0] = arguments[0][:schemeIndex] + token + "@" + arguments[0][schemeIndex:]
     except KeyError:
         pass
-    
+
     if platform in LINUX_LIKE_PLATFORMS:
         process = await asyncio.create_subprocess_exec(
             'bash', script, *arguments, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
