@@ -1,15 +1,16 @@
 import unittest
-from mkdocs_multirepo_plugin import util
-from mkdocs_multirepo_plugin import structure
 from aiofiles import tempfile
 import pathlib
 import subprocess
 import sys
 
 try:
-    import mkdocs_multirepo_plugin
+    from mkdocs_multirepo_plugin import util
+    from mkdocs_multirepo_plugin import structure
 except:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "."])
+    from mkdocs_multirepo_plugin import util
+    from mkdocs_multirepo_plugin import structure
 
 class BaseCase(unittest.IsolatedAsyncioTestCase):
 
