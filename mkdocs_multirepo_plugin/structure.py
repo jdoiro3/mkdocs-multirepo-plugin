@@ -6,7 +6,7 @@ from mkdocs.utils import yaml_load
 from mkdocs.structure.files import File
 from .util import (
     ImportDocsException, git_supports_sparse_clone,
-    remove_parents, execute_bash_script
+    remove_parents, execute_bash_script, ImportSyntaxError
 )
 import asyncio
 import tqdm
@@ -33,8 +33,21 @@ def resolve_nav_paths(nav: List[Dict], section_name: str) -> None:
 def parse_repo_url(repo_url: str) -> Dict[str, str]:
     """Parses !import statement urls"""
     url_parts = repo_url.split("?")
-    import_parts = {"url": url_parts[0]}
-    for part in url_parts[1:]:
+    url_parts_len = len(url_parts)
+    if url_parts_len > 2:
+        raise ImportSyntaxError(
+            f"The import statement's repo url, {repo_url}, can only contain one ?"
+            )
+    if url_parts_len == 1:
+        url, query_str = url_parts[0], None
+    else:
+        url, query_str = url_parts[0], url_parts[1]
+    if query_str:
+        query_parts = query_str.split("&")
+    else:
+        query_parts = []
+    import_parts = {"url": url}
+    for part in query_parts:
         k, v = part.split("=")
         import_parts[k] = v
     return import_parts
