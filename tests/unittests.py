@@ -106,6 +106,8 @@ class TestStructure(BaseCase):
         for case in repo_url_cases:
             parsed_url = structure.parse_repo_url(case[0])
             self.assertDictEqual(parsed_url, case[1])
+        with self.assertRaises(util.ImportSyntaxError):
+            structure.parse_repo_url(f"{base_url}?docs_dir=fldr/docs/*?config=multirepo.yml")
 
     async def test_sparse_clone(self):
         async with tempfile.TemporaryDirectory() as temp_dir:
