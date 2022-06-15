@@ -7,7 +7,7 @@ import sys
 try:
     from mkdocs_multirepo_plugin import util
     from mkdocs_multirepo_plugin import structure
-except:
+except ModuleNotFoundError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "."])
     from mkdocs_multirepo_plugin import util
     from mkdocs_multirepo_plugin import structure
@@ -98,10 +98,10 @@ class TestStructure(BaseCase):
         repo_url_cases = [
             (f"{base_url}", {"url": base_url}),
             (f"{base_url}?branch=master", {"url": base_url, "branch": "master"}),
-            (f"{base_url}?branch=main?multi_docs=true", {"url": base_url, "branch": "main", "multi_docs": "true"}),
-            (f"{base_url}?multi_docs=false?branch=main", {"url": base_url, "multi_docs": "false", "branch": "main"}),
+            (f"{base_url}?branch=main&multi_docs=true", {"url": base_url, "branch": "main", "multi_docs": "true"}),
+            (f"{base_url}?multi_docs=false&branch=main", {"url": base_url, "multi_docs": "false", "branch": "main"}),
             (f"{base_url}?docs_dir=fldr/docs/*", {"url": base_url, "docs_dir": "fldr/docs/*"}),
-            (f"{base_url}?multi_docs=false?branch=main?config=multirepo.yml", {"url": base_url, "multi_docs": "false", "branch": "main", "config": "multirepo.yml"}),
+            (f"{base_url}?multi_docs=false&branch=main&config=multirepo.yml", {"url": base_url, "multi_docs": "false", "branch": "main", "config": "multirepo.yml"}),
         ]
         for case in repo_url_cases:
             parsed_url = structure.parse_repo_url(case[0])
