@@ -11,6 +11,7 @@ from .util import (
 import asyncio
 import tqdm
 import os
+from slugify import slugify
 
 
 def is_yaml_file(file: File) -> bool:
@@ -121,7 +122,7 @@ class Repo:
         self.url = url
         self.branch = branch
         self.temp_dir = temp_dir
-        self.location = temp_dir / self.name
+        self.location = temp_dir / slugify(self.name)
 
     @property
     def cloned(self):
