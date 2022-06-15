@@ -118,11 +118,11 @@ class Repo:
     """
 
     def __init__(self, name: str, url: str, branch: str, temp_dir: Path):
-        self.name = name
+        self.name = slugify(name)
         self.url = url
         self.branch = branch
         self.temp_dir = temp_dir
-        self.location = temp_dir / slugify(self.name)
+        self.location = temp_dir / self.name
 
     @property
     def cloned(self):
