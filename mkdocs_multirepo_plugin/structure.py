@@ -11,6 +11,7 @@ from .util import (
 import asyncio
 import tqdm
 import os
+from slugify import slugify
 
 
 def is_yaml_file(file: File) -> bool:
@@ -117,7 +118,7 @@ class Repo:
     """
 
     def __init__(self, name: str, url: str, branch: str, temp_dir: Path):
-        self.name = name
+        self.name = slugify(name)
         self.url = url
         self.branch = branch
         self.temp_dir = temp_dir

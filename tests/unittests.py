@@ -113,12 +113,12 @@ class TestStructure(BaseCase):
         async with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
             repo = structure.Repo(
-                "test_repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
+                "test-repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
                 temp_dir_path
             )
             await repo.sparse_clone(["docs/*"])
             # make sure repo location is correct
-            self.assertEqual(repo.location, pathlib.Path(temp_dir) / "test_repo")
+            self.assertEqual(repo.location, pathlib.Path(temp_dir) / "test-repo")
             docs_dir = pathlib.Path(repo.location) / "docs"
             self.assertDirExists(docs_dir)
             expected_files = [
@@ -136,8 +136,8 @@ class TestStructure(BaseCase):
                 temp_dir_path
             )
             await repo.sparse_clone(["docs/*"])
-            # make sure the repo locaton is correct
-            self.assertEqual(repo.location, pathlib.Path(temp_dir) / "test repo")
+            # make sure the repo location is correct
+            self.assertEqual(repo.location, pathlib.Path(temp_dir) / "test-repo")
             # make sure directory with spaces exists
             self.assertDirExists(repo.location)
             docs_dir = repo.location / "docs"
