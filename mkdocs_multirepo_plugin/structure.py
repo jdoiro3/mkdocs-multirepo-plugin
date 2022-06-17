@@ -22,7 +22,7 @@ def is_yaml_file(file: File) -> bool:
 
 
 def resolve_nav_paths(nav: List[Dict], section_name: str) -> None:
-    """Adds the section_name to the begining of all paths in a MkDocs nav object"""
+    """Adds the section_name to the beginning of all paths in a MkDocs nav object"""
     for index, entry in enumerate(nav):
         (key, value), = entry.items()
         if type(value) is list:
