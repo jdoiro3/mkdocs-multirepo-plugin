@@ -25,7 +25,8 @@ setup(
     install_requires=[
         "mkdocs>=1.0.4",
         "asyncio",
-        "tqdm"
+        "tqdm",
+        "python-slugify"
         ],
     include_package_data=True,
     zip_safe=False,
