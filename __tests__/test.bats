@@ -40,7 +40,7 @@ assertFileExists() {
   else
     echo "$1 does not exist"
     echo "--- Site Directory Contents ---"
-    find $parent/site
+    tree "$parent/site"
     return 1
   fi
 }
@@ -161,7 +161,6 @@ teardown() {
   parent="parent-multiple-nav-imports"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
-  tree "$parent/site"
   # testing subsection import
   run cat "$parent/site/section/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
@@ -176,7 +175,7 @@ teardown() {
   run cat "$parent/site/section/ok-nav-complex/section2/index.html"
   outputContains "Welcome to section 2."
   # testing an import within multiple subsections
-  run cat "$parent/site/deepImport/subsection/subsection/ok-nav-simple/index.html"
+  run cat "$parent/site/deepimport/subsection/subsection/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
 }
 
