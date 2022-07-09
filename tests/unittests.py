@@ -3,12 +3,13 @@ from aiofiles import tempfile
 import pathlib
 import subprocess
 import sys
+from pathlib import Path
 
 try:
     from mkdocs_multirepo_plugin import util
     from mkdocs_multirepo_plugin import structure
 except ModuleNotFoundError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "."])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "."])
     from mkdocs_multirepo_plugin import util
     from mkdocs_multirepo_plugin import structure
 
@@ -80,6 +81,8 @@ class TestUtil(BaseCase):
 
 class TestStructure(BaseCase):
 
+    maxDiff = None
+
     def test_resolve_nav_paths(self):
         section_name = "some_repo"
         nav = [
@@ -92,6 +95,59 @@ class TestStructure(BaseCase):
             ]
         structure.resolve_nav_paths(nav, section_name)
         self.assertListEqual(nav, expected)
+
+    def test_get_import_stmts(self):
+        temp_dir = pathlib.Path("")
+        nav = [
+            "index.md",
+            {"home": "home.md"},
+            {"sec2": [
+                {"sec3": "bar.md"},
+                {"sec4": [
+                    {"sec5": "!import https://baz"},
+                    {"sec6": [{"sec7": "!import https://foo"}, {"sec8": "foo.md"}, {"sec12": "!import https://bar"}]}
+                ]},
+                {"sec9": [
+                    {"sec10": "index.md"},
+                    {"sec11": "foo.md"}
+                ]}
+            ]},
+            {"sec13": [
+                {"sec14": "!import https://baz"}, 
+                {"sec15": "index.md"}, 
+                {"sec16": [
+                        {"sec17": [
+                            {"sec18": "!import https://foo"},
+                            {"sec19": "index.md"}
+                        ]},
+                        {"home": "index.md"}
+                ]}
+            ]}
+        ]
+        expected = [
+            structure.NavImport(
+                "sec5", nav[2]["sec2"][1]["sec4"][0], 
+                structure.DocsRepo(name=str(Path("sec2/sec4/sec5")), url="https://baz", branch="master", temp_dir=temp_dir)
+                ), 
+            structure.NavImport(
+                "sec7", nav[2]["sec2"][1]["sec4"][1]["sec6"][0], 
+                structure.DocsRepo(name=str(Path("sec2/sec4/sec6/sec7")), url="https://foo", branch="master", temp_dir=temp_dir)
+                ),
+            structure.NavImport(
+                "sec12", nav[2]["sec2"][1]["sec4"][1]["sec6"][2], 
+                structure.DocsRepo(name=str(Path("sec2/sec4/sec6/sec12")), url="https://bar", branch="master", temp_dir=temp_dir)
+                ),
+            structure.NavImport(
+                "sec14", nav[3]["sec13"][0], 
+                structure.DocsRepo(name=str(Path("sec13/sec14")), url="https://baz", branch="master", temp_dir=temp_dir)
+                ),
+            structure.NavImport(
+                "sec18", nav[3]["sec13"][2]["sec16"][0]["sec17"][0], 
+                structure.DocsRepo(name=str(Path("sec13/sec16/sec17/sec18")), url="https://foo", branch="master", temp_dir=temp_dir)
+                ),
+            ]
+        self.assertListEqual(structure.get_import_stmts(nav, temp_dir, "master"), expected)
+
 
     def test_parse_repo_url(self):
         base_url = "https://github.com/backstage/backstage"
@@ -132,7 +188,7 @@ class TestStructure(BaseCase):
         async with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
             repo = structure.Repo(
-                "test repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
+                "test-repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
                 temp_dir_path
             )
             await repo.sparse_clone(["docs/*"])

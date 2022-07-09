@@ -1,14 +1,14 @@
 #!/bin/bash
 
 url="$1"
-name="$2"
+docs_dir="$2"
 branch=$3
 shift 3
 dirs=( "$@" )
 
 
-mkdir "$name" # make the section directory
-cd "$name"
+mkdir "$docs_dir" # make the section directory
+cd "$docs_dir"
 # initialize git
 git init
 

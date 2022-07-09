@@ -40,7 +40,7 @@ assertFileExists() {
   else
     echo "$1 does not exist"
     echo "--- Site Directory Contents ---"
-    find $parent/site
+    tree "$parent/site"
     return 1
   fi
 }
@@ -154,21 +154,28 @@ teardown() {
   outputContains "Welcome to section 1."
   run cat "$parent/site/ok-nav-complex/section2/index.html"
   outputContains "Welcome to section 2."
+}
+
+@test "Build a mkdocs site with subsection imports with same section names" {
+  cd ${fixturesDir}
+  parent="parent-multiple-nav-imports"
+  run mkdocs build --config-file=$parent/mkdocs.yml
+  debugger
   # testing subsection import
-  run cat "$parent/site/ok-nav-simple2/index.html"
+  run cat "$parent/site/section/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
-  run cat "$parent/site/ok-nav-complex2/index.html"
+  run cat "$parent/site/section/ok-nav-complex/index.html"
   outputContains "Welcome to a complex repo."
-  run cat "$parent/site/ok-nav-complex2/section1/getting-started/index.html"
+  run cat "$parent/site/section/ok-nav-complex/section1/getting-started/index.html"
   outputContains "Let's get started with section 1."
-  run cat "$parent/site/ok-nav-complex2/section2/getting-started/index.html"
+  run cat "$parent/site/section/ok-nav-complex/section2/getting-started/index.html"
   outputContains "Let's get started with section 2."
-  run cat "$parent/site/ok-nav-complex2/section1/index.html"
+  run cat "$parent/site/section/ok-nav-complex/section1/index.html"
   outputContains "Welcome to section 1."
-  run cat "$parent/site/ok-nav-complex2/section2/index.html"
+  run cat "$parent/site/section/ok-nav-complex/section2/index.html"
   outputContains "Welcome to section 2."
   # testing an import within multiple subsections
-  run cat "$parent/site/ok-nav-simple3/index.html"
+  run cat "$parent/site/deepimport/subsection/subsection/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
 }
 

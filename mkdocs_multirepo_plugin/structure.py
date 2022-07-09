@@ -69,10 +69,24 @@ class NavImport:
         repo (DocsRepo): The docs repo object created after parsing the import statement.
     """
 
-    def __init__(self, section, nav_entry_ptr, repo):
+    def __init__(self, section: str, nav_entry_ptr: Dict[str, Union[List, str]], repo: "DocsRepo"):
         self.section = section
-        self.nav_entry_ptr = nav_entry_ptr
         self.repo = repo
+        self.nav_entry_ptr = nav_entry_ptr
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, NavImport) and
+            self.section == other.section and
+            self.nav_entry_ptr == other.nav_entry_ptr and
+            self.repo == other.repo
+        )
+
+    def __str__(self):
+        return f"NavImport({self.nav_entry_ptr}, {self.repo})"
+
+    def __repr__(self):
+        return self.__str__()
 
     def set_section_value(self, new_val: Union[List, str]) -> None:
         if isinstance(new_val, str) or isinstance(new_val, list):
@@ -81,7 +95,7 @@ class NavImport:
         raise ValueError(f"new_val must be either a list or a str, not {type(new_val)}")
 
 
-def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str) -> List[NavImport]:
+def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str, path_to_section=[]) -> List[NavImport]:
     """Searches through the nav and finds import statements, returning a list of NavImport objects.
     The NavImport object contains, among other things, a reference to the dictionary in the nav that
     allows later updates to this nav entry in place.
@@ -91,18 +105,28 @@ def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str) -> Li
         if isinstance(entry, str):
             continue
         (section, value), = entry.items()
+        path_to_section.append(section)
         if type(value) is list:
             imports += get_import_stmts(value, temp_dir, default_branch)
         elif value.startswith("!import"):
             import_stmt: Dict[str, str] = parse_import(value)
+            # slugify the section names and turn them into a valid path string
+            path = str(Path(*[slugify(section) for section in path_to_section]))
             repo = DocsRepo(
-                        name=section, url=import_stmt.get("url"),
+                        name=path, url=import_stmt.get("url"),
                         temp_dir=temp_dir, docs_dir=import_stmt.get("docs_dir", "docs/*"),
                         branch=import_stmt.get("branch", default_branch),
                         multi_docs=bool(import_stmt.get("multi_docs", False)),
                         config=import_stmt.get("config", "mkdocs.yml")
                     )
             imports.append(NavImport(section, nav[index], repo))
+            path_to_section.pop()
+        else:
+            path_to_section.pop()
+    try:
+        path_to_section.pop()
+    except:
+        pass
     return imports
 
 
@@ -113,12 +137,12 @@ class Repo:
         name (str): The name (used as the section name) of the repo.
         url (str): The remote's url.
         branch (str): The branch that will be cloned.
-        temp_dir (pathlib.Path): The directory where all repos are cloned to.
-        location (pathlib.Path): The location of the local repo on the filesystem.
+        temp_dir (Path): The directory where all repos are cloned to.
+        location (Path): The location of the local repo on the filesystem.
     """
 
     def __init__(self, name: str, url: str, branch: str, temp_dir: Path):
-        self.name = slugify(name)
+        self.name = name
         self.url = url
         self.branch = branch
         self.temp_dir = temp_dir
@@ -172,8 +196,8 @@ class DocsRepo(Repo):
         name (str): The name (used as the section name) of the repo.
         url (str): The remote's url.
         branch (str): The branch that will be cloned.
-        temp_dir (pathlib.Path): The directory where all repos are cloned to.
-        location (pathlib.Path): The location of the local repo on the filesystem.
+        temp_dir (Path): The directory where all repos are cloned to.
+        location (Path): The location of the local repo on the filesystem.
         docs_dir (str): The location of the documentation, which can be a glob. Default is "docs/*".
         edit_uri (str): The edit_uri used for MkDocs.
         config (str): The filename and extension for the yaml configuration file. Default is "mkdocs.yml".
@@ -197,19 +221,21 @@ class DocsRepo(Repo):
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
 
+    def __repr__(self):
+        return self.__str__()
+
     def __eq__(self, other):
-        if isinstance(other, DocsRepo):
-            return (
-                (self.name == other.name) and
-                (self.url == other.url) and
-                (self.temp_dir == other.temp_dir) and
-                (self.docs_dir == other.docs_dir) and
-                (self.branch == other.branch) and
-                (self.edit_uri == other.edit_uri) and
-                (self.multi_docs == other.multi_docs) and
-                (self.config == other.config)
-            )
-        return False
+        return (
+            isinstance(other, DocsRepo) and
+            (self.name == other.name) and
+            (self.url == other.url) and
+            (self.temp_dir == other.temp_dir) and
+            (self.docs_dir == other.docs_dir) and
+            (self.branch == other.branch) and
+            (self.edit_uri == other.edit_uri) and
+            (self.multi_docs == other.multi_docs) and
+            (self.config == other.config)
+        )
 
     def get_edit_url(self, src_path):
         src_path = remove_parents(src_path, 1)

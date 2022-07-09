@@ -15,6 +15,7 @@ from pathlib import Path
 from copy import deepcopy
 import shutil
 import tempfile
+from slugify import slugify
 
 IMPORT_STATEMENT = "!import"
 DEFAULT_BRANCH = "master"
@@ -120,8 +121,9 @@ class MultirepoPlugin(BasePlugin):
         docs_repo_objs = []
         for repo in repos:
             import_stmt = parse_repo_url(repo.get("import_url"))
+            name_slug = slugify(repo.get("section"))
             repo = DocsRepo(
-                name=repo.get("section"), url=import_stmt.get("url"),
+                name=name_slug, url=import_stmt.get("url"),
                 temp_dir=self.temp_dir, docs_dir=repo.get("docs_dir", "docs/*"),
                 branch=import_stmt.get("branch", DEFAULT_BRANCH), edit_uri=repo.get("edit_uri"),
                 multi_docs=bool(repo.get("multi_docs", False))
