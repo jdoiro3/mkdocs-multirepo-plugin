@@ -161,6 +161,7 @@ teardown() {
   parent="parent-multiple-nav-imports"
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
+  tree "$parent/site"
   # testing subsection import
   run cat "$parent/site/section/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
