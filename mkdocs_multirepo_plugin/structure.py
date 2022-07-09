@@ -112,7 +112,6 @@ def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str, path_
             import_stmt: Dict[str, str] = parse_import(value)
             # slugify the section names and turn them into a valid path string
             path = str(Path(*[slugify(section) for section in path_to_section]))
-            print(path)
             repo = DocsRepo(
                         name=path, url=import_stmt.get("url"),
                         temp_dir=temp_dir, docs_dir=import_stmt.get("docs_dir", "docs/*"),

@@ -188,7 +188,7 @@ class TestStructure(BaseCase):
         async with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
             repo = structure.Repo(
-                "test repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
+                "test-repo", "https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1", "main",
                 temp_dir_path
             )
             await repo.sparse_clone(["docs/*"])
