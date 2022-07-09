@@ -5,12 +5,12 @@ nav:
   - ok-nav-simple: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
   - ok-nav-complex: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-complex'
   - section:
-    - ok-nav-simple2: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
-    - ok-nav-complex2: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-complex'
+    - ok-nav-simple: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
+    - ok-nav-complex: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-complex'
   - deepImport:
-    - subsection1:
-      - subsection2:
-        - ok-nav-simple3: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
+    - subsection:
+      - subsection:
+        - ok-nav-simple: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
 
 plugins:
   - multirepo
