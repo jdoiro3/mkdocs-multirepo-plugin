@@ -147,7 +147,9 @@ class TestStructure(BaseCase):
                 ),
             ]
         self.assertListEqual(structure.get_import_stmts(nav, temp_dir, "master"), expected)
-
+        # make sure we're treating function as first class object
+        # read more here: https://stackoverflow.com/a/39826915/10044811
+        self.assertListEqual(structure.get_import_stmts(nav, temp_dir, "master"), expected)
 
     def test_parse_repo_url(self):
         base_url = "https://github.com/backstage/backstage"

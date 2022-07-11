@@ -95,19 +95,21 @@ class NavImport:
         raise ValueError(f"new_val must be either a list or a str, not {type(new_val)}")
 
 
-def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str, path_to_section=[]) -> List[NavImport]:
+def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str, path_to_section: List[str]=None) -> List[NavImport]:
     """Searches through the nav and finds import statements, returning a list of NavImport objects.
     The NavImport object contains, among other things, a reference to the dictionary in the nav that
     allows later updates to this nav entry in place.
     """
     imports: List[NavImport] = []
+    if path_to_section is None:
+        path_to_section = []
     for index, entry in enumerate(nav):
         if isinstance(entry, str):
             continue
         (section, value), = entry.items()
         path_to_section.append(section)
         if type(value) is list:
-            imports += get_import_stmts(value, temp_dir, default_branch)
+            imports += get_import_stmts(value, temp_dir, default_branch, path_to_section)
         elif value.startswith("!import"):
             import_stmt: Dict[str, str] = parse_import(value)
             # slugify the section names and turn them into a valid path string
