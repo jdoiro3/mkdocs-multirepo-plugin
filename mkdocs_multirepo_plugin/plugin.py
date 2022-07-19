@@ -28,6 +28,7 @@ class MultirepoPlugin(BasePlugin):
         ("temp_dir", config_options.Type(str, default="temp_dir")),
         ("repos", config_options.Type(list, default=[])),
         ("url", config_options.Type(str, default=None)),
+        ("extra_imports", config_options.Type(list, default=[])),
         # used when developing in repo that is imported
         ("custom_dir", config_options.Type(str, default=None)),
         ("yml_file", config_options.Type(str, default=None)),
@@ -116,17 +117,21 @@ class MultirepoPlugin(BasePlugin):
             self.repos[repo.name] = repo
         return config
 
-    def handle_repos_based_import(self, config: Config, repos: List[DocsRepo]) -> Config:
+    def handle_repos_based_import(self, config: Config, repos: List[Dict]) -> Config:
         """Imports documentation in other repos based on repos configuration"""
         docs_repo_objs = []
         for repo in repos:
             import_stmt = parse_repo_url(repo.get("import_url"))
             name_slug = slugify(repo.get("section"))
             repo = DocsRepo(
-                name=name_slug, url=import_stmt.get("url"),
-                temp_dir=self.temp_dir, docs_dir=repo.get("docs_dir", "docs/*"),
-                branch=import_stmt.get("branch", DEFAULT_BRANCH), edit_uri=repo.get("edit_uri"),
-                multi_docs=bool(repo.get("multi_docs", False))
+                name=name_slug, 
+                url=import_stmt.get("url"),
+                temp_dir=self.temp_dir, 
+                docs_dir=repo.get("docs_dir", "docs/*"),
+                branch=import_stmt.get("branch", DEFAULT_BRANCH), 
+                edit_uri=repo.get("edit_uri"),
+                multi_docs=bool(repo.get("multi_docs", False)),
+                extra_imports=repo.get("extra_imports", [])
                 )
             docs_repo_objs.append(repo)
         asyncio_run(batch_import(docs_repo_objs))

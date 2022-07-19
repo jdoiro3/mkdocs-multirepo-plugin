@@ -12,23 +12,24 @@ import asyncio
 import tqdm
 import os
 from slugify import slugify
+import ast
 
 
 def is_yaml_file(file: File) -> bool:
-    return os.path.splitext(file.src_path)[1] in (
-        ".yaml",
-        ".yml"
-    )
+    return os.path.splitext(file.src_path)[1] in (".yaml", ".yml")
 
 
 def resolve_nav_paths(nav: List[Dict], section_name: str) -> None:
     """Adds the section_name to the beginning of all paths in a MkDocs nav object"""
     for index, entry in enumerate(nav):
-        (key, value), = entry.items()
-        if type(value) is list:
-            resolve_nav_paths(value, section_name)
-        else:
-            nav[index][key] = str(section_name / Path(value)).replace("\\", "/")
+        if isinstance(entry, str):
+            nav[index] = str(section_name / Path(entry)).replace("\\", "/")
+        elif isinstance(entry, dict):
+            (key, value), = entry.items()
+            if type(value) is list:
+                resolve_nav_paths(value, section_name)
+            else:
+                nav[index][key] = str(section_name / Path(value)).replace("\\", "/")
 
 
 def parse_repo_url(repo_url: str) -> Dict[str, str]:
@@ -50,7 +51,13 @@ def parse_repo_url(repo_url: str) -> Dict[str, str]:
     import_parts = {"url": url}
     for part in query_parts:
         k, v = part.split("=")
-        import_parts[k] = v
+        if v[0] == "[" and v[len(v)-1] == "]":
+            try:
+                import_parts[k] = [lst_v.strip() for lst_v in ast.literal_eval(v)]
+            except ValueError:
+                raise ImportSyntaxError(f"{v} is not a properly formatted python list\nException raised for import statement: {repo_url}")
+        else:
+            import_parts[k] = v
     return import_parts
 
 
@@ -95,7 +102,7 @@ class NavImport:
         raise ValueError(f"new_val must be either a list or a str, not {type(new_val)}")
 
 
-def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str, path_to_section: List[str]=None) -> List[NavImport]:
+def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str, path_to_section: List[str] = None) -> List[NavImport]:
     """Searches through the nav and finds import statements, returning a list of NavImport objects.
     The NavImport object contains, among other things, a reference to the dictionary in the nav that
     allows later updates to this nav entry in place.
@@ -119,7 +126,8 @@ def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str, path_
                         temp_dir=temp_dir, docs_dir=import_stmt.get("docs_dir", "docs/*"),
                         branch=import_stmt.get("branch", default_branch),
                         multi_docs=bool(import_stmt.get("multi_docs", False)),
-                        config=import_stmt.get("config", "mkdocs.yml")
+                        config=import_stmt.get("config", "mkdocs.yml"),
+                        extra_imports=import_stmt.get("extra_imports", [])
                     )
             imports.append(NavImport(section, nav[index], repo))
             path_to_section.pop()
@@ -205,13 +213,20 @@ class DocsRepo(Repo):
         config (str): The filename and extension for the yaml configuration file. Default is "mkdocs.yml".
         multi_docs (bool): If this is True, it means the repo has multiple docs directories that the user
                             wants to be pulled into the site.
+        extra_imports (list): Extra directories to import along with the docs
     """
 
     def __init__(
-        self, name: str, url: str, temp_dir: Path,
-        docs_dir: str = "docs/*", branch: str = "main",
-        edit_uri: str = None, multi_docs: bool = False,
-        config: str = "mkdocs.yml"
+        self, 
+        name: str,
+        url: str,
+        temp_dir: Path,
+        docs_dir: str = "docs/*",
+        branch: str = "main",
+        edit_uri: str = None,
+        multi_docs: bool = False,
+        config: str = "mkdocs.yml",
+        extra_imports: List[str] = []
     ):
         super().__init__(name, url, branch, temp_dir)
         self.docs_dir = docs_dir
@@ -219,6 +234,7 @@ class DocsRepo(Repo):
         self.multi_docs = multi_docs
         self.src_path_map = {}
         self.config = config
+        self.extra_imports = extra_imports
 
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
@@ -281,10 +297,10 @@ class DocsRepo(Repo):
                 docs_dir = "docs"
             else:
                 docs_dir = self.docs_dir
-            await self.sparse_clone([docs_dir, self.config])
+            await self.sparse_clone([docs_dir, self.config] + self.extra_imports)
             self.transform_docs_dir()
         else:
-            await self.sparse_clone([self.docs_dir, self.config])
+            await self.sparse_clone([self.docs_dir, self.config] + self.extra_imports)
             await execute_bash_script("mv_docs_up.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
         return self
 
