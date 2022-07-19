@@ -124,11 +124,11 @@ class MultirepoPlugin(BasePlugin):
             import_stmt = parse_repo_url(repo.get("import_url"))
             name_slug = slugify(repo.get("section"))
             repo = DocsRepo(
-                name=name_slug, 
+                name=name_slug,
                 url=import_stmt.get("url"),
-                temp_dir=self.temp_dir, 
+                temp_dir=self.temp_dir,
                 docs_dir=repo.get("docs_dir", "docs/*"),
-                branch=import_stmt.get("branch", DEFAULT_BRANCH), 
+                branch=import_stmt.get("branch", DEFAULT_BRANCH),
                 edit_uri=repo.get("edit_uri"),
                 multi_docs=bool(repo.get("multi_docs", False)),
                 extra_imports=repo.get("extra_imports", [])

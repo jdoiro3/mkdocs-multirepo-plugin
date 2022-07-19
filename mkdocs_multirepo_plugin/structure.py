@@ -55,7 +55,9 @@ def parse_repo_url(repo_url: str) -> Dict[str, str]:
             try:
                 import_parts[k] = [lst_v.strip() for lst_v in ast.literal_eval(v)]
             except ValueError:
-                raise ImportSyntaxError(f"{v} is not a properly formatted python list\nException raised for import statement: {repo_url}")
+                raise ImportSyntaxError(
+                    f"{v} is not a properly formatted python list\nException raised for import statement: {repo_url}"
+                    )
         else:
             import_parts[k] = v
     return import_parts
@@ -102,7 +104,9 @@ class NavImport:
         raise ValueError(f"new_val must be either a list or a str, not {type(new_val)}")
 
 
-def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str, path_to_section: List[str] = None) -> List[NavImport]:
+def get_import_stmts(
+    nav: List[Dict], temp_dir: Path, default_branch: str, path_to_section: List[str] = None
+        ) -> List[NavImport]:
     """Searches through the nav and finds import statements, returning a list of NavImport objects.
     The NavImport object contains, among other things, a reference to the dictionary in the nav that
     allows later updates to this nav entry in place.
@@ -135,7 +139,7 @@ def get_import_stmts(nav: List[Dict], temp_dir: Path, default_branch: str, path_
             path_to_section.pop()
     try:
         path_to_section.pop()
-    except:
+    except IndexError:
         pass
     return imports
 
@@ -217,7 +221,7 @@ class DocsRepo(Repo):
     """
 
     def __init__(
-        self, 
+        self,
         name: str,
         url: str,
         temp_dir: Path,
