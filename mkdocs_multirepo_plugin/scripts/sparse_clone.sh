@@ -9,7 +9,7 @@ dirs=( "$@" )
 if [[ -n  "$AccessToken" ]]; then
     git config http.extraheader "AUTHORIZATION: bearer $AccessToken"
 fi
-git clone --branch "$branch" --no-cone --depth 1 --filter=blob:none --sparse $url "$docs_dir" || exit 1
+git clone --branch "$branch" --depth 1 --filter=blob:none --sparse $url "$docs_dir" || exit 1
 cd "$docs_dir"
-git sparse-checkout set ${dirs[*]}
+git sparse-checkout --no-cone set ${dirs[*]}
 rm -rf .git
