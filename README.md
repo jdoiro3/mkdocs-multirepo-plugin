@@ -208,6 +208,10 @@ Writers can now run `mkdocs serve` within their local repo, using the main site'
 
 ![site image](assets/backstage-material-theme.png)
 
+## Examples
+
+- [Multirepo with Mcdocstrings](./examples/mcdocstrings)
+
 ## Running Tests
 
 Tests were modeled off of [mkdocs-monorepo-plugin](https://github.com/backstage/mkdocs-monorepo-plugin/blob/master/docs/CONTRIBUTING.md). To run the test suite you'll need:
