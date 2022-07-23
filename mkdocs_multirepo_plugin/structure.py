@@ -171,7 +171,7 @@ class Repo:
 
     async def sparse_clone(self, dirs: List[str]) -> Tuple[str, str]:
         """sparse clones a Git repo asynchronously"""
-        args = [self.url, self.name, self.branch] + dirs
+        args = [self.url, self.name, self.branch] + ["--no-cone"] + dirs
         if git_supports_sparse_clone():
             stdout = await execute_bash_script("sparse_clone.sh", args, self.temp_dir)
         else:
