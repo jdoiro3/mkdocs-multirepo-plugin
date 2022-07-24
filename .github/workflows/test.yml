@@ -52,8 +52,6 @@ jobs:
           make all
           sudo make install
           git --version
-      - name: Unittests
-        run: sudo python3 -m unittest tests.unittests -v
       - name: Install Bats
         run: ./__tests__/setup-bats.sh
       - name: Install Python dependencies
