@@ -57,6 +57,7 @@ The plugin introduces the *!import* statement in your config's *nav* section. Yo
   - **docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
   - **multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
   - **config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
+  - **extra_imports=["{filename | path | glob}"]**: Use this if you want to import additional directories or files along with the docs.
 
 </details>
 
