@@ -30,7 +30,6 @@ class MultirepoPlugin(BasePlugin):
         ("temp_dir", config_options.Type(str, default="temp_dir")),
         ("repos", config_options.Type(list, default=[])),
         ("url", config_options.Type(str, default=None)),
-        ("extra_imports", config_options.Type(list, default=[])),
         # used when developing in repo that is imported
         ("custom_dir", config_options.Type(str, default=None)),
         ("yml_file", config_options.Type(str, default=None)),
