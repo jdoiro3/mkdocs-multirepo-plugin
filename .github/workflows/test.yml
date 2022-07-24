@@ -51,8 +51,8 @@ jobs:
           cd git-${{ matrix.git-version }}
           make configure
           ./configure --prefix=/usr
-          make all info
-          sudo make install install-doc install-html install-info
+          make all
+          sudo make install
           git --version
       - name: Install Bats
         run: ./__tests__/setup-bats.sh
