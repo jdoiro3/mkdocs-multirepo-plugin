@@ -29,7 +29,7 @@ jobs:
 
   integration-tests:
     needs: unit-tests
-    name: Integration Tests on Python ${{ matrix.python-version }} and Git ${{ matrix.git-version }}
+    name: Python ${{ matrix.python-version }} and Git ${{ matrix.git-version }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -43,7 +43,7 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Git from Source
+      - name: Install Git ${{ matrix.git-version }} from Source
         run: |
           sudo apt-get install -y dh-autoreconf libcurl4-gnutls-dev libexpat1-dev gettext libz-dev libssl-dev install-info unzip
           sudo apt-get -y install docbook2x
@@ -51,7 +51,7 @@ jobs:
           cd git-${{ matrix.git-version }}
           make configure
           ./configure --prefix=/usr
-          make all doc info
+          make all info
           sudo make install install-doc install-html install-info
           git --version
       - name: Install Bats
