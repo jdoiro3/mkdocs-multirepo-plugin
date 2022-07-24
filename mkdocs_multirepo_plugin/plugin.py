@@ -20,6 +20,8 @@ from slugify import slugify
 IMPORT_STATEMENT = "!import"
 DEFAULT_BRANCH = "master"
 
+class ReposSectionException(Exception):
+    pass
 
 class MultirepoPlugin(BasePlugin):
 
@@ -122,16 +124,20 @@ class MultirepoPlugin(BasePlugin):
         docs_repo_objs = []
         for repo in repos:
             import_stmt = parse_repo_url(repo.get("import_url"))
+            if set(repo.keys()).difference({"import_url", "section"}) != set():
+                raise ReposSectionException(
+                    "Repos section now only supports 'import_url' and 'section'. All other config values should use the nav import url config (i.e., [url]?[key]=[value])"
+                    )
             name_slug = slugify(repo.get("section"))
             repo = DocsRepo(
                 name=name_slug,
                 url=import_stmt.get("url"),
                 temp_dir=self.temp_dir,
-                docs_dir=repo.get("docs_dir", "docs/*"),
+                docs_dir=import_stmt.get("docs_dir", "docs/*"),
                 branch=import_stmt.get("branch", DEFAULT_BRANCH),
-                edit_uri=repo.get("edit_uri"),
-                multi_docs=bool(repo.get("multi_docs", False)),
-                extra_imports=repo.get("extra_imports", [])
+                edit_uri=import_stmt.get("edit_uri"),
+                multi_docs=bool(import_stmt.get("multi_docs", False)),
+                extra_imports=import_stmt.get("extra_imports", [])
                 )
             docs_repo_objs.append(repo)
         asyncio_run(batch_import(docs_repo_objs))
