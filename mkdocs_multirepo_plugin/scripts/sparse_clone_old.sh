@@ -7,7 +7,7 @@ shift 3
 dirs=( "$@" )
 
 
-mkdir "$docs_dir" # make the section directory
+mkdir -p "$docs_dir" # make the section directory
 cd "$docs_dir"
 # initialize git
 git init
