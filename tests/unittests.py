@@ -159,7 +159,14 @@ class TestStructure(BaseCase):
             (f"{base_url}?branch=main&multi_docs=true", {"url": base_url, "branch": "main", "multi_docs": "true"}),
             (f"{base_url}?multi_docs=false&branch=main", {"url": base_url, "multi_docs": "false", "branch": "main"}),
             (f"{base_url}?docs_dir=fldr/docs/*", {"url": base_url, "docs_dir": "fldr/docs/*"}),
-            (f"{base_url}?multi_docs=false&branch=main&config=multirepo.yml", {"url": base_url, "multi_docs": "false", "branch": "main", "config": "multirepo.yml"}),
+            (
+                f"{base_url}?multi_docs=false&branch=main&config=multirepo.yml", 
+                {"url": base_url, "multi_docs": "false", "branch": "main", "config": "multirepo.yml"}
+                ),
+            (
+                f'{base_url}?multi_docs=false&branch=main&config=multirepo.yml&extra_imports=["README.md", "src/*"]', 
+                {"url": base_url, "multi_docs": "false", "branch": "main", "config": "multirepo.yml", "extra_imports": ["README.md", "src/*"]}
+                ),
         ]
         for case in repo_url_cases:
             parsed_url = structure.parse_repo_url(case[0])
@@ -241,6 +248,31 @@ class TestStructure(BaseCase):
                     temp_dir_path
                 )
                 yml_dict = repo.load_config("")
+
+    async def test_extra_imports(self):
+        async with tempfile.TemporaryDirectory() as temp_dir:
+            temp_dir_path = pathlib.Path(temp_dir)
+            docsRepo = structure.DocsRepo(
+                name="test-repo",
+                url="https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1",
+                temp_dir=temp_dir_path,
+                docs_dir="docs/*",
+                branch="main",
+                edit_uri="/test",
+                multi_docs=False,
+                extra_imports=["src/*"]
+                )
+            await docsRepo.import_docs()
+            expected_files = [
+                docsRepo.location / file for file in
+                ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
+                ]
+            expected_src_files = [
+                docsRepo.location / "src" / file for file in
+                ["script.py"]
+                ]
+            for file in expected_files + expected_src_files:
+                self.assertFileExists(file)
 
 
 if __name__ == '__main__':

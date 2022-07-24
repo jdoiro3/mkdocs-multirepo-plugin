@@ -94,23 +94,17 @@ plugins:
       cleanup: true
       repos:
         - section: Backstage
-          import_url: 'https://github.com/backstage/backstage'
           # you can define the edit uri path
-          edit_uri: /blob/master/
+          import_url: 'https://github.com/backstage/backstage?edit_uri=/blob/master/'
         - section: Monorepo
-          import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
-          edit_uri: /blob/master/
+          import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin?edit_uri=/blob/master/'
         - section: 'Techdocs-cli'
           # note that the branch is still specified in the url
-          import_url: 'https://github.com/backstage/techdocs-cli?branch=main'
-          edit_uri: /blob/main/
+          import_url: 'https://github.com/backstage/techdocs-cli?branch=main&edit_uri=/blob/main/'
         - section: FastAPI
-          import_url: 'https://github.com/tiangolo/fastapi'
-          docs_dir: docs/en/docs/* # glob
+          import_url: 'https://github.com/tiangolo/fastapi?docs_dir=docs/en/docs/*'
         - section: Monorepo Multi Docs
-          import_url: https://github.com/backstage/mkdocs-monorepo-plugin
-          multi_docs: True
-          docs_dir: sample-docs/* # glob
+          import_url: https://github.com/backstage/mkdocs-monorepo-plugin?multi_docs=True&docs_dir=sample-docs/*
         - section: 'Django REST'
           import_url: 'https://github.com/encode/django-rest-framework'
         - section: 'Cookiecutter Pypackage'
