@@ -18,8 +18,6 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: '3.8'
-      - name: Install Git
-        run: sudo apt-get install git
       - name: Install Python dependencies
         run: sudo ./__tests__/setup-pip.sh
       - name: Linter
@@ -29,12 +27,13 @@ jobs:
 
   integration-tests:
     needs: unit-tests
-    name: Integration Tests on Python ${{ matrix.python-version }}
+    name: Python ${{ matrix.python-version }} and Git ${{ matrix.git-version }}
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         python-version: [3, 3.6, 3.7, 3.8]
+        git-version: [2.17.0, 2.35.0, 2.37.1]
 
     steps:
       - uses: actions/checkout@v3
@@ -42,6 +41,17 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install Git ${{ matrix.git-version }} from Source
+        run: |
+          sudo apt-get install -y dh-autoreconf libcurl4-gnutls-dev libexpat1-dev gettext libz-dev libssl-dev install-info unzip
+          sudo apt-get -y install docbook2x
+          wget https://github.com/git/git/archive/refs/tags/v${{ matrix.git-version }}.zip && unzip v${{ matrix.git-version }}.zip
+          cd git-${{ matrix.git-version }}
+          make configure
+          ./configure --prefix=/usr
+          make all
+          sudo make install
+          git --version
       - name: Install Bats
         run: ./__tests__/setup-bats.sh
       - name: Install Python dependencies

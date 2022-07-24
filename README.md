@@ -57,6 +57,7 @@ The plugin introduces the *!import* statement in your config's *nav* section. Yo
   - **docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
   - **multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
   - **config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
+  - **extra_imports=["{filename | path | glob}"]**: Use this if you want to import additional directories or files along with the docs.
 
 </details>
 
@@ -94,23 +95,17 @@ plugins:
       cleanup: true
       repos:
         - section: Backstage
-          import_url: 'https://github.com/backstage/backstage'
           # you can define the edit uri path
-          edit_uri: /blob/master/
+          import_url: 'https://github.com/backstage/backstage?edit_uri=/blob/master/'
         - section: Monorepo
-          import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin'
-          edit_uri: /blob/master/
+          import_url: 'https://github.com/backstage/mkdocs-monorepo-plugin?edit_uri=/blob/master/'
         - section: 'Techdocs-cli'
           # note that the branch is still specified in the url
-          import_url: 'https://github.com/backstage/techdocs-cli?branch=main'
-          edit_uri: /blob/main/
+          import_url: 'https://github.com/backstage/techdocs-cli?branch=main&edit_uri=/blob/main/'
         - section: FastAPI
-          import_url: 'https://github.com/tiangolo/fastapi'
-          docs_dir: docs/en/docs/* # glob
+          import_url: 'https://github.com/tiangolo/fastapi?docs_dir=docs/en/docs/*'
         - section: Monorepo Multi Docs
-          import_url: https://github.com/backstage/mkdocs-monorepo-plugin
-          multi_docs: True
-          docs_dir: sample-docs/* # glob
+          import_url: https://github.com/backstage/mkdocs-monorepo-plugin?multi_docs=True&docs_dir=sample-docs/*
         - section: 'Django REST'
           import_url: 'https://github.com/encode/django-rest-framework'
         - section: 'Cookiecutter Pypackage'
@@ -207,6 +202,10 @@ Writers can now run `mkdocs serve` within their local repo, using the main site'
 ![imported repo serve example](assets/imported-repo-serve.gif)
 
 ![site image](assets/backstage-material-theme.png)
+
+## Examples
+
+- [Multirepo with Mcdocstrings](./examples/mcdocstrings)
 
 ## Running Tests
 

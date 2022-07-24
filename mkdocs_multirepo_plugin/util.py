@@ -28,6 +28,9 @@ class GitException(Exception):
 class ImportSyntaxError(Exception):
     pass
 
+class BashException(Exception):
+    pass
+
 
 def get_src_path_root(src_path: str) -> str:
     """returns the root directory of a path (represented as a string)"""
@@ -119,7 +122,7 @@ async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Pat
     stdout, stderr = await process.communicate()
     stdout, stderr = stdout.decode(), stderr.decode()
     if process.returncode == 1:
-        raise GitException(f"\n{stderr}\n")
+        raise BashException(f"\n{stderr}\n")
     return stdout
 
 
