@@ -190,7 +190,6 @@ class MultirepoPlugin(BasePlugin):
                         continue
                     for key in self.repos.keys():
                         if f.src_path.startswith(key):
-                            repo = self.repos.get(key)
                             f.page.edit_url = self.repos.get(key).get_edit_url(f.src_path, len(Path(key).parts))
                             break
                         
