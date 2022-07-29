@@ -30,6 +30,7 @@ class MultirepoPlugin(BasePlugin):
         ("temp_dir", config_options.Type(str, default="temp_dir")),
         ("repos", config_options.Type(list, default=[])),
         ("url", config_options.Type(str, default=None)),
+        ("deep_nav_imports", config_options.Type(bool, default=False)),
         # used when developing in repo that is imported
         ("custom_dir", config_options.Type(str, default=None)),
         ("yml_file", config_options.Type(str, default=None)),
@@ -183,12 +184,23 @@ class MultirepoPlugin(BasePlugin):
         if self.config.get("imported_repo"):
             return nav
         else:
-            for f in files:
-                root_src_path = get_src_path_root(f.src_path)
-                if root_src_path in self.repos and f.page:
-                    repo = self.repos.get(root_src_path)
-                    f.page.edit_url = repo.get_edit_url(f.src_path)
-            return nav
+            if self.config.get("deep_nav_imports"):
+                for f in files:
+                    if not f.page:
+                        continue
+                    for key in self.repos.keys():
+                        if f.src_path.startswith(key):
+                            repo = self.repos.get(key)
+                            f.page.edit_url = self.repos.get(key).get_edit_url(f.src_path, len(Path(key).parts))
+                            break
+                        
+            else:
+                for f in files:
+                    root_src_path = get_src_path_root(f.src_path)
+                    if root_src_path in self.repos and f.page:
+                        repo = self.repos.get(root_src_path)
+                        f.page.edit_url = repo.get_edit_url(f.src_path)
+                return nav
 
     def on_post_build(self, config: Config) -> None:
         if self.config.get("imported_repo"):

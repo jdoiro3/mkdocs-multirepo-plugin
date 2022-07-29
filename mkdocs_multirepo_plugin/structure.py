@@ -259,8 +259,8 @@ class DocsRepo(Repo):
             (self.config == other.config)
         )
 
-    def get_edit_url(self, src_path):
-        src_path = remove_parents(src_path, 1)
+    def get_edit_url(self, src_path, depth : int = 1):
+        src_path = remove_parents(src_path, depth)
         if self.multi_docs:
             parent_path = str(Path(src_path).parent).replace("\\", "/")
             if parent_path in self.src_path_map:

@@ -203,6 +203,23 @@ Writers can now run `mkdocs serve` within their local repo, using the main site'
 
 ![site image](assets/backstage-material-theme.png)
 
+### α Deep Navigation Imports
+
+```yaml
+  plugins:
+    - multirepo:
+        deep_nav_imports: true
+```
+
+This toggle allows for `!import` statements to be placed in deeper levels of nav. Slightly less performant on build.
+
+```yaml
+nav:
+  - Home: 'index.md'
+  - Category: 
+    - Subcategory:
+      - MyImportedDocs: '!import ...'
+```
 ## Examples
 
 - [Multirepo with Mcdocstrings](./examples/mcdocstrings)
