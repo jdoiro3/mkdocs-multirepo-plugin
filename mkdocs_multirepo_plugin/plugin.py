@@ -20,6 +20,8 @@ from slugify import slugify
 IMPORT_STATEMENT = "!import"
 DEFAULT_BRANCH = "master"
 
+class ReposSectionException(Exception):
+    pass
 
 class ReposSectionException(Exception):
     pass

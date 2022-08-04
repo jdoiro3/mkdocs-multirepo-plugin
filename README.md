@@ -9,7 +9,7 @@
 
 Build documentation in multiple repos into one site.
 
-[Buy me a 🍺](https://www.buymeacoffee.com/jdoiro)
+If you like this plugin and want me to continue maintaining it in my free time, please [buy me a 🍺](https://www.buymeacoffee.com/jdoiro)!
 
 ## Features
 
