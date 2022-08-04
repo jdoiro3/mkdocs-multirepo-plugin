@@ -33,7 +33,7 @@ jobs:
           printf "flake8 count for max-complexity=10: "
           poetry run flake8 ./mkdocs_multirepo_plugin --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Unittests
-        run: sudo python3 -m unittest tests.unittests -v
+        run: sudo poetry run python3 -m unittest tests.unittests -v
 
   integration-tests:
     needs: unit-tests
