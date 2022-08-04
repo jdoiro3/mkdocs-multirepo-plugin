@@ -28,6 +28,7 @@ class GitException(Exception):
 class ImportSyntaxError(Exception):
     pass
 
+
 class BashException(Exception):
     pass
 

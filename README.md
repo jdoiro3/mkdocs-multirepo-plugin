@@ -207,7 +207,18 @@ Writers can now run `mkdocs serve` within their local repo, using the main site'
 
 - [Multirepo with Mcdocstrings](./examples/mcdocstrings)
 
-## Running Tests
+## Contributing
+
+You'll need to install [Poetry](https://python-poetry.org) and Git to contribute and run tests locally.
+
+### Setup
+
+> Assumes you have `poetry` installed and in your path
+
+```> poetry install```
+```> poetry shell```
+
+### Running Tests
 
 Tests were modeled off of [mkdocs-monorepo-plugin](https://github.com/backstage/mkdocs-monorepo-plugin/blob/master/docs/CONTRIBUTING.md). To run the test suite you'll need:
 
@@ -230,7 +241,6 @@ $ PYTHON_37_ONLY=1 ./__tests__/test.sh
 ### Unit Testing
 
 ```
-$ pip install -r requirements.txt
-$ python -m unittest tests.unittests
+$ python[3] -m unittest tests.unittests
 ```
 

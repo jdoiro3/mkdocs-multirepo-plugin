@@ -3,22 +3,32 @@ from aiofiles import tempfile
 import pathlib
 import subprocess
 import sys
+import os
 from pathlib import Path
+from shutil import copy
+import stat
+from mkdocs_multirepo_plugin import util
+from mkdocs_multirepo_plugin import structure
 
-try:
-    from mkdocs_multirepo_plugin import util
-    from mkdocs_multirepo_plugin import structure
-except ModuleNotFoundError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "."])
-    from mkdocs_multirepo_plugin import util
-    from mkdocs_multirepo_plugin import structure
+SCRIPTS_DIR = Path.cwd() / "mkdocs_multirepo_plugin" / "scripts"
+PYTHON_BIN = Path(sys.executable).parent
+scripts = list(SCRIPTS_DIR.iterdir())
 
 class BaseCase(unittest.IsolatedAsyncioTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        # move the script files to python bin
+        for script in scripts:
+            new_script = copy(script, PYTHON_BIN)
+            # make executable by all
+            file_stat = os.stat(new_script)
+            os.chmod(new_script, file_stat.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
     def assertDirExists(self, dir: pathlib.Path):
         if not dir.is_dir():
             contents = []
-            for p in dir.parent.parent.rglob("*"):
+            for p in dir.parent.rglob("*"):
                 contents.append(p)
             raise AssertionError(f"Directory {str(dir)} doesn't exist.\nContents of {dir.parent.parent} are:\n{contents}")
 
