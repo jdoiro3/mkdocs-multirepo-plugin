@@ -64,9 +64,9 @@ jobs:
           git --version
       - name: Install Bats
         run: ./__tests__/setup-bats.sh
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      - name: Install Python dependencies
-        run: poetry install
+      - name: Install Package and Integration Test Deps
+        run: |
+          pip install .
+          pip install -r integration-requirements.txt
       - name: Integration Tests
         run: ./__tests__/test-bats-ci.sh
