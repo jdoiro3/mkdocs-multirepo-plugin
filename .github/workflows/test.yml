@@ -70,8 +70,7 @@ jobs:
           virtualenvs-in-project: true
       - name: Install Package and Integration Test Deps
         run: |
-          poetry build -f wheel
-          pip install dist/*
+          pip install .
           pip install -r integration-requirements.txt
       - name: Integration Tests
         run: ./__tests__/test-bats-ci.sh
