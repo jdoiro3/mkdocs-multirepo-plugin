@@ -17,9 +17,6 @@ aiofiles = {version = "*", python = ">=3.6,<4.0"}
 flake8 = {version = "*", python = ">=3.6.1"}
 mkdocs-material = {version = "*", python = ">=3.7"}
 
-[project.entry-points."mkdocs.plugins"]
-multirepo = "mkdocs_multirepo_plugin.plugin:MultirepoPlugin"
-
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

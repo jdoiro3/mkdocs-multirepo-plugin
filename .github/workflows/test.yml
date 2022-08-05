@@ -70,6 +70,7 @@ jobs:
           virtualenvs-in-project: true
       - name: Install Package and Integration Test Deps
         run: |
+          rm -f pyproject.toml
           pip install .
           pip install -r integration-requirements.txt
       - name: Integration Tests
