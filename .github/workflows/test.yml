@@ -68,6 +68,7 @@ jobs:
         uses: snok/install-poetry@v1
       - name: Install Package and Integration Test Deps
         run: |
+          poetry config virtualenvs.in-project true
           poetry build -f wheel
           pip install dist/*
           pip install -r integration-requirements.txt
