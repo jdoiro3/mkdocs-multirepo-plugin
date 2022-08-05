@@ -23,9 +23,6 @@ DEFAULT_BRANCH = "master"
 class ReposSectionException(Exception):
     pass
 
-class ReposSectionException(Exception):
-    pass
-
 
 class MultirepoPlugin(BasePlugin):
 
