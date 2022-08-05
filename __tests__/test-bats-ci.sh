@@ -4,7 +4,6 @@
 GITHUB_ACTIONS_E2E_PATH="/home/runner/work/mkdocs-multirepo-plugin/mkdocs_multirepo_plugin/__tests__/test.bats"
 LOCAL_E2E_PATH="./__tests__/test.bats"
 
-pip freeze
 if [[ -f "$GITHUB_ACTIONS_E2E_PATH" ]]; then
     bats $GITHUB_ACTIONS_E2E_PATH
 elif [[ -f "$LOCAL_E2E_PATH" ]]; then
