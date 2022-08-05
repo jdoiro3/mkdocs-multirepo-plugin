@@ -69,6 +69,8 @@ jobs:
         with:
           virtualenvs-in-project: true
       - name: Install Package and Integration Test Deps
+        # we need to to install the package with setup.py for mkdocs to be able to access
+        # the plugin
         run: |
           rm -f pyproject.toml
           pip install .
