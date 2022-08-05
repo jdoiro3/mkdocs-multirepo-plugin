@@ -71,6 +71,5 @@ jobs:
           poetry build -f wheel
           pip install dist/*
           pip install -r integration-requirements.txt
-          pip install .
       - name: Integration Tests
         run: ./__tests__/test-bats-ci.sh

@@ -5,9 +5,9 @@ GITHUB_ACTIONS_E2E_PATH="/home/runner/work/mkdocs-multirepo-plugin/mkdocs_multir
 LOCAL_E2E_PATH="./__tests__/test.bats"
 
 if [[ -f "$GITHUB_ACTIONS_E2E_PATH" ]]; then
-    poetry run bats $GITHUB_ACTIONS_E2E_PATH
+    bats $GITHUB_ACTIONS_E2E_PATH
 elif [[ -f "$LOCAL_E2E_PATH" ]]; then
-    poetry run bats $LOCAL_E2E_PATH
+    bats $LOCAL_E2E_PATH
 else
     echo "Could not find the test.bats file. Please check /__tests__/test-ci.sh and correct the paths."
     exit 1
