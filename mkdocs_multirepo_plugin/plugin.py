@@ -23,6 +23,7 @@ DEFAULT_BRANCH = "master"
 class ReposSectionException(Exception):
     pass
 
+
 class MultirepoPlugin(BasePlugin):
 
     config_scheme = (
@@ -125,7 +126,8 @@ class MultirepoPlugin(BasePlugin):
             import_stmt = parse_repo_url(repo.get("import_url"))
             if set(repo.keys()).difference({"import_url", "section"}) != set():
                 raise ReposSectionException(
-                    "Repos section now only supports 'import_url' and 'section'. All other config values should use the nav import url config (i.e., [url]?[key]=[value])"
+                    "Repos section now only supports 'import_url' and 'section'. \
+                     All other config values should use the nav import url config (i.e., [url]?[key]=[value])"
                     )
             name_slug = slugify(repo.get("section"))
             repo = DocsRepo(

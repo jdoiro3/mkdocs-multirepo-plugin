@@ -1,9 +1,4 @@
 ##
-# Install the mkdocs-multirepo-plugin locally on test run.
-#
-pip install -e . --quiet >&2
-
-##
 # These are helper variables and functions written in Bash. It's like writing in your Terminal!
 # Feel free to optimize these, or even run them in your own Terminal.
 #

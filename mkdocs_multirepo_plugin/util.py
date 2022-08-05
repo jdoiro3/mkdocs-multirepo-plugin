@@ -32,6 +32,10 @@ class BashException(Exception):
     pass
 
 
+class BashException(Exception):
+    pass
+
+
 def get_src_path_root(src_path: str) -> str:
     """returns the root directory of a path (represented as a string)"""
     if "\\" in src_path:
