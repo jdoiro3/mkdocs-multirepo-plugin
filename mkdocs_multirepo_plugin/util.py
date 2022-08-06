@@ -8,7 +8,6 @@ from mkdocs.utils import warning_filter
 from collections import namedtuple
 from re import search
 import os
-import time
 
 # used for getting Git version
 GitVersion = namedtuple("GitVersion", "major minor")
@@ -27,9 +26,6 @@ class GitException(Exception):
 
 
 class ImportSyntaxError(Exception):
-    pass
-
-class BashException(Exception):
     pass
 
 
@@ -143,6 +139,7 @@ def asyncio_run(futures) -> None:
     else:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(futures)
+
 
 class ProgressList:
 

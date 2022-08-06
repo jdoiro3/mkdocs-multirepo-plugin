@@ -5,10 +5,10 @@ from pathlib import Path
 from mkdocs.utils import yaml_load
 from mkdocs.structure.files import File
 from .util import (
-    ImportDocsException, 
+    ImportDocsException,
     git_supports_sparse_clone,
-    remove_parents, 
-    execute_bash_script, 
+    remove_parents,
+    execute_bash_script,
     ImportSyntaxError,
     ProgressList
 )

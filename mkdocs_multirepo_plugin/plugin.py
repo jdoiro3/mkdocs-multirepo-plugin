@@ -25,6 +25,7 @@ if is_windows():
 IMPORT_STATEMENT = "!import"
 DEFAULT_BRANCH = "master"
 
+
 class ReposSectionException(Exception):
     pass
 
