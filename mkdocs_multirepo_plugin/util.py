@@ -28,12 +28,15 @@ class GitException(Exception):
 class ImportSyntaxError(Exception):
     pass
 
+
 class BashException(Exception):
     pass
 
 
-class BashException(Exception):
-    pass
+def is_windows():
+    if platform not in LINUX_LIKE_PLATFORMS:
+        return True
+    return False
 
 
 def get_src_path_root(src_path: str) -> str:
@@ -136,3 +139,28 @@ def asyncio_run(futures) -> None:
     else:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(futures)
+
+
+class ProgressList:
+
+    def __init__(self, labels):
+        self._labels = labels
+        self._labels_map = {
+            label: i for i, label in enumerate(self._labels)
+        }
+        self._num_items = len(self._labels)
+        for label in self._labels:
+            print(f"🔳 {label}")
+
+    def index(self, label):
+        return self._labels_map.get(label)
+
+    def mark_completed(self, label, duration=""):
+        i = self.index(label)
+        num_items = self._num_items
+        update_line = f"\033[{num_items - i}A"
+        back_to_bottom = f"\033[{num_items - i - 1}B"
+        if i == num_items - 1:
+            print(f"{update_line}✅ {label} ({duration} secs)")
+        else:
+            print(f"{update_line}✅ {label} ({duration} secs){back_to_bottom}")

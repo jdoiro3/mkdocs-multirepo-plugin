@@ -5,14 +5,18 @@ from pathlib import Path
 from mkdocs.utils import yaml_load
 from mkdocs.structure.files import File
 from .util import (
-    ImportDocsException, git_supports_sparse_clone,
-    remove_parents, execute_bash_script, ImportSyntaxError
+    ImportDocsException,
+    git_supports_sparse_clone,
+    remove_parents,
+    execute_bash_script,
+    ImportSyntaxError,
+    ProgressList
 )
 import asyncio
-import tqdm
 import os
 from slugify import slugify
 import ast
+import time
 
 
 def is_yaml_file(file: File) -> bool:
@@ -320,9 +324,8 @@ async def batch_import(repos: List[DocsRepo]) -> None:
     """Given a list of DocRepo instances, performs a batch import asynchronously"""
     if not repos:
         return None
-    longest_desc = max([len(f"✅ Got {repo.name} Docs") for repo in repos])
-    progress_bar = tqdm.tqdm(total=len(repos), desc=" "*longest_desc)
+    progress_list = ProgressList([repo.name for repo in repos])
+    start = time.time()
     for import_async in asyncio.as_completed([repo.import_docs() for repo in repos]):
         repo = await import_async
-        progress_bar.set_description(f"✅ Got {repo.name} Docs".ljust(longest_desc))
-        progress_bar.update()
+        progress_list.mark_completed(repo.name, round(time.time() - start, 3))

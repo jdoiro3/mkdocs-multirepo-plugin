@@ -9,7 +9,7 @@ from .structure import (
     )
 from .util import (
     ImportDocsException, log, get_src_path_root,
-    asyncio_run
+    asyncio_run, is_windows
 )
 from pathlib import Path
 from copy import deepcopy
@@ -17,8 +17,14 @@ import shutil
 import tempfile
 from slugify import slugify
 
+if is_windows():
+    # allow for ASCII escape codes to be used in terminal
+    import os
+    os.system()
+
 IMPORT_STATEMENT = "!import"
 DEFAULT_BRANCH = "master"
+
 
 class ReposSectionException(Exception):
     pass
