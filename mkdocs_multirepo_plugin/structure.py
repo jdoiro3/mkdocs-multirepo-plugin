@@ -13,7 +13,6 @@ from .util import (
     ProgressList
 )
 import asyncio
-import tqdm
 import os
 from slugify import slugify
 import ast

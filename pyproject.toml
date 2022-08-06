@@ -9,7 +9,6 @@ license = "MIT"
 [tool.poetry.dependencies]
 mkdocs = {version = ">=1.0.4", python = ">=3.6"}
 asyncio = "*"
-tqdm = "*"
 python-slugify = {version = "*", python = ">=2.7,<2.8 || >=3.6.0"}
 
 [tool.poetry.dev-dependencies]
