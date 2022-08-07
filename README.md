@@ -199,7 +199,7 @@ plugins:
 
 Writers can now run `mkdocs serve` within their local repo, using the main site's configuration, custom theming and features. This means all development is distributed, without technical writers having to switch repos.
 
-![imported repo serve example](assets/imported-repo-serve.gif)
+> Backstage with Material theme
 
 ![site image](assets/backstage-material-theme.png)
 
