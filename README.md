@@ -116,7 +116,7 @@ plugins:
 
 Once you're done configuring, run either `mkdocs serve` or `mkdocs build`. This will `import` the docs into a temporary directory and build the site.
 
-![example gif](assets/example.gif)
+![mkdocs-multirepo-plugin-demo](https://user-images.githubusercontent.com/57968347/183310333-07576062-d4e0-47d1-ac2c-9b682fea8b4e.gif)
 
 ## Additional Features
 
