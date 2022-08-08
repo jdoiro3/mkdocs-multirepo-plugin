@@ -20,7 +20,7 @@ from slugify import slugify
 if is_windows():
     # allow for ASCII escape codes to be used in terminal
     import os
-    os.system()
+    os.system("")
 
 IMPORT_STATEMENT = "!import"
 DEFAULT_BRANCH = "master"
