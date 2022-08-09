@@ -142,7 +142,7 @@ class MultirepoPlugin(BasePlugin):
                 temp_dir=self.temp_dir,
                 docs_dir=import_stmt.get("docs_dir", "docs/*"),
                 branch=import_stmt.get("branch", DEFAULT_BRANCH),
-                edit_uri=import_stmt.get("edit_uri"),
+                edit_uri=import_stmt.get("edit_uri") or config.get("edit_uri"),
                 multi_docs=bool(import_stmt.get("multi_docs", False)),
                 extra_imports=import_stmt.get("extra_imports", [])
                 )

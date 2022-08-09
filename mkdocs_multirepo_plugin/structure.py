@@ -130,8 +130,10 @@ def get_import_stmts(
             # slugify the section names and turn them into a valid path string
             path = str(Path(*[slugify(section) for section in path_to_section]))
             repo = DocsRepo(
-                        name=path, url=import_stmt.get("url"),
-                        temp_dir=temp_dir, docs_dir=import_stmt.get("docs_dir", "docs/*"),
+                        name=path, 
+                        url=import_stmt.get("url"),
+                        temp_dir=temp_dir, 
+                        docs_dir=import_stmt.get("docs_dir", "docs/*"),
                         branch=import_stmt.get("branch", default_branch),
                         multi_docs=bool(import_stmt.get("multi_docs", False)),
                         config=import_stmt.get("config", "mkdocs.yml"),
@@ -238,11 +240,19 @@ class DocsRepo(Repo):
     ):
         super().__init__(name, url, branch, temp_dir)
         self.docs_dir = docs_dir
-        self.edit_uri = edit_uri or docs_dir
         self.multi_docs = multi_docs
         self.src_path_map = {}
         self.config = config
         self.extra_imports = extra_imports
+        # Mkdocs by default sets the edit_uri to 'edit/master/docs/' when the repo_url is GitHub and 
+        # 'src/default/docs/' when it's Bitbucket. We don't want docs to be in the edit_uri
+        if edit_uri:
+            if "/docs" in edit_uri:
+                self.edit_uri = edit_uri.replace("/docs", "")
+            else:
+                self.edit_uri = edit_uri
+        else:
+            self.edit_uri = edit_uri
 
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
@@ -269,10 +279,12 @@ class DocsRepo(Repo):
             parent_path = str(Path(src_path).parent).replace("\\", "/")
             if parent_path in self.src_path_map:
                 src_path = Path(src_path)
-                return self.url + self.edit_uri + self.src_path_map.get(parent_path) + "/" + str(src_path.name)
+                url_parts = [self.url, self.edit_uri, self.src_path_map.get(parent_path), str(src_path.name)]
             else:
-                return self.url + self.edit_uri + self.src_path_map.get(str(src_path), str(src_path))
-        return self.url + self.edit_uri + self.docs_dir.replace("/*", "") + src_path
+                url_parts = [self.url, self.edit_uri, self.src_path_map.get(str(src_path), str(src_path))]
+        else:
+            url_parts = [self.url, self.edit_uri, self.docs_dir.replace("/*", ""), src_path]
+        return '/'.join(part.strip('/') for part in url_parts)
 
     def set_edit_uri(self, edit_uri) -> None:
         """Sets the edit uri for the repo. Used for mkdocs pages"""
