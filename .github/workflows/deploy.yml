@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/deploy.yml"
       - "setup.py"
+      - "pyproject.toml"
       
 
   # Allows you to run this workflow manually from the Actions tab
