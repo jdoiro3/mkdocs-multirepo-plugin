@@ -10,7 +10,8 @@ from .util import (
     remove_parents,
     execute_bash_script,
     ImportSyntaxError,
-    ProgressList
+    ProgressList,
+    log
 )
 import asyncio
 import os
@@ -226,33 +227,41 @@ class DocsRepo(Repo):
         extra_imports (list): Extra directories to import along with the docs
     """
 
+    def _fix_edit_uri(self, edit_uri: str) -> str:
+        """fixes the edit_uri based on what mkdocs sets it to by default"""
+        # Mkdocs by default sets the edit_uri to 'edit/master/docs/' when the repo_url is GitHub and 
+        # 'src/default/docs/' when it's Bitbucket. We don't want docs to be in the edit_uri since
+        # documentation isn't always in the docs directory for this plugin.
+        edit_uri_parts = edit_uri.strip("/").split("/")
+        parts = len(edit_uri_parts)
+        if parts > 1 and edit_uri_parts[1] == "master" and self.branch != "master":
+            edit_uri_parts[1] = self.branch
+        if parts > 2 and edit_uri_parts[2] == "docs":
+            del edit_uri_parts[2]
+        return '/'.join(part for part in edit_uri_parts) + "/"
+
     def __init__(
         self,
         name: str,
         url: str,
         temp_dir: Path,
         docs_dir: str = "docs/*",
-        branch: str = "main",
-        edit_uri: str = None,
+        branch: str = None,
+        # this will usually be the default value set by mkdocs
+        edit_uri: str = "",
         multi_docs: bool = False,
         config: str = "mkdocs.yml",
-        extra_imports: List[str] = []
+        extra_imports: List[str] = None
     ):
+        if extra_imports is None:
+            extra_imports = []
         super().__init__(name, url, branch, temp_dir)
         self.docs_dir = docs_dir
         self.multi_docs = multi_docs
         self.src_path_map = {}
         self.config = config
         self.extra_imports = extra_imports
-        # Mkdocs by default sets the edit_uri to 'edit/master/docs/' when the repo_url is GitHub and 
-        # 'src/default/docs/' when it's Bitbucket. We don't want docs to be in the edit_uri
-        if edit_uri:
-            if "/docs" in edit_uri:
-                self.edit_uri = edit_uri.replace("/docs", "")
-            else:
-                self.edit_uri = edit_uri
-        else:
-            self.edit_uri = edit_uri
+        self.edit_uri = self._fix_edit_uri(edit_uri)
 
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
