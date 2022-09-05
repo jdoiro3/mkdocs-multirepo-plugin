@@ -1,3 +1,7 @@
+## 0.4.8
+
+- Fixed the handling of generating the correct edit urls for imported repos.
+
 ## 0.4.4
 
 - Added support for importing extra directories via `extra_imports`. This allows users to import directories or files in addition to markdown contained in the docs directory (e.g., src). This might be done in order to get source code that is required to build docs using plugins like `mkdocstrings`.

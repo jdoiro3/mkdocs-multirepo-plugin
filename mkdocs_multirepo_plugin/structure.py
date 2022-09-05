@@ -2,8 +2,14 @@ from typing import Tuple, List, Dict, Union
 import shutil
 import subprocess
 from pathlib import Path
+from mkdocs.config import Config
 from mkdocs.utils import yaml_load
-from mkdocs.structure.files import File
+from mkdocs.structure.files import (
+    File,
+    Files,
+    _filter_paths,
+    _sort_files
+)
 from .util import (
     ImportDocsException,
     git_supports_sparse_clone,
@@ -110,7 +116,10 @@ class NavImport:
 
 
 def get_import_stmts(
-    nav: List[Dict], temp_dir: Path, default_branch: str, path_to_section: List[str] = None
+    nav: List[Dict],
+    temp_dir: Path,
+    default_branch: str,
+    path_to_section: List[str] = None
         ) -> List[NavImport]:
     """Searches through the nav and finds import statements, returning a list of NavImport objects.
     The NavImport object contains, among other things, a reference to the dictionary in the nav that
@@ -131,9 +140,10 @@ def get_import_stmts(
             # slugify the section names and turn them into a valid path string
             path = str(Path(*[slugify(section) for section in path_to_section]))
             repo = DocsRepo(
-                        name=path, 
+                        # we set the DocsRepo name to the path to the section to reduce the chance names collide
+                        name=path,
                         url=import_stmt.get("url"),
-                        temp_dir=temp_dir, 
+                        temp_dir=temp_dir,
                         docs_dir=import_stmt.get("docs_dir", "docs/*"),
                         branch=import_stmt.get("branch", default_branch),
                         multi_docs=bool(import_stmt.get("multi_docs", False)),
@@ -224,12 +234,12 @@ class DocsRepo(Repo):
         config (str): The filename and extension for the yaml configuration file. Default is "mkdocs.yml".
         multi_docs (bool): If this is True, it means the repo has multiple docs directories that the user
                             wants to be pulled into the site.
-        extra_imports (list): Extra directories to import along with the docs
+        extra_imports (list): Extra directories to import along with the docs.
     """
 
     def _fix_edit_uri(self, edit_uri: str) -> str:
         """fixes the edit_uri based on what mkdocs sets it to by default"""
-        # Mkdocs by default sets the edit_uri to 'edit/master/docs/' when the repo_url is GitHub and 
+        # Mkdocs by default sets the edit_uri to 'edit/master/docs/' when the repo_url is GitHub and
         # 'src/default/docs/' when it's Bitbucket. We don't want docs to be in the edit_uri since
         # documentation isn't always in the docs directory for this plugin.
         edit_uri_parts = edit_uri.strip("/").split("/")
@@ -282,8 +292,12 @@ class DocsRepo(Repo):
             (self.config == other.config)
         )
 
+    @property
+    def name_length(self):
+        return len(Path(self.name).parts)
+
     def get_edit_url(self, src_path):
-        src_path = remove_parents(src_path, 1)
+        src_path = remove_parents(src_path, self.name_length)
         if self.multi_docs:
             parent_path = str(Path(src_path).parent).replace("\\", "/")
             if parent_path in self.src_path_map:
@@ -297,7 +311,7 @@ class DocsRepo(Repo):
 
     def set_edit_uri(self, edit_uri) -> None:
         """Sets the edit uri for the repo. Used for mkdocs pages"""
-        self.edit_uri = edit_uri or self.docs_dir
+        self.edit_uri = self._fix_edit_uri(edit_uri or self.docs_dir)
 
     def transform_docs_dir(self) -> None:
         """Moves all files within a docs directory to the parent directory, deleting the docs directory after."""
@@ -350,3 +364,37 @@ async def batch_import(repos: List[DocsRepo]) -> None:
     for import_async in asyncio.as_completed([repo.import_docs() for repo in repos]):
         repo = await import_async
         progress_list.mark_completed(repo.name, round(time.time() - start, 3))
+
+
+# taken from Mkdocs and adjusted for the plugin
+def get_files(config: Config, repo: DocsRepo) -> Files:
+    """Walk the `docs_dir` and return a Files collection."""
+    files = []
+    exclude = ['.*', '/templates']
+
+    for source_dir, dirnames, filenames in os.walk(repo.location, followlinks=True):
+        relative_dir = os.path.relpath(source_dir, repo.temp_dir)
+
+        for dirname in list(dirnames):
+            path = os.path.normpath(os.path.join(relative_dir, dirname))
+            # Skip any excluded directories
+            if _filter_paths(basename=dirname, path=path, is_dir=True, exclude=exclude):
+                dirnames.remove(dirname)
+        dirnames.sort()
+
+        for filename in _sort_files(filenames):
+            path = os.path.normpath(os.path.join(relative_dir, filename))
+            # Skip any excluded files
+            if _filter_paths(basename=filename, path=path, is_dir=False, exclude=exclude):
+                continue
+            # Skip README.md if an index file also exists in dir
+            if filename == 'README.md' and 'index.md' in filenames:
+                log.warning(
+                    f"Both index.md and README.md found. Skipping README.md from {source_dir}"
+                )
+                continue
+            files.append(
+                File(path, repo.temp_dir, config['site_dir'], config['use_directory_urls'])
+            )
+
+    return Files(files)
