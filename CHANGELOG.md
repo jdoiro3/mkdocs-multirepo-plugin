@@ -1,6 +1,6 @@
 ## 0.4.8
 
-- Fixed the handling of generating the correct edit urls for imported repos.
+- Fixed the generation of edit urls for imported repos.
 
 ## 0.4.4
 
