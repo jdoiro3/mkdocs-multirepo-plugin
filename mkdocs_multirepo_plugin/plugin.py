@@ -15,6 +15,7 @@ from .structure import (
     )
 from .util import (
     ImportDocsException,
+    ImportSyntaxError,
     log,
     asyncio_run,
     is_windows
@@ -138,6 +139,8 @@ class MultirepoPlugin(BasePlugin):
         docs_repo_objs = []
         for repo in repos:
             import_stmt = parse_repo_url(repo.get("import_url"))
+            if "!import" in import_stmt.get("url"):
+                raise ImportSyntaxError(f"import_url should only contain the url with plugin accepted params. You included '!import'.")
             if set(repo.keys()).difference({"import_url", "section"}) != set():
                 raise ReposSectionException(
                     "Repos section now only supports 'import_url' and 'section'. \
