@@ -1,15 +1,24 @@
 from typing import List, Dict
 from mkdocs.plugins import BasePlugin
-from mkdocs.structure.files import get_files, Files
+from mkdocs.structure.files import Files, File
 from mkdocs.theme import Theme
 from mkdocs.config import Config, config_options
 from .structure import (
-    Repo, DocsRepo, parse_repo_url, batch_import, resolve_nav_paths,
-    get_import_stmts, is_yaml_file
+    Repo,
+    DocsRepo,
+    parse_repo_url,
+    batch_import,
+    resolve_nav_paths,
+    get_import_stmts,
+    is_yaml_file,
+    get_files
     )
 from .util import (
-    ImportDocsException, log, get_src_path_root,
-    asyncio_run, is_windows
+    ImportDocsException,
+    ImportSyntaxError,
+    log,
+    asyncio_run,
+    is_windows
 )
 from pathlib import Path
 from copy import deepcopy
@@ -118,7 +127,7 @@ class MultirepoPlugin(BasePlugin):
             repo_config = repo.load_config()
             if not repo_config.get("nav"):
                 raise ImportDocsException(f"{repo.name}'s {repo.config} file doesn't have a nav section")
-            repo.set_edit_uri(repo_config.get("edit_uri"))
+            repo.set_edit_uri(repo_config.get("edit_uri") or config.get("edit_uri"))
             # Change the section title value from '!import {url}' to the imported repo's nav
             # Note: this changes config.nav in place
             nav_import.set_section_value(repo_config.get("nav"))
@@ -130,6 +139,8 @@ class MultirepoPlugin(BasePlugin):
         docs_repo_objs = []
         for repo in repos:
             import_stmt = parse_repo_url(repo.get("import_url"))
+            if "!import" in import_stmt.get("url"):
+                raise ImportSyntaxError(f"import_url should only contain the url with plugin accepted params. You included '!import'.")
             if set(repo.keys()).difference({"import_url", "section"}) != set():
                 raise ReposSectionException(
                     "Repos section now only supports 'import_url' and 'section'. \
@@ -142,7 +153,7 @@ class MultirepoPlugin(BasePlugin):
                 temp_dir=self.temp_dir,
                 docs_dir=import_stmt.get("docs_dir", "docs/*"),
                 branch=import_stmt.get("branch", DEFAULT_BRANCH),
-                edit_uri=import_stmt.get("edit_uri"),
+                edit_uri=import_stmt.get("edit_uri") or config.get("edit_uri"),
                 multi_docs=bool(import_stmt.get("multi_docs", False)),
                 extra_imports=import_stmt.get("extra_imports", [])
                 )
@@ -179,12 +190,14 @@ class MultirepoPlugin(BasePlugin):
         if self.config.get("imported_repo"):
             return files
         else:
-            temp_config = deepcopy(config)
-            temp_config["docs_dir"] = self.temp_dir
-            other_repo_files = get_files(temp_config)
-            for f in other_repo_files:
-                if not is_yaml_file(f):
-                    files.append(f)
+            repo_files: List[File]
+            for repo in self.repos.values():
+                repo_files = get_files(config, repo)
+                for f in repo_files:
+                    if not is_yaml_file(f):
+                        # the file needs to know about the repo it belongs to
+                        f.repo = repo
+                        files.append(f)
             return files
 
     def on_nav(self, nav, config: Config, files: Files):
@@ -192,10 +205,12 @@ class MultirepoPlugin(BasePlugin):
             return nav
         else:
             for f in files:
-                root_src_path = get_src_path_root(f.src_path)
-                if root_src_path in self.repos and f.page:
-                    repo = self.repos.get(root_src_path)
-                    f.page.edit_url = repo.get_edit_url(f.src_path)
+                try:
+                    files_repo = f.repo
+                except AttributeError:
+                    files_repo = None
+                if files_repo and f.page:
+                    f.page.edit_url = files_repo.get_edit_url(f.src_path)
             return nav
 
     def on_post_build(self, config: Config) -> None:

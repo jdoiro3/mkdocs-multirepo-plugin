@@ -1,7 +1,7 @@
 
 [tool.poetry]
 name = "mkdocs-multirepo-plugin"
-version = "0.4.4"
+version = "0.4.8"
 description = "Build documentation in multiple repos into one site."
 authors = ["jdoiro3 <josephdoiron1234@yahoo.com>"]
 license = "MIT"
@@ -15,6 +15,9 @@ python-slugify = {version = "*", python = ">=2.7,<2.8 || >=3.6.0"}
 aiofiles = {version = "*", python = ">=3.6,<4.0"}
 flake8 = {version = "*", python = ">=3.6.1"}
 mkdocs-material = {version = "*", python = ">=3.7"}
+
+[tool.poetry.plugins."mkdocs.plugins"]
+multirepo = "mkdocs_multirepo_plugin.plugin:MultirepoPlugin"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

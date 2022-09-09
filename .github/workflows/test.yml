@@ -53,6 +53,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Git ${{ matrix.git-version }} from Source
         run: |
+          sudo apt-get update
           sudo apt-get install -y dh-autoreconf libcurl4-gnutls-dev libexpat1-dev gettext libz-dev libssl-dev install-info unzip
           sudo apt-get -y install docbook2x
           wget https://github.com/git/git/archive/refs/tags/v${{ matrix.git-version }}.zip && unzip v${{ matrix.git-version }}.zip
