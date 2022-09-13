@@ -62,36 +62,14 @@ def remove_parents(path: str, num_to_remove: int) -> str:
     return '/' + str(Path(*parts_to_keep)).replace('\\', '/')
 
 
-def where_git() -> Path:
-    extra_run_args = get_subprocess_run_extra_args()
-    output = (
-        subprocess.run(["where", "git"], **extra_run_args)
-        .stdout
-        .replace("\r", "")  # remove carrage return
-        .split("\n")[0]  # handle multiple locations of git.exe
-    )
-    if "INFO" in output:
-        # see if a git install is located in the default location
-        default_git_loc = Path("C:/Program Files/Git")
-        if default_git_loc.is_dir():
-            return default_git_loc
-        else:
-            raise GitException(
-                f"git is not in PATH and install isn't located at {str(default_git_loc)}"
-                )
-    else:
-        return Path(output).parent.parent
-
-
 def git_version() -> GitVersion:
     extra_run_args = get_subprocess_run_extra_args()
-    if platform in LINUX_LIKE_PLATFORMS:
+    try:
         output = subprocess.run(["git", "--version"], **extra_run_args)
-    else:
-        git_folder = where_git()
-        output = subprocess.run(
-            [str(git_folder / "bin" / "git.exe"), "--version"], **extra_run_args
-            )
+    except FileNotFoundError:
+        raise GitException(
+            "git executable not found. Please ensure git is available in PATH."
+        )
     stdout = output.stdout
     if isinstance(stdout, bytes):
         stdout = output.stdout.decode()
@@ -116,16 +94,15 @@ async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Pat
     except KeyError:
         pass
 
-    if platform in LINUX_LIKE_PLATFORMS:
+    try:
         process = await asyncio.create_subprocess_exec(
             'bash', script, *arguments, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
-    else:
-        git_folder = where_git()
-        process = await asyncio.create_subprocess_exec(
-            str(git_folder / "bin" / "bash.exe"), script, *arguments,
-            cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    except FileNotFoundError:
+        raise GitException(
+            "bash executable not found. Please ensure bash is available in PATH."
         )
+
     stdout, stderr = await process.communicate()
     stdout, stderr = stdout.decode(), stderr.decode()
     if process.returncode == 1:
