@@ -15,6 +15,7 @@ from .util import (
     git_supports_sparse_clone,
     remove_parents,
     execute_bash_script,
+    execute_git_bash_script,
     ImportSyntaxError,
     ProgressList,
     log
@@ -190,9 +191,9 @@ class Repo:
         """sparse clones a Git repo asynchronously"""
         args = [self.url, self.name, self.branch] + dirs
         if git_supports_sparse_clone():
-            stdout = await execute_bash_script("sparse_clone.sh", args, self.temp_dir)
+            stdout = await execute_git_bash_script("sparse_clone.sh", args, self.temp_dir)
         else:
-            stdout = await execute_bash_script("sparse_clone_old.sh", args, self.temp_dir)
+            stdout = await execute_git_bash_script("sparse_clone_old.sh", args, self.temp_dir)
         return stdout
 
     async def import_config_files(self, dirs: List[str]) -> subprocess.CompletedProcess:

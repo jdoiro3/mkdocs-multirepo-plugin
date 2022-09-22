@@ -84,8 +84,8 @@ def git_supports_sparse_clone() -> bool:
     return True
 
 
-async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
-    """executes a bash script in an asynchronously"""
+async def execute_git_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
+    """executes a bash script with a git command / git URL an asynchronously"""
     try:
         token = os.environ['AccessToken']
         # Insert the PAT after the url scheme
@@ -93,16 +93,20 @@ async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Pat
         arguments[0] = arguments[0][:schemeIndex] + token + "@" + arguments[0][schemeIndex:]
     except KeyError:
         pass
+    return await execute_bash_script(script, arguments, cwd)
 
-    try:
+async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
+    """executes a bash script an asynchronously"""
+    if platform in LINUX_LIKE_PLATFORMS:
         process = await asyncio.create_subprocess_exec(
             'bash', script, *arguments, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
-    except FileNotFoundError:
-        raise GitException(
-            "bash executable not found. Please ensure bash is available in PATH."
+    else:
+        git_folder = where_git()
+        process = await asyncio.create_subprocess_exec(
+            str(git_folder / "bin" / "bash.exe"), script, *arguments,
+            cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
-
     stdout, stderr = await process.communicate()
     stdout, stderr = stdout.decode(), stderr.decode()
     if process.returncode == 1:

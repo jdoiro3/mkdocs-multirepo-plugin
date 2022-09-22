@@ -43,7 +43,7 @@ class BaseCase(unittest.IsolatedAsyncioTestCase):
                 section, "main", "docs/*", "mkdocs.yml"
                 ]
             temp_dir_path = pathlib.Path(temp_dir)
-            await util.execute_bash_script(script, args, temp_dir_path)
+            await util.execute_git_bash_script(script, args, temp_dir_path)
             self.assertDirExists(temp_dir_path / section)
             docs_dir = temp_dir_path / section / "docs"
             self.assertDirExists(docs_dir)
