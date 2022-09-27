@@ -97,15 +97,13 @@ async def execute_git_bash_script(script: str, arguments: list = [], cwd: Path =
 
 async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
     """executes a bash script an asynchronously"""
-    if platform in LINUX_LIKE_PLATFORMS:
+    try:
         process = await asyncio.create_subprocess_exec(
             'bash', script, *arguments, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
-    else:
-        git_folder = where_git()
-        process = await asyncio.create_subprocess_exec(
-            str(git_folder / "bin" / "bash.exe"), script, *arguments,
-            cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    except FileNotFoundError:
+        raise GitException(
+            "bash executable not found. Please ensure bash is available in PATH."
         )
     stdout, stderr = await process.communicate()
     stdout, stderr = stdout.decode(), stderr.decode()
