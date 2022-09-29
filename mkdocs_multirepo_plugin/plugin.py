@@ -141,14 +141,16 @@ class MultirepoPlugin(BasePlugin):
             import_stmt = parse_repo_url(repo.get("import_url"))
             if "!import" in import_stmt.get("url"):
                 raise ImportSyntaxError(f"import_url should only contain the url with plugin accepted params. You included '!import'.")
-            if set(repo.keys()).difference({"import_url", "section"}) != set():
+            if set(repo.keys()).difference({"import_url", "section", "section_path"}) != set():
                 raise ReposSectionException(
-                    "Repos section now only supports 'import_url' and 'section'. \
+                    "Repos section now only supports 'import_url', 'section', and 'section_path'. \
                      All other config values should use the nav import url config (i.e., [url]?[key]=[value])"
                     )
             name_slug = slugify(repo.get("section"))
+            path = repo.get("section_path")
+            repo_name = f"{path}/{name_slug}" if path is not None else name_slug
             repo = DocsRepo(
-                name=name_slug,
+                name=repo_name,
                 url=import_stmt.get("url"),
                 temp_dir=self.temp_dir,
                 docs_dir=import_stmt.get("docs_dir", "docs/*"),

@@ -107,10 +107,13 @@ plugins:
         - section: Monorepo Multi Docs
           import_url: https://github.com/backstage/mkdocs-monorepo-plugin?multi_docs=True&docs_dir=sample-docs/*
         - section: 'Django REST'
+          section_path: python # Put this under the python menu entry
           import_url: 'https://github.com/encode/django-rest-framework'
         - section: 'Cookiecutter Pypackage'
+          section_path: python # Put this under the python menu entry
           import_url: 'https://github.com/zillionare/cookiecutter-pypackage'
         - section: 'Pydantic'
+          section_path: python # Put this under the python menu entry
           import_url: 'https://github.com/samuelcolvin/pydantic'
 ```
 
