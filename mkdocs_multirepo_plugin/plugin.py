@@ -127,7 +127,7 @@ class MultirepoPlugin(BasePlugin):
             repo_config = repo.load_config()
             if not repo_config.get("nav"):
                 raise ImportDocsException(f"{repo.name}'s {repo.config} file doesn't have a nav section")
-            repo.set_edit_uri(repo_config.get("edit_uri") or config.get("edit_uri"))
+            repo.set_edit_uri(repo_config.get("edit_uri") or config.get("edit_uri") or "")
             # Change the section title value from '!import {url}' to the imported repo's nav
             # Note: this changes config.nav in place
             nav_import.set_section_value(repo_config.get("nav"))
@@ -153,7 +153,7 @@ class MultirepoPlugin(BasePlugin):
                 temp_dir=self.temp_dir,
                 docs_dir=import_stmt.get("docs_dir", "docs/*"),
                 branch=import_stmt.get("branch", DEFAULT_BRANCH),
-                edit_uri=import_stmt.get("edit_uri") or config.get("edit_uri"),
+                edit_uri=import_stmt.get("edit_uri") or config.get("edit_uri") or "",
                 multi_docs=bool(import_stmt.get("multi_docs", False)),
                 extra_imports=import_stmt.get("extra_imports", [])
                 )
