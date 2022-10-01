@@ -2,6 +2,7 @@
 
 - Added support for importing repos into a subsection.
 - Fixed moving the imported docs folder up so that the docs folder does not appear in the menu.
+- MkDocs versions  >= 1.4.0 changed the default config values from an empty string to None. You should use this version or newer to insure support with newer versions of MkDocs.
 
 ## 0.4.8
 
