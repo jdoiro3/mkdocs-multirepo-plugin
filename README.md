@@ -164,7 +164,15 @@ By default, this directory turns into this.
 
 ### Use in CI/CD
 
-If you want to use the plugin within Azure Pipelines or Github Actions, you'll need to define an `AccessToken` environment variable for the `mkdocs build` step. The `AccessToken` should have access to `clone` all repos.
+If you want to use the plugin within Azure Pipelines or Github Actions, you'll need to define an access token.
+
+#### Azure Pipelines
+
+You'll need to define an `AccessToken` environment variable for the `mkdocs build` step. The access token should have access to `clone` all repos.
+
+#### Github Actions
+
+You'll need to define an `GithubAccessToken` environment variable for the `mkdocs build` step. The access token should have access to `clone` all repos. This can be a personal access token or one from a GitHub App.
 
 #### Azure Pipeline Step Example
 
