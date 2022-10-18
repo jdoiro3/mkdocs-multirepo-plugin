@@ -96,9 +96,9 @@ jobs:
         id: old_pyproject
         run: |
           old_pyproject="$(git show main:pyproject.toml)"
-          old_pyproject="${old_pyproject//'%'/'%25'}"
-          old_pyproject="${old_pyproject//$'\n'/'%0A'}"
-          old_pyproject="${old_pyproject//$'\r'/'%0D'}"
+          old_pyproject="${old_pyproject//'%'/'%'}"
+          old_pyproject="${old_pyproject//$'\n'/'\n'}"
+          old_pyproject="${old_pyproject//$'\r'/'\r'}"
           echo "old_pyproject=$old_pyproject" >> $GITHUB_ENV
       - name: Version Check
         uses: actions/github-script@v6
