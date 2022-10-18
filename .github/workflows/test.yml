@@ -107,11 +107,11 @@ jobs:
             fs.readFile('pyproject.toml', 'utf8', (err, data) => {
               if (err) throw err
               var pyproject = toml.parse(data)
-            }))
+            })
             fs.readFile('old_pyproject.toml', 'utf8', (err, data) => {
               if (err) throw err
               var old_pyproject = toml.parse(data)
-            }))
+            })
 
             if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
               return `Please update the version in [pyproject.toml](pyproject.toml) (${old_pyproject.tool.poetry.version} <= ${pyproject.tool.poetry.version}).`
