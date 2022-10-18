@@ -99,6 +99,7 @@ jobs:
           old_pyproject="${old_pyproject//'%'/'%'}"
           old_pyproject="${old_pyproject//$'\n'/'\n'}"
           old_pyproject="${old_pyproject//$'\r'/'\r'}"
+          old_pyproject="${old_pyproject//$'"'/'"'}"
           echo "old_pyproject=$old_pyproject" >> $GITHUB_ENV
       - name: Version Check
         uses: actions/github-script@v6
@@ -113,7 +114,7 @@ jobs:
             fs.createReadStream('pyproject.toml', 'utf8').pipe(concat(function(data) {
               var pyproject = toml.parse(data);
             }))
-            var old_pyproject = toml.parse(${{ env.old_pyproject }})
+            var old_pyproject = toml.parse("${{ env.old_pyproject }}")
 
             if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
               return `Please update the version in [pyproject.toml](pyproject.toml) (${old_pyproject.tool.poetry.version} <= ${pyproject.tool.poetry.version}).`
