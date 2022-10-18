@@ -101,17 +101,11 @@ jobs:
         with:
           script: |
             const toml = require('toml')
-            const fs = require('fs')
+            const fs = require('fs').promises
             const semver = require('semver')
 
-            fs.readFile('pyproject.toml', 'utf8', (err, data) => {
-              if (err) throw err
-              var pyproject = toml.parse(data)
-            })
-            fs.readFile('old_pyproject.toml', 'utf8', (err, data) => {
-              if (err) throw err
-              var old_pyproject = toml.parse(data)
-            })
+            var pyproject = toml.parse(await fs.readFile('pyproject.toml', 'utf8'))
+            var old_pyproject = toml.parse(await fs.readFile('old_pyproject.toml', 'utf8'))
 
             if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
               return `Please update the version in [pyproject.toml](pyproject.toml) (${old_pyproject.tool.poetry.version} <= ${pyproject.tool.poetry.version}).`
