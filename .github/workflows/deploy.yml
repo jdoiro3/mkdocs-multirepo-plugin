@@ -127,7 +127,7 @@ jobs:
             }
           result-encoding: string
       - name: Publish a Python distribution to PyPI
-        if: ${{ steps.generate-release.outputs.result == "true" }}
+        if: ${{ steps.generate-release.outputs.result == 'true' }}
         uses: pypa/gh-action-pypi-publish@f3ebf87ba2883f1c40faf37d2bb42277f12179c8
         with:
           user: __token__
