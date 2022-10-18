@@ -45,7 +45,7 @@ jobs:
               var old_pyproject = toml.parse(await fs.readFile('old_pyproject.toml', 'utf8'))
 
               if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
-                return `Update the version in [pyproject.toml](https://github.com/jdoiro3/mkdocs-multirepo-plugin/blob/${{ github.head_ref }}/pyproject.toml) if you want this PR to generate a new release (${old_pyproject.tool.poetry.version} >= ${pyproject.tool.poetry.version}).`
+                return `Update the version in [pyproject.toml](https://github.com/${{ github.event.pull_request.head.repo.full_name }}/blob/${{ github.head_ref }}/pyproject.toml) if you want this PR to generate a new release (${old_pyproject.tool.poetry.version} >= ${pyproject.tool.poetry.version}).`
               } else {
                 return "Version has been updated in pyproject.toml."
               }
