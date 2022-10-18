@@ -94,13 +94,8 @@ jobs:
       - name: Get old version
         run: git fetch --no-tags origin main:main
       - name: Get Old pyproject.toml
-        id: old_pyproject
         run: |
-          old_pyproject="$(git show main:pyproject.toml)"
-          old_pyproject="${old_pyproject//'%'/'%'}"
-          old_pyproject="${old_pyproject//$'\n'/'\n'}"
-          old_pyproject="${old_pyproject//$'\r'/'\r'}"
-          echo "old_pyproject=$old_pyproject" >> $GITHUB_ENV
+          git show main:pyproject.toml > old_pyproject.toml
       - name: Version Check
         uses: actions/github-script@v6
         id: comment-body
@@ -112,9 +107,11 @@ jobs:
             const semver = require('semver')
 
             fs.createReadStream('pyproject.toml', 'utf8').pipe(concat(function(data) {
-              var pyproject = toml.parse(data);
+              var pyproject = toml.parse(data)
             }))
-            var old_pyproject = toml.parse(${{ toJSON(env.old_pyproject) }})
+            fs.createReadStream('old_pyproject.toml', 'utf8').pipe(concat(function(data) {
+              var old_pyproject = toml.parse(data)
+            }))
 
             if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
               return `Please update the version in [pyproject.toml](pyproject.toml) (${old_pyproject.tool.poetry.version} <= ${pyproject.tool.poetry.version}).`
