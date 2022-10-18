@@ -113,7 +113,7 @@ jobs:
             fs.createReadStream('pyproject.toml', 'utf8').pipe(concat(function(data) {
               var pyproject = toml.parse(data);
             }))
-            var old_pyproject = toml.parse("${{ env.old_pyproject }}".replace('"', '\"'))
+            var old_pyproject = toml.parse(${{ toJSON(env.old_pyproject) }})
 
             if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
               return `Please update the version in [pyproject.toml](pyproject.toml) (${old_pyproject.tool.poetry.version} <= ${pyproject.tool.poetry.version}).`
