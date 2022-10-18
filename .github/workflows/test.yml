@@ -42,7 +42,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3, 3.6, 3.7, 3.8, '3.10']
+        python-version: [3.7, 3.8, '3.10']
         git-version: [2.17.0, 2.35.0, 2.37.1]
 
     steps:
@@ -66,15 +66,67 @@ jobs:
       - name: Install Bats
         run: ./__tests__/setup-bats.sh
       - name: Install Poetry
-        uses: snok/install-poetry@v1.3.1
+        uses: snok/install-poetry@v1
         with:
           virtualenvs-in-project: true
       - name: Install Package and Integration Test Deps
-        # we need to to install the package with setup.py for mkdocs to be able to access
-        # the plugin
         run: |
-          rm -f pyproject.toml
-          pip install .
+          poetry build
+          pip install ./dist/*.whl
           pip install -r integration-requirements.txt
       - name: Integration Tests
         run: ./__tests__/test-bats-ci.sh
+  
+  version_check:
+    needs: integration-tests
+    name: Check pyproject.toml version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - run: |
+          npm install semver
+          npm install toml
+      - name: Get old version
+        run: git fetch --no-tags origin main:main
+      - name: Get Old pyproject.toml
+        run: |
+          git show main:pyproject.toml > old_pyproject.toml
+      - name: Version Check
+        uses: actions/github-script@v6
+        id: comment-body
+        with:
+          script: |
+            const toml = require('toml')
+            const fs = require('fs').promises
+            const semver = require('semver')
+
+            var pyproject = toml.parse(await fs.readFile('pyproject.toml', 'utf8'))
+            var old_pyproject = toml.parse(await fs.readFile('old_pyproject.toml', 'utf8'))
+
+            if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
+              return `Update the version in [pyproject.toml](https://github.com/jdoiro3/mkdocs-multirepo-plugin/blob/${{ github.head_ref }}/pyproject.toml) if you want this PR to generate a new release (${old_pyproject.tool.poetry.version} >= ${pyproject.tool.poetry.version}).`
+            } else {
+              return "Version has been updated in pyproject.toml."
+            }
+          result-encoding: string
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: "## Version Number Check"
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Version Number Check
+            ${{steps.comment-body.outputs.result}}
+          edit-mode: replace
+      
