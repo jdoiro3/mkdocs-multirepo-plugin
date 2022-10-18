@@ -73,6 +73,7 @@ jobs:
         run: |
           poetry build
           pip install ./dist/*.whl
+          pip install -r integration-requirements.txt
       - name: Integration Tests
         run: ./__tests__/test-bats-ci.sh
       - name: Setup Node
