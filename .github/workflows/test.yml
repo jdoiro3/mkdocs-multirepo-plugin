@@ -78,3 +78,55 @@ jobs:
           pip install -r integration-requirements.txt
       - name: Integration Tests
         run: ./__tests__/test-bats-ci.sh
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - run: |
+          npm install semver
+          npm install toml
+      - name: Get old version
+        run: git fetch --no-tags origin main:main
+      - name: Get Old pyproject.toml
+        id: old_pyproject
+        run: |
+          old_pyproject=$(git show main:pyproject.toml)
+          echo "old_pyproject=$old_pyproject" >> $GITHUB_ENV
+      - name: Version Check
+        uses: actions/github-script@v6
+        id: comment-body
+        with:
+          script: |
+            const toml = require('toml')
+            const concat = require('concat-stream')
+            const fs = require('fs')
+            const semver = require('semver')
+
+            fs.createReadStream('pyproject.toml', 'utf8').pipe(concat(function(data) {
+              var pyproject = toml.parse(data);
+            }))
+            var old_pyproject = toml.parse(${{ env.old_pyproject }})
+
+            if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
+              return `Please update the version in [pyproject.toml](pyproject.toml) (${old_pyproject.tool.poetry.version} <= ${pyproject.tool.poetry.version}).`
+            } else {
+              return "Version has been updated in pyproject.toml."
+            }
+          result-encoding: string
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: "## Version Number Check"
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Version Number Check
+            ${{steps.comment-body.outputs.result}}
+          edit-mode: replace
+      

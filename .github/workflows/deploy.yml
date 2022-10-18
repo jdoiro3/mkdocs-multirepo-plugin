@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - ".github/workflows/deploy.yml"
-      - "setup.py"
       - "pyproject.toml"
       
 
@@ -90,12 +89,43 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@master
         with:
-          python-version: 3.7
+          python-version: 3.10
       - name: Build Python distribution
         run: |
           pip install wheel
           rm -rf dist
-          python setup.py bdist_wheel sdist --formats gztar
+          poetry build
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - run: |
+          npm install semver
+          npm install toml
+      - name: Get old version
+        run: git fetch --no-tags origin main:main
+      - name: Get Old pyproject.toml
+        id: old_pyproject
+        run: |
+          old_pyproject=$(git show main:pyproject.toml)
+          echo "old_pyproject=$old_pyproject" >> $GITHUB_ENV
+      - name: Version Check
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const toml = require('toml')
+            const concat = require('concat-stream')
+            const fs = require('fs')
+            const semver = require('semver')
+
+            fs.createReadStream('pyproject.toml', 'utf8').pipe(concat(function(data) {
+              var pyproject = toml.parse(data);
+            }))
+            var old_pyproject = toml.parse(${{ env.old_pyproject }})
+
+            if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
+              throw new Error(`the current package version is <= the version on main (${old_pyproject.tool.poetry.version} <= ${pyproject.tool.poetry.version})`)
+            }
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@f3ebf87ba2883f1c40faf37d2bb42277f12179c8
         with:

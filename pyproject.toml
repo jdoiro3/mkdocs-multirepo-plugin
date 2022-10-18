@@ -1,10 +1,27 @@
-
 [tool.poetry]
 name = "mkdocs-multirepo-plugin"
 version = "0.4.10"
 description = "Build documentation in multiple repos into one site."
 authors = ["jdoiro3 <josephdoiron1234@yahoo.com>"]
 license = "MIT"
+readme = "README.md"
+homepage = "https://pypi.org/project/mkdocs-multirepo-plugin/"
+repository = "https://github.com/jdoiro3/mkdocs-multirepo-plugin"
+keywords = ["mkdocs", "docs", "documentation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python",
+    "Intended Audience :: Developers",
+    "Topic :: Documentation",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux"
+]
+
+[tool.poetry.scripts]
+sparse_clone = { reference = 'mkdocs_multirepo_plugin/scripts/sparse_clone.sh', type = "file" }
+sparse_clone_old = { reference = 'mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh', type = "file" }
+mv_docs_up = { reference = 'mkdocs_multirepo_plugin/scripts/mv_docs_up.sh', type = "file" }
 
 [tool.poetry.dependencies]
 mkdocs = {version = ">=1.0.4", python = ">=3.6"}
@@ -22,3 +39,6 @@ multirepo = "mkdocs_multirepo_plugin.plugin:MultirepoPlugin"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[project.entry-points."mkdocs.plugins"]
+multirepo = "mkdocs_multirepo_plugin.plugin:MultirepoPlugin"
