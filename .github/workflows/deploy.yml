@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - ".github/workflows/deploy.yml"
-      - "setup.py"
       - "pyproject.toml"
       
 
@@ -45,7 +44,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3, 3.6, 3.7, 3.8]
+        python-version: [3.7, 3.8, '3.10']
         git-version: [2.17.0, 2.35.0, 2.37.1]
 
     steps:
@@ -90,13 +89,45 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@master
         with:
-          python-version: 3.7
+          python-version: 3.10
       - name: Build Python distribution
         run: |
           pip install wheel
           rm -rf dist
-          python setup.py bdist_wheel sdist --formats gztar
+          poetry build
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - run: |
+          npm install semver
+          npm install toml
+      - name: Get old version
+        run: git fetch --no-tags origin main:main
+      - name: Get Old pyproject.toml
+        run: |
+          git show main:pyproject.toml > old_pyproject.toml
+      - name: Version Check
+        uses: actions/github-script@v6
+        id: generate-release
+        with:
+          script: |
+            const toml = require('toml')
+            const fs = require('fs').promises
+            const semver = require('semver')
+
+            var pyproject = toml.parse(await fs.readFile('pyproject.toml', 'utf8'))
+            var old_pyproject = toml.parse(await fs.readFile('old_pyproject.toml', 'utf8'))
+
+            if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
+              console.log(`the current package version is <= the version on main (${old_pyproject.tool.poetry.version} >= ${pyproject.tool.poetry.version})`)
+              return "false"
+            } else {
+              return "true"
+            }
+          result-encoding: string
       - name: Publish a Python distribution to PyPI
+        if: ${{ steps.generate-release.outputs.result == 'true' }}
         uses: pypa/gh-action-pypi-publish@f3ebf87ba2883f1c40faf37d2bb42277f12179c8
         with:
           user: __token__
