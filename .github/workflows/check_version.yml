@@ -13,7 +13,6 @@ on:
       
 jobs:
   version_check:
-      needs: integration-tests
       name: Check pyproject.toml version
       runs-on: ubuntu-latest
       steps:
