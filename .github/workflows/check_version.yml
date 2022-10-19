@@ -57,7 +57,7 @@ jobs:
                 msg_body = "Version has been updated in pyproject.toml."
               }
               if ("${{ env.curr_changelog }}" === "${{ env.main_changelog }}") {
-                msg_body += ` In addition, please update the [CHANGELOG.md](https://github.com/${{ github.event.pull_request.head.repo.full_name }}/blob/${{ github.head_ref }}/pyproject.toml).`
+                msg_body += ` In addition, please update the [CHANGELOG.md](https://github.com/${{ github.event.pull_request.head.repo.full_name }}/blob/${{ github.head_ref }}/CHANGELOG.md).`
               }
               return msg_body
             result-encoding: string
