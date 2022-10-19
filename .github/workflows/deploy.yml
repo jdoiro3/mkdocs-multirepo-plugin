@@ -83,11 +83,15 @@ jobs:
     needs: integration-tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@master
         with:
           python-version: '3.10'
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
       - name: Build Python distribution
         run: |
           pip install wheel
@@ -100,11 +104,9 @@ jobs:
       - run: |
           npm install semver
           npm install toml
-      - name: Get old version
-        run: git fetch --no-tags origin main:main
-      - name: Get Old pyproject.toml
+      - name: Get the previous commit on main pyproject.toml
         run: |
-          git show main:pyproject.toml > old_pyproject.toml
+          git show main~1:pyproject.toml > old_pyproject.toml
       - name: Version Check
         uses: actions/github-script@v6
         id: generate-release
