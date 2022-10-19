@@ -100,6 +100,8 @@ teardown() {
   outputContains "Welcome to section 1."
   run cat "$parent/site/ok-nav-complex/section2/index.html"
   outputContains "Welcome to section 2."
+  run cat "$parent/site/sub-section/deep/ok-sub-section/index.html"
+  outputContains "Welcome to a simple repo."
 }
 
 @test "Build a mkdocs site with nav section" {

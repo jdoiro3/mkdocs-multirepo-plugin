@@ -9,3 +9,6 @@ plugins:
           import_url: https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-no-nav
         - section: ok-nav-complex
           import_url: https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-complex
+        - section: ok-sub-section
+          section_path: sub-section/deep
+          import_url: https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple
