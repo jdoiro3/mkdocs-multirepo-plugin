@@ -27,11 +27,15 @@ jobs:
         - run: |
             npm install semver
             npm install toml
-        - name: Get old version
+        - name: Fetch main branch
           run: git fetch --no-tags origin main:main
-        - name: Get Old pyproject.toml
+        - name: Get Old pyproject.toml and Hashes of CHANGELOG.md
           run: |
             git show main:pyproject.toml > old_pyproject.toml
+            main_changelog=$(git show main:CHANGELOG.md | git hash-object --stdin)
+            curr_changelog=$(git show ${{ github.head_ref }}:CHANGELOG.md | git hash-object --stdin)
+            echo "main_changelog=${main_changelog}" >> $GITHUB_ENV
+            echo "curr_changelog=$curr_changelog" >> $GITHUB_ENV
         - name: Version Check
           uses: actions/github-script@v6
           id: comment-body
@@ -44,11 +48,18 @@ jobs:
               var pyproject = toml.parse(await fs.readFile('pyproject.toml', 'utf8'))
               var old_pyproject = toml.parse(await fs.readFile('old_pyproject.toml', 'utf8'))
 
+              var msg_body = ""
               if (semver.gte(old_pyproject.tool.poetry.version, pyproject.tool.poetry.version)) {
-                return `Update the version in [pyproject.toml](https://github.com/${{ github.event.pull_request.head.repo.full_name }}/blob/${{ github.head_ref }}/pyproject.toml) if you want this PR to generate a new release (${old_pyproject.tool.poetry.version} >= ${pyproject.tool.poetry.version}).`
+                msg_body = (
+                  `Update the version in [pyproject.toml](https://github.com/${{ github.event.pull_request.head.repo.full_name }}/blob/${{ github.head_ref }}/pyproject.toml) if you want this PR to generate a new release (main is ${old_pyproject.tool.poetry.version} >= ${pyproject.tool.poetry.version}).`
+                  )
               } else {
-                return "Version has been updated in pyproject.toml."
+                msg_body = "Version has been updated in pyproject.toml."
               }
+              if ("${{ env.curr_changelog }}" !== "${{ env.main_changelog }}") {
+                msg_body += ` In addition, please update the [CHANGELOG.md](https://github.com/${{ github.event.pull_request.head.repo.full_name }}/blob/${{ github.head_ref }}/pyproject.toml).`
+              }
+              return msg_body
             result-encoding: string
         - name: Find Comment
           uses: peter-evans/find-comment@v2
