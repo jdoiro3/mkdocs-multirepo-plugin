@@ -114,7 +114,7 @@ plugins:
           import_url: 'https://github.com/zillionare/cookiecutter-pypackage'
         - section: 'Pydantic'
           section_path: python # Put this under the python menu entry
-          import_url: 'https://github.com/samuelcolvin/pydantic'
+          import_url: 'https://github.com/samuelcolvin/pydantic?branch=main'
 ```
 
 Once you're done configuring, run either `mkdocs serve` or `mkdocs build`. This will `import` the docs into a temporary directory and build the site.
