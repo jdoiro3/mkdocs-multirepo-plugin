@@ -104,6 +104,7 @@ jobs:
       - run: |
           npm install semver
           npm install toml
+          npm install changelog-parser
       - name: Get the previous commit on main pyproject.toml
         run: |
           git show main~1:pyproject.toml > old_pyproject.toml
@@ -132,22 +133,7 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.pypi_api_key }}
-
-  tag-and-generate-github-release:
-    needs: publish-to-pypi
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14
-      - run: |
-          npm install semver
-          npm install toml
-          npm install changelog-parser
-      - name: Create tag
+      - name: Get changes from changelog
         id: get-changes
         uses: actions/github-script@v6
         with:
@@ -158,8 +144,8 @@ jobs:
             var version = toml.parse(await fs.readFile('pyproject.toml', 'utf8')).tool.poetry.version
             var changelog = await parseChangelog('CHANGELOG.md')
             return {changes: changelog.versions[0].body, version: version}
-          result-encoding: string
       - name: Create Release
+        if: ${{ steps.generate-release.outputs.result == 'true' }}
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -172,3 +158,4 @@ jobs:
             ${{ steps.get-changes.outputs.result.changes }}
           draft: false
           prerelease: false
+      
