@@ -1,3 +1,7 @@
+## 0.4.11
+
+- Added a specific `GithubAccessToken` environment variable that allows usage of the plugin with GitHub Apps-generated access tokens and personal access tokens. 
+
 ## 0.4.10
 
 - Added support for importing repos into a subsection.
