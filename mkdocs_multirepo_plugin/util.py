@@ -7,7 +7,6 @@ import logging
 from mkdocs.utils import warning_filter
 from collections import namedtuple
 from re import search
-import os
 
 # used for getting Git version
 GitVersion = namedtuple("GitVersion", "major minor")
