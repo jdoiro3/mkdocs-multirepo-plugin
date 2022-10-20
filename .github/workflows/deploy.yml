@@ -148,25 +148,16 @@ jobs:
           npm install toml
           npm install changelog-parser
       - name: Create tag
-        id: create-tag-and-return-changes
+        id: get-changes
         uses: actions/github-script@v6
         with:
           script: |
             const toml = require('toml')
             const fs = require('fs').promises
             const parseChangelog = require('changelog-parser')
-
             var version = toml.parse(await fs.readFile('pyproject.toml', 'utf8')).tool.poetry.version
             var changelog = await parseChangelog('CHANGELOG.md')
-
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `refs/tags/v${version}`,
-              sha: context.sha
-            })
-
-            return changelog.versions[0].body
+            return {changes: changelog.versions[0].body, version: version}
           result-encoding: string
       - name: Create Release
         id: create_release
@@ -174,10 +165,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
+          tag_name: v${{ steps.get-changes.outputs.result.version }}
           release_name: Release ${{ github.ref }}
           body: |
             Changes in this Release
-            ${{steps.create-tag-and-return-changes.outputs.result}}
+            ${{ steps.get-changes.outputs.result.changes }}
           draft: false
           prerelease: false
