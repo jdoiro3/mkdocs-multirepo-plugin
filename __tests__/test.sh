@@ -16,7 +16,7 @@ docker build -t mkdocs-multirepo-test-runner:$1 --quiet -f- . <<EOF
   ENV VIRTUAL_ENV=env
   RUN python3 -m venv $VIRTUAL_ENV
   ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-  COPY ./setup.py /workspace/setup.py
+  COPY ./pyproject.toml /workspace/pyproject.toml
   COPY ./mkdocs_multirepo_plugin /workspace/mkdocs_multirepo_plugin
   COPY ./README.md /workspace/README.md
   COPY ./integration-requirements.txt /workspace/integration-requirements.txt

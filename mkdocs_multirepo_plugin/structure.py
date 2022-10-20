@@ -242,8 +242,6 @@ class DocsRepo(Repo):
         # Mkdocs by default sets the edit_uri to 'edit/master/docs/' when the repo_url is GitHub and
         # 'src/default/docs/' when it's Bitbucket. We don't want docs to be in the edit_uri since
         # documentation isn't always in the docs directory for this plugin.
-        if not edit_uri:
-            log.warning(f"set edit_uri in !import statement so edit urls can be formatted correctly for {self.name}.")
         edit_uri_parts = edit_uri.strip("/").split("/")
         parts = len(edit_uri_parts)
         if parts > 1 and edit_uri_parts[1] == "master" and self.branch != "master":

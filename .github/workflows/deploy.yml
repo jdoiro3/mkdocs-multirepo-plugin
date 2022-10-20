@@ -79,7 +79,7 @@ jobs:
       - name: Integration Tests
         run: ./__tests__/test-bats-ci.sh
 
-  publish:
+  publish-to-pypi:
     needs: integration-tests
     runs-on: ubuntu-latest
     steps:
@@ -132,3 +132,52 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.pypi_api_key }}
+
+  tag-and-generate-github-release:
+    needs: publish-to-pypi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - run: |
+          npm install semver
+          npm install toml
+          npm install changelog-parser
+      - name: Create tag
+        id: create-tag-and-return-changes
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const toml = require('toml')
+            const fs = require('fs').promises
+            const parseChangelog = require('changelog-parser')
+
+            var version = toml.parse(await fs.readFile('pyproject.toml', 'utf8')).tool.poetry.version
+            var changelog = await parseChangelog('CHANGELOG.md')
+
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/v${version}`,
+              sha: context.sha
+            })
+
+            return changelog.versions[0].body
+          result-encoding: string
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            ${{steps.create-tag-and-return-changes.outputs.result}}
+          draft: false
+          prerelease: false

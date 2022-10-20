@@ -1,6 +1,7 @@
 ## 0.4.11
 
-- Added a specific `GithubAccessToken` environment variable that allows usage of the plugin with GitHub Apps-generated access tokens and personal access tokens. 
+- Added a specific `GithubAccessToken` environment variable that allows usage of the plugin with GitHub Apps-generated access tokens and personal access tokens.
+- Fixed edit urls for imported repos where the the Mkdocs `edit_uri` and `repo_url` aren't set, and the Multirepo `edit_uri` for an imported repo isn't set. Note that the edit url for imported repos hasn't been robustly tested yet.
 
 ## 0.4.10
 
