@@ -62,6 +62,19 @@ class MultirepoPlugin(BasePlugin):
     def set_temp_dir(self, dir):
         self.temp_dir = dir
 
+    def derive_config_edit_uri(self, repo_name: str, repo_url: str, config: Config) -> str:
+        """returns the derived edit_uri based on the imported repos url"""
+        repo_url_key = f"{repo_name}_repo_url"
+        config[repo_url_key] = repo_url
+        edit_uri_obj = config_options.EditURI(repo_url_key)
+        # sets the mkdocs edit_uri  in place
+        edit_uri_obj.post_validation(config, "edit_uri")
+        derived_edit_uri = config.get("edit_uri")
+        # we just used mkdocs machinery to get the derived value and
+        # now we delete since the edit_uri needs to be None for other imported repos
+        del config["edit_uri"]
+        return derived_edit_uri or ""
+
     def setup_imported_repo(self, config: Config):
         temp_dir = tempfile.mkdtemp(prefix="multirepo_")
         temp_section_dir = Path(temp_dir) / "docs" / self.config.get("section_name")
@@ -121,13 +134,16 @@ class MultirepoPlugin(BasePlugin):
         """Imports documentation in other repos based on nav configuration"""
         nav: List[Dict] = config.get('nav')
         nav_imports = get_import_stmts(nav, self.temp_dir, DEFAULT_BRANCH)
-        repos = [nav_import.repo for nav_import in nav_imports]
+        repos: List[DocsRepo] = [nav_import.repo for nav_import in nav_imports]
         asyncio_run(batch_import(repos))
         for nav_import, repo in zip(nav_imports, repos):
             repo_config = repo.load_config()
             if not repo_config.get("nav"):
                 raise ImportDocsException(f"{repo.name}'s {repo.config} file doesn't have a nav section")
-            repo.set_edit_uri(repo_config.get("edit_uri") or config.get("edit_uri") or "")
+            # mkdocs config values edit_uri and repo_url aren't set
+            if not config.get("edit_uri"):
+                derived_edit_uri = self.derive_config_edit_uri(repo.name, repo.url, config)
+            repo.set_edit_uri(repo_config.get("edit_uri") or config.get("edit_uri") or derived_edit_uri)
             # Change the section title value from '!import {url}' to the imported repo's nav
             # Note: this changes config.nav in place
             nav_import.set_section_value(repo_config.get("nav"))
@@ -149,13 +165,16 @@ class MultirepoPlugin(BasePlugin):
             name_slug = slugify(repo.get("section"))
             path = repo.get("section_path")
             repo_name = f"{path}/{name_slug}" if path is not None else name_slug
+            # mkdocs config values edit_uri and repo_url aren't set
+            if not config.get("edit_uri"):
+                derived_edit_uri = self.derive_config_edit_uri(repo_name, import_stmt.get("url"), config)
             repo = DocsRepo(
                 name=repo_name,
                 url=import_stmt.get("url"),
                 temp_dir=self.temp_dir,
                 docs_dir=import_stmt.get("docs_dir", "docs/*"),
                 branch=import_stmt.get("branch", DEFAULT_BRANCH),
-                edit_uri=import_stmt.get("edit_uri") or config.get("edit_uri") or "",
+                edit_uri=import_stmt.get("edit_uri") or config.get("edit_uri") or derived_edit_uri,
                 multi_docs=bool(import_stmt.get("multi_docs", False)),
                 extra_imports=import_stmt.get("extra_imports", [])
                 )
