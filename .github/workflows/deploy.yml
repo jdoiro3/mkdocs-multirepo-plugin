@@ -12,13 +12,13 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
-      deploy-new-version:
+      generate-gh-release:
         type: choice
-        description: Deploy new PYPI version
-        default: 'no' 
+        description: Generate a GH release and create a new tag
+        default: 'false' 
         options: 
-        - yes
-        - no
+        - 'true'
+        - 'false'
       
 jobs:
   unit-tests:
@@ -151,16 +151,17 @@ jobs:
             const parseChangelog = require('changelog-parser')
             var version = toml.parse(await fs.readFile('pyproject.toml', 'utf8')).tool.poetry.version
             var changelog = await parseChangelog('CHANGELOG.md')
+            console.log({changes: changelog.versions[0].body, version: version})
             return {changes: changelog.versions[0].body, version: version}
       - name: Create Release
-        if: ${{ steps.generate-release.outputs.result == 'true' || github.event.inputs.deploy-new-version == 'yes' }}
+        if: ${{ steps.generate-release.outputs.result == 'true' || github.event.inputs.generate-gh-release == 'true' }}
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.get-changes.outputs.result.version }}
-          release_name: Release ${{ github.ref }}
+          release_name: Release v${{ steps.get-changes.outputs.result.version }}
           body: |
             Changes in this Release
             ${{ steps.get-changes.outputs.result.changes }}
