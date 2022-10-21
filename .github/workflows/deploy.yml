@@ -5,7 +5,6 @@ on:
     branches:
       - main
     paths:
-      - ".github/workflows/deploy.yml"
       - "pyproject.toml"
       
 
@@ -16,6 +15,13 @@ on:
         type: choice
         description: Generate a GH release and create a new tag
         default: 'false' 
+        options: 
+        - 'true'
+        - 'false'
+      run-integration-tests:
+        type: choice
+        description: Run integration testing before generating release
+        default: 'true' 
         options: 
         - 'true'
         - 'false'
@@ -46,6 +52,7 @@ jobs:
         run: poetry run python3 -m unittest tests.unittests -v
 
   integration-tests:
+    if: ${{ github.event.inputs.run-integration-tests == 'true' }}
     needs: unit-tests
     name: Python ${{ matrix.python-version }} and Git ${{ matrix.git-version }}
     runs-on: ubuntu-latest
@@ -164,7 +171,7 @@ jobs:
           release_name: Release v${{ steps.get-changes.outputs.result.version }}
           body: |
             Changes in this Release
-            ${{ steps.get-changes.outputs.result.changes }}
+            ${{ steps.get-changes.outputs.result }}
           draft: false
           prerelease: false
       
