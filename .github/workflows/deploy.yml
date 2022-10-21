@@ -95,6 +95,7 @@ jobs:
         run: ./__tests__/test-bats-ci.sh
 
   publish-to-pypi:
+    if: ${{ always() && github.event.inputs.run-integration-tests == 'false' }}
     needs: integration-tests
     runs-on: ubuntu-latest
     steps:
