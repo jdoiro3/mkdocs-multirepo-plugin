@@ -159,8 +159,9 @@ jobs:
             const parseChangelog = require('changelog-parser')
             var version = toml.parse(await fs.readFile('pyproject.toml', 'utf8')).tool.poetry.version
             var changelog = await parseChangelog('CHANGELOG.md')
-            console.log({changes: changelog.versions[0].body, version: version})
-            return {changes: changelog.versions[0].body, version: version}
+            let result = {changes: changelog.versions[0].body, version: version}
+            console.log(result)
+            return result
       - name: Create Release
         if: ${{ steps.generate-release.outputs.result == 'true' || github.event.inputs.generate-gh-release == 'true' }}
         id: create_release
@@ -168,11 +169,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.get-changes.outputs.result.version }}
-          release_name: Release v${{ steps.get-changes.outputs.result.version }}
+          tag_name: v${{ fromJSON(steps.get-changes.outputs.result).version }}
+          release_name: Release v${{ fromJSON(steps.get-changes.outputs.result).version }}
           body: |
             Changes in this Release
-            ${{ steps.get-changes.outputs.result }}
+            ${{ fromJSON(steps.get-changes.outputs.result).changes }}
           draft: false
           prerelease: false
       
