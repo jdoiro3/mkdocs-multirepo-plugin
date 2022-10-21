@@ -19,7 +19,7 @@ if [[ -n  "$AccessToken" ]]; then
     url_to_use="${protocol}://$AccessToken@$url_rest"
     git config http.extraheader "AUTHORIZATION: bearer $AccessToken"
 elif [[ -n  "$GithubAccessToken" ]]; then
-    url_to_use="${protocol}://x-access-token:$AccessToken@$url_rest"
+    url_to_use="${protocol}://x-access-token:$GithubAccessToken@$url_rest"
 else
   url_to_use="$url"
 fi
