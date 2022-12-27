@@ -226,8 +226,7 @@ You'll need to install [Poetry](https://python-poetry.org) and Git to contribute
 
 > Assumes you have `poetry` installed and in your path
 
-```> poetry install```
-```> poetry shell```
+```~ poetry install & poetry shell```
 
 ### Running Tests
 
