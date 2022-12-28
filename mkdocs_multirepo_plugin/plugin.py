@@ -198,14 +198,15 @@ class MultirepoPlugin(BasePlugin):
             self.repos[repo.name] = repo
         return config
 
-    def on_config(self, config: Config, skip_edit_url_derivation: bool = False) -> Config:
+    def on_config(self, config: Config, skip_edit_url_derivation: bool = False, import_dir: Path = Path()) -> Config:
         if self.config.get("imported_repo"):
             config, temp_dir = self.handle_imported_repo(config)
             self.set_temp_dir(temp_dir)
             return config
         else:
-            docs_dir = Path(config.get('docs_dir') or "")
-            self.set_temp_dir(docs_dir.parent / self.config.get("temp_dir"))
+            docs_dir = config.get('docs_dir')
+            import_dir = Path(docs_dir).parent if docs_dir else import_dir
+            self.set_temp_dir(import_dir / self.config.get("temp_dir"))
             if not self.temp_dir.is_dir():
                 self.temp_dir.mkdir()
             repos = self.config.get("repos")
