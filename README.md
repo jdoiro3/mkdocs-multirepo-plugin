@@ -214,10 +214,6 @@ Writers can now run `mkdocs serve` within their local repo, using the main site'
 
 ![site image](assets/backstage-material-theme.png)
 
-## Examples
-
-- [Multirepo with Mcdocstrings](./examples/mcdocstrings)
-
 ## Contributing
 
 You'll need to install [Poetry](https://python-poetry.org) and Git to contribute and run tests locally.
@@ -226,8 +222,7 @@ You'll need to install [Poetry](https://python-poetry.org) and Git to contribute
 
 > Assumes you have `poetry` installed and in your path
 
-```> poetry install```
-```> poetry shell```
+```~ poetry install & poetry shell```
 
 ### Running Tests
 
