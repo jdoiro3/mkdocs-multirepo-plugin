@@ -26,6 +26,9 @@ fi
 # sparse checkout the old way
 git config core.sparseCheckout true
 git remote add -f origin "$url_to_use"
+# .git/info might not exist after git init, depending on git version
+# (e.g. git 2.24.1 does not create it)
+mkdir -p .git/info
 for dir in "${dirs[@]}"
 do
    printf "${dir}\n">> .git/info/sparse-checkout
