@@ -298,6 +298,7 @@ class DocsRepo(Repo):
 
     def get_edit_url(self, src_path):
         src_path = remove_parents(src_path, self.name_length)
+        is_extra_import = src_path.split("/")[-1] in self.extra_imports
         if self.multi_docs:
             parent_path = str(Path(src_path).parent).replace("\\", "/")
             if parent_path in self.src_path_map:
@@ -306,7 +307,10 @@ class DocsRepo(Repo):
             else:
                 url_parts = [self.url, self.edit_uri, self.src_path_map.get(str(src_path), str(src_path))]
         else:
-            url_parts = [self.url, self.edit_uri, self.docs_dir.replace("/*", ""), src_path]
+            if is_extra_import:
+                url_parts = [self.url, self.edit_uri, src_path]
+            else:
+                url_parts = [self.url, self.edit_uri, self.docs_dir.replace("/*", ""), src_path]
         return '/'.join(part.strip('/') for part in url_parts)
 
     def set_edit_uri(self, edit_uri) -> None:
