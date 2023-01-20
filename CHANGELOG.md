@@ -1,3 +1,14 @@
+## 0.5.0
+
+### PRs in Release
+
+- [Create .git/info dir if it does not exist](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/59)
+- [fixing edit urls and add new config param](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/75)
+
+### Added Features
+
+TODO
+
 ## 0.4.12
 
 - Fixed use of `GithubAccessToken` environment variable so that the sparse clone now uses the correct token.
