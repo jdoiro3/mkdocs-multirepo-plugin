@@ -335,7 +335,7 @@ class DocsRepo(Repo):
             if p.name == "docs":
                 shutil.rmtree(str(p))
 
-    async def import_docs(self, remove_existing: bool = True, keep_docs_dir: bool = True) -> 'DocsRepo':
+    async def import_docs(self, remove_existing: bool = True, keep_docs_dir: bool = False) -> 'DocsRepo':
         """imports the markdown documentation to be included in the site asynchronously"""
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
@@ -360,7 +360,7 @@ class DocsRepo(Repo):
         return config
 
 
-async def batch_import(repos: List[DocsRepo], remove_existing: bool = True, keep_docs_dir: bool = True) -> None:
+async def batch_import(repos: List[DocsRepo], remove_existing: bool = True, keep_docs_dir: bool = False) -> None:
     """Given a list of DocRepo instances, performs a batch import asynchronously"""
     if not repos:
         return None
