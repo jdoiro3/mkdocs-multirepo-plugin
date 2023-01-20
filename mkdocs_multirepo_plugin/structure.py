@@ -296,7 +296,7 @@ class DocsRepo(Repo):
     def name_length(self):
         return len(Path(self.name).parts)
 
-    def get_edit_url(self, src_path):
+    def get_edit_url(self, src_path, keep_docs_dir: bool = False):
         src_path = remove_parents(src_path, self.name_length)
         is_extra_import = src_path.split("/")[-1] in self.extra_imports
         if self.multi_docs:
@@ -307,7 +307,7 @@ class DocsRepo(Repo):
             else:
                 url_parts = [self.url, self.edit_uri, self.src_path_map.get(str(src_path), str(src_path))]
         else:
-            if is_extra_import:
+            if is_extra_import or keep_docs_dir:
                 url_parts = [self.url, self.edit_uri, src_path]
             else:
                 url_parts = [self.url, self.edit_uri, self.docs_dir.replace("/*", ""), src_path]
@@ -335,7 +335,7 @@ class DocsRepo(Repo):
             if p.name == "docs":
                 shutil.rmtree(str(p))
 
-    async def import_docs(self, remove_existing=True) -> 'DocsRepo':
+    async def import_docs(self, remove_existing: bool = True, keep_docs_dir: bool = True) -> 'DocsRepo':
         """imports the markdown documentation to be included in the site asynchronously"""
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
@@ -348,7 +348,8 @@ class DocsRepo(Repo):
             self.transform_docs_dir()
         else:
             await self.sparse_clone([self.docs_dir, self.config] + self.extra_imports)
-            await execute_bash_script("mv_docs_up.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
+            if not keep_docs_dir:
+                await execute_bash_script("mv_docs_up.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
         return self
 
     def load_config(self) -> Dict:
@@ -359,13 +360,15 @@ class DocsRepo(Repo):
         return config
 
 
-async def batch_import(repos: List[DocsRepo]) -> None:
+async def batch_import(repos: List[DocsRepo], remove_existing: bool = True, keep_docs_dir: bool = True) -> None:
     """Given a list of DocRepo instances, performs a batch import asynchronously"""
     if not repos:
         return None
     progress_list = ProgressList([repo.name for repo in repos])
     start = time.time()
-    for import_async in asyncio.as_completed([repo.import_docs() for repo in repos]):
+    for import_async in asyncio.as_completed(
+        [repo.import_docs(remove_existing=remove_existing, keep_docs_dir=keep_docs_dir) for repo in repos]
+        ):
         repo = await import_async
         progress_list.mark_completed(repo.name, round(time.time() - start, 3))
 

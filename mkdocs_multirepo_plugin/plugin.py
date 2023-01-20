@@ -46,13 +46,14 @@ class MultirepoPlugin(BasePlugin):
         ("temp_dir", config_options.Type(str, default="temp_dir")),
         ("repos", config_options.Type(list, default=[])),
         ("url", config_options.Type(str, default=None)),
+        ("keep_docs_dir", config_options.Type(bool, default=False)),
         # used when developing in repo that is imported
         ("custom_dir", config_options.Type(str, default=None)),
         ("yml_file", config_options.Type(str, default=None)),
         ("imported_repo", config_options.Type(bool, default=False)),
         ("dirs", config_options.Type(list, default=[])),
         ("branch", config_options.Type(str, default=None)),
-        ("section_name", config_options.Type(str, default="Imported Docs"))
+        ("section_name", config_options.Type(str, default="Imported Docs")),
     )
 
     def __init__(self):
@@ -134,10 +135,11 @@ class MultirepoPlugin(BasePlugin):
 
     def handle_nav_based_import(self, config: Config) -> Config:
         """Imports documentation in other repos based on nav configuration"""
+        keep_docs_dir: bool = self.config.get("keep_docs_dir")
         nav: List[Dict] = config.get('nav')
         nav_imports = get_import_stmts(nav, self.temp_dir, DEFAULT_BRANCH)
         repos: List[DocsRepo] = [nav_import.repo for nav_import in nav_imports]
-        asyncio_run(batch_import(repos))
+        asyncio_run(batch_import(repos, keep_docs_dir=keep_docs_dir))
         need_to_derive_edit_uris = config.get("edit_uri") is None
 
         for nav_import, repo in zip(nav_imports, repos):
@@ -238,7 +240,7 @@ class MultirepoPlugin(BasePlugin):
                 except AttributeError:
                     files_repo = None
                 if files_repo and f.page:
-                    f.page.edit_url = files_repo.get_edit_url(f.src_path)
+                    f.page.edit_url = files_repo.get_edit_url(f.src_path, self.config.get("keep_docs_dir"))
             return nav
 
     def on_post_build(self, config: Config) -> None:
