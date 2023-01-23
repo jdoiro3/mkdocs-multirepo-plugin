@@ -3,11 +3,20 @@
 ### PRs in Release
 
 - [Create .git/info dir if it does not exist](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/59)
-- [fixing edit urls and add new config param](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/75)
+- [Fix edit urls and add new `keep_docs_dir` config param](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/75)
 
 ### Added Features
 
-TODO
+A new `keep_docs_dir` was added to the `multirepo` config. Setting this to `true` will cause the plugin to not move the contents of the `docs_dir` up and delete it. See issue [#74](https://github.com/jdoiro3/mkdocs-multirepo-plugin/issues/74) for more details.
+
+#### Usage Example
+
+```yaml
+plugins:
+  - search
+  - multirepo:
+      keep_docs_dir: true
+```
 
 ## 0.4.12
 
