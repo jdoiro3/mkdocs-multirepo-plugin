@@ -1,10 +1,10 @@
-## 0.5.0
+## 0.5.1
 
 ### PRs in Release
 
 - [Create .git/info dir if it does not exist](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/59)
 - [Fix edit urls and add new `keep_docs_dir` config param](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/75)
-- [Fix Readme]()
+- [Fix Readme](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/77)
 
 ### Added Features
 
