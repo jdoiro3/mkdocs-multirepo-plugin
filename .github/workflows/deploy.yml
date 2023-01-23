@@ -12,19 +12,14 @@ on:
   workflow_dispatch:
     inputs:
       generate-gh-release:
-        type: choice
         description: Generate a GH release and create a new tag
-        default: 'false'
-        options:
-        - 'true'
-        - 'false'
+        type: boolean
+        required: false
+        default: false
       run-integration-tests:
-        type: choice
         description: Run integration testing before generating release
-        default: 'true'
-        options:
-        - 'true'
-        - 'false'
+        type: boolean
+        default: true
 
 jobs:
   unit-tests:
