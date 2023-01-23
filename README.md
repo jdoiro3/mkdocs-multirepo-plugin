@@ -58,8 +58,6 @@ The plugin introduces the *!import* statement in your config's *nav* section. Yo
   - **multi_docs={True | False}**: If set to *True* all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
   - **config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
   - **extra_imports=["{filename | path | glob}"]**: Use this if you want to import additional directories or files along with the docs.
-  - **keep_docs_dir=[True | False]**: If set to *True* the docs directory will not be removed when importing docs. When using this with a `nav` section in an *imported* repo you must keep the docs directory in the path (e.g., `docs/path/to/file.md`).
-
 </details>
 
 ```yaml
@@ -94,6 +92,9 @@ plugins:
   - multirepo:
       # (optional) tells multirepo to cleanup the temporary directory after site is built.
       cleanup: true
+      # if set the docs directory will not be removed when importing docs. When using this with a nav section in an imported repo 
+      # you must keep the docs directory in the path (e.g., docs/path/to/file.md).
+      keep_docs_dir: true
       repos:
         - section: Backstage
           # you can define the edit uri path
