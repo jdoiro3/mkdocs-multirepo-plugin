@@ -16,6 +16,11 @@ on:
         type: boolean
         required: false
         default: true
+      release-to-pypi-override:
+        description: Generate a release to PYPI even if the version in pyproject.toml is the same as main
+        type: boolean
+        required: false
+        default: false
       run-integration-tests:
         description: Run integration testing before generating release
         type: boolean
@@ -140,7 +145,7 @@ jobs:
             }
           result-encoding: string
       - name: Publish a Python distribution to PyPI
-        if: ${{ steps.generate-release.outputs.result == 'true' }}
+        if: ${{ steps.generate-release.outputs.result == 'true' || github.event.inputs.release-to-pypi-override == 'true' }}
         uses: pypa/gh-action-pypi-publish@f3ebf87ba2883f1c40faf37d2bb42277f12179c8
         with:
           user: __token__
