@@ -17,7 +17,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux"
 ]
-
 [tool.poetry.scripts]
 sparse_clone = { reference = 'mkdocs_multirepo_plugin/scripts/sparse_clone.sh', type = "file" }
 sparse_clone_old = { reference = 'mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh', type = "file" }
