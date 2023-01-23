@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mkdocs-multirepo-plugin"
-version = "0.5.0"
+version = "0.5.1"
 description = "Build documentation in multiple repos into one site."
 authors = ["jdoiro3 <josephdoiron1234@yahoo.com>"]
 license = "MIT"
