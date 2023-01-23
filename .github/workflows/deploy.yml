@@ -19,6 +19,7 @@ on:
       run-integration-tests:
         description: Run integration testing before generating release
         type: boolean
+        required: false
         default: true
 
 jobs:
