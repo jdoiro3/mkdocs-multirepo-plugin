@@ -19,7 +19,7 @@ debugger() {
 
 outputContains() {
   if [[ "$output" == *"$1"* ]]
-  then 
+  then
     return 0
   else
     echo "Output does not contain '$1'"

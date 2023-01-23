@@ -1,12 +1,13 @@
-from typing import Dict, Any
-from pathlib import Path
-from sys import platform, version_info
-import subprocess
 import asyncio
 import logging
-from mkdocs.utils import warning_filter
+import subprocess
 from collections import namedtuple
+from pathlib import Path
 from re import search
+from sys import platform, version_info
+from typing import Any, Dict
+
+from mkdocs.utils import warning_filter
 
 # used for getting Git version
 GitVersion = namedtuple("GitVersion", "major minor")
@@ -58,7 +59,7 @@ def remove_parents(path: str, num_to_remove: int) -> str:
     if num_to_remove >= len(parts):
         raise ValueError(f"{num_to_remove} >= to path with {parts} parts.")
     parts_to_keep = parts[num_to_remove:]
-    return '/' + str(Path(*parts_to_keep)).replace('\\', '/')
+    return "/" + str(Path(*parts_to_keep)).replace("\\", "/")
 
 
 def git_version() -> GitVersion:
@@ -72,7 +73,7 @@ def git_version() -> GitVersion:
     stdout = output.stdout
     if isinstance(stdout, bytes):
         stdout = output.stdout.decode()
-    version = search(r'([\d.]+)', stdout).group(1).split(".")[:2]
+    version = search(r"([\d.]+)", stdout).group(1).split(".")[:2]
     return GitVersion(int(version[0]), int(version[1]))
 
 
@@ -83,11 +84,18 @@ def git_supports_sparse_clone() -> bool:
     return True
 
 
-async def execute_bash_script(script: str, arguments: list = [], cwd: Path = Path.cwd()) -> str:
+async def execute_bash_script(
+    script: str, arguments: list = [], cwd: Path = Path.cwd()
+) -> str:
     """executes a bash script in an asynchronously"""
     try:
         process = await asyncio.create_subprocess_exec(
-            'bash', script, *arguments, cwd=cwd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            "bash",
+            script,
+            *arguments,
+            cwd=cwd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
     except FileNotFoundError:
         raise GitException(
@@ -110,12 +118,9 @@ def asyncio_run(futures) -> None:
 
 
 class ProgressList:
-
     def __init__(self, labels):
         self._labels = labels
-        self._labels_map = {
-            label: i for i, label in enumerate(self._labels)
-        }
+        self._labels_map = {label: i for i, label in enumerate(self._labels)}
         self._num_items = len(self._labels)
         for label in self._labels:
             print(f"🔳 {label}")

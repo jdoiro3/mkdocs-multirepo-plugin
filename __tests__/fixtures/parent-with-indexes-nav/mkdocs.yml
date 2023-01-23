@@ -8,10 +8,8 @@ theme:
 nav:
   - Home:
     - index.md
-    - About: about.md    
+    - About: about.md
   - ok-nav-simple: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'
 
 plugins:
   - multirepo
-
-
