@@ -6,7 +6,7 @@ on:
       - main
     paths-ignore:
       - '**/README.md'
-      
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -76,4 +76,3 @@ jobs:
           pip install -r integration-requirements.txt
       - name: Integration Tests
         run: ./__tests__/test-bats-ci.sh
-      

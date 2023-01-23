@@ -1,29 +1,26 @@
-from typing import Tuple, List, Dict, Union
-import shutil
-import subprocess
-from pathlib import Path
-from mkdocs.config import Config
-from mkdocs.utils import yaml_load
-from mkdocs.structure.files import (
-    File,
-    Files,
-    _filter_paths,
-    _sort_files
-)
-from .util import (
-    ImportDocsException,
-    git_supports_sparse_clone,
-    remove_parents,
-    execute_bash_script,
-    ImportSyntaxError,
-    ProgressList,
-    log
-)
+import ast
 import asyncio
 import os
-from slugify import slugify
-import ast
+import shutil
+import subprocess
 import time
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
+
+from mkdocs.config import Config
+from mkdocs.structure.files import File, Files, _filter_paths, _sort_files
+from mkdocs.utils import yaml_load
+from slugify import slugify
+
+from .util import (
+    ImportDocsException,
+    ImportSyntaxError,
+    ProgressList,
+    execute_bash_script,
+    git_supports_sparse_clone,
+    log,
+    remove_parents,
+)
 
 
 def is_yaml_file(file: File) -> bool:
@@ -36,7 +33,7 @@ def resolve_nav_paths(nav: List[Dict], section_name: str) -> None:
         if isinstance(entry, str):
             nav[index] = str(section_name / Path(entry)).replace("\\", "/")
         elif isinstance(entry, dict):
-            (key, value), = entry.items()
+            ((key, value),) = entry.items()
             if type(value) is list:
                 resolve_nav_paths(value, section_name)
             else:
@@ -50,7 +47,7 @@ def parse_repo_url(repo_url: str) -> Dict[str, str]:
     if url_parts_len > 2:
         raise ImportSyntaxError(
             f"The import statement's repo url, {repo_url}, can only contain one ?"
-            )
+        )
     if url_parts_len == 1:
         url, query_str = url_parts[0], None
     else:
@@ -62,13 +59,13 @@ def parse_repo_url(repo_url: str) -> Dict[str, str]:
     import_parts = {"url": url}
     for part in query_parts:
         k, v = part.split("=")
-        if v[0] == "[" and v[len(v)-1] == "]":
+        if v[0] == "[" and v[len(v) - 1] == "]":
             try:
                 import_parts[k] = [lst_v.strip() for lst_v in ast.literal_eval(v)]
             except ValueError:
                 raise ImportSyntaxError(
                     f"{v} is not a properly formatted python list\nException raised for import statement: {repo_url}"
-                    )
+                )
         else:
             import_parts[k] = v
     return import_parts
@@ -89,17 +86,19 @@ class NavImport:
         repo (DocsRepo): The docs repo object created after parsing the import statement.
     """
 
-    def __init__(self, section: str, nav_entry_ptr: Dict[str, Union[List, str]], repo: "DocsRepo"):
+    def __init__(
+        self, section: str, nav_entry_ptr: Dict[str, Union[List, str]], repo: "DocsRepo"
+    ):
         self.section = section
         self.repo = repo
         self.nav_entry_ptr = nav_entry_ptr
 
     def __eq__(self, other):
         return (
-            isinstance(other, NavImport) and
-            self.section == other.section and
-            self.nav_entry_ptr == other.nav_entry_ptr and
-            self.repo == other.repo
+            isinstance(other, NavImport)
+            and self.section == other.section
+            and self.nav_entry_ptr == other.nav_entry_ptr
+            and self.repo == other.repo
         )
 
     def __str__(self):
@@ -119,8 +118,8 @@ def get_import_stmts(
     nav: List[Dict],
     temp_dir: Path,
     default_branch: str,
-    path_to_section: List[str] = None
-        ) -> List[NavImport]:
+    path_to_section: List[str] = None,
+) -> List[NavImport]:
     """Searches through the nav and finds import statements, returning a list of NavImport objects.
     The NavImport object contains, among other things, a reference to the dictionary in the nav that
     allows later updates to this nav entry in place.
@@ -131,25 +130,27 @@ def get_import_stmts(
     for index, entry in enumerate(nav):
         if isinstance(entry, str):
             continue
-        (section, value), = entry.items()
+        ((section, value),) = entry.items()
         path_to_section.append(section)
         if type(value) is list:
-            imports += get_import_stmts(value, temp_dir, default_branch, path_to_section)
+            imports += get_import_stmts(
+                value, temp_dir, default_branch, path_to_section
+            )
         elif value.startswith("!import"):
             import_stmt: Dict[str, str] = parse_import(value)
             # slugify the section names and turn them into a valid path string
             path = str(Path(*[slugify(section) for section in path_to_section]))
             repo = DocsRepo(
-                        # we set the DocsRepo name to the path to the section to reduce the chance names collide
-                        name=path,
-                        url=import_stmt.get("url"),
-                        temp_dir=temp_dir,
-                        docs_dir=import_stmt.get("docs_dir", "docs/*"),
-                        branch=import_stmt.get("branch", default_branch),
-                        multi_docs=bool(import_stmt.get("multi_docs", False)),
-                        config=import_stmt.get("config", "mkdocs.yml"),
-                        extra_imports=import_stmt.get("extra_imports", [])
-                    )
+                # we set the DocsRepo name to the path to the section to reduce the chance names collide
+                name=path,
+                url=import_stmt.get("url"),
+                temp_dir=temp_dir,
+                docs_dir=import_stmt.get("docs_dir", "docs/*"),
+                branch=import_stmt.get("branch", default_branch),
+                multi_docs=bool(import_stmt.get("multi_docs", False)),
+                config=import_stmt.get("config", "mkdocs.yml"),
+                extra_imports=import_stmt.get("extra_imports", []),
+            )
             imports.append(NavImport(section, nav[index], repo))
             path_to_section.pop()
         else:
@@ -192,7 +193,9 @@ class Repo:
         if git_supports_sparse_clone():
             stdout = await execute_bash_script("sparse_clone.sh", args, self.temp_dir)
         else:
-            stdout = await execute_bash_script("sparse_clone_old.sh", args, self.temp_dir)
+            stdout = await execute_bash_script(
+                "sparse_clone_old.sh", args, self.temp_dir
+            )
         return stdout
 
     async def import_config_files(self, dirs: List[str]) -> subprocess.CompletedProcess:
@@ -215,7 +218,9 @@ class Repo:
                 with open(config_file, "rb") as f:
                     return yaml_load(f)
             else:
-                raise ImportDocsException(f"{self.name} doesn't have {yml_file} at {str(config_file)}")
+                raise ImportDocsException(
+                    f"{self.name} doesn't have {yml_file} at {str(config_file)}"
+                )
         else:
             raise ImportDocsException("docs must be imported before loading yaml")
 
@@ -248,7 +253,7 @@ class DocsRepo(Repo):
             edit_uri_parts[1] = self.branch
         if parts > 2 and edit_uri_parts[2] == "docs":
             del edit_uri_parts[2]
-        return '/'.join(part for part in edit_uri_parts) + "/"
+        return "/".join(part for part in edit_uri_parts) + "/"
 
     def __init__(
         self,
@@ -261,7 +266,7 @@ class DocsRepo(Repo):
         edit_uri: str = "",
         multi_docs: bool = False,
         config: str = "mkdocs.yml",
-        extra_imports: List[str] = None
+        extra_imports: List[str] = None,
     ):
         if extra_imports is None:
             extra_imports = []
@@ -281,33 +286,51 @@ class DocsRepo(Repo):
 
     def __eq__(self, other):
         return (
-            isinstance(other, DocsRepo) and
-            (self.name == other.name) and
-            (self.url == other.url) and
-            (self.temp_dir == other.temp_dir) and
-            (self.docs_dir == other.docs_dir) and
-            (self.branch == other.branch) and
-            (self.edit_uri == other.edit_uri) and
-            (self.multi_docs == other.multi_docs) and
-            (self.config == other.config)
+            isinstance(other, DocsRepo)
+            and (self.name == other.name)
+            and (self.url == other.url)
+            and (self.temp_dir == other.temp_dir)
+            and (self.docs_dir == other.docs_dir)
+            and (self.branch == other.branch)
+            and (self.edit_uri == other.edit_uri)
+            and (self.multi_docs == other.multi_docs)
+            and (self.config == other.config)
         )
 
     @property
     def name_length(self):
         return len(Path(self.name).parts)
 
-    def get_edit_url(self, src_path):
+    def get_edit_url(self, src_path, keep_docs_dir: bool = False):
         src_path = remove_parents(src_path, self.name_length)
+        is_extra_import = src_path.split("/")[-1] in self.extra_imports
         if self.multi_docs:
             parent_path = str(Path(src_path).parent).replace("\\", "/")
             if parent_path in self.src_path_map:
                 src_path = Path(src_path)
-                url_parts = [self.url, self.edit_uri, self.src_path_map.get(parent_path), str(src_path.name)]
+                url_parts = [
+                    self.url,
+                    self.edit_uri,
+                    self.src_path_map.get(parent_path),
+                    str(src_path.name),
+                ]
             else:
-                url_parts = [self.url, self.edit_uri, self.src_path_map.get(str(src_path), str(src_path))]
+                url_parts = [
+                    self.url,
+                    self.edit_uri,
+                    self.src_path_map.get(str(src_path), str(src_path)),
+                ]
         else:
-            url_parts = [self.url, self.edit_uri, self.docs_dir.replace("/*", ""), src_path]
-        return '/'.join(part.strip('/') for part in url_parts)
+            if is_extra_import or keep_docs_dir:
+                url_parts = [self.url, self.edit_uri, src_path]
+            else:
+                url_parts = [
+                    self.url,
+                    self.edit_uri,
+                    self.docs_dir.replace("/*", ""),
+                    src_path,
+                ]
+        return "/".join(part.strip("/") for part in url_parts)
 
     def set_edit_uri(self, edit_uri) -> None:
         """Sets the edit uri for the repo. Used for mkdocs pages"""
@@ -323,15 +346,21 @@ class DocsRepo(Repo):
                 if not new_p:
                     new_p = p.parent.parent / p.name
                 # create a mapping from the old src_path to the old for page edit_urls
-                old_src_path = str(p).replace(str(self.location), "").replace("\\", "/")[1:]
-                new_src_path = str(new_p).replace(str(self.location), "").replace("\\", "/")
+                old_src_path = (
+                    str(p).replace(str(self.location), "").replace("\\", "/")[1:]
+                )
+                new_src_path = (
+                    str(new_p).replace(str(self.location), "").replace("\\", "/")
+                )
                 self.src_path_map[new_src_path] = old_src_path
         # delete all empty docs directories
         for p in self.location.rglob("*"):
             if p.name == "docs":
                 shutil.rmtree(str(p))
 
-    async def import_docs(self, remove_existing=True) -> 'DocsRepo':
+    async def import_docs(
+        self, remove_existing: bool = True, keep_docs_dir: bool = False
+    ) -> "DocsRepo":
         """imports the markdown documentation to be included in the site asynchronously"""
         if self.location.is_dir() and remove_existing:
             shutil.rmtree(str(self.location))
@@ -344,24 +373,38 @@ class DocsRepo(Repo):
             self.transform_docs_dir()
         else:
             await self.sparse_clone([self.docs_dir, self.config] + self.extra_imports)
-            await execute_bash_script("mv_docs_up.sh", [self.docs_dir.replace("/*", "")], cwd=self.location)
+            if not keep_docs_dir:
+                await execute_bash_script(
+                    "mv_docs_up.sh",
+                    [self.docs_dir.replace("/*", "")],
+                    cwd=self.location,
+                )
         return self
 
     def load_config(self) -> Dict:
         """Loads the repo's multirepo config file"""
         config = super().load_config(self.config)
-        if 'nav' in config:
-            resolve_nav_paths(config.get('nav'), self.name)
+        if "nav" in config:
+            resolve_nav_paths(config.get("nav"), self.name)
         return config
 
 
-async def batch_import(repos: List[DocsRepo]) -> None:
+async def batch_import(
+    repos: List[DocsRepo], remove_existing: bool = True, keep_docs_dir: bool = False
+) -> None:
     """Given a list of DocRepo instances, performs a batch import asynchronously"""
     if not repos:
         return None
     progress_list = ProgressList([repo.name for repo in repos])
     start = time.time()
-    for import_async in asyncio.as_completed([repo.import_docs() for repo in repos]):
+    for import_async in asyncio.as_completed(
+        [
+            repo.import_docs(
+                remove_existing=remove_existing, keep_docs_dir=keep_docs_dir
+            )
+            for repo in repos
+        ]
+    ):
         repo = await import_async
         progress_list.mark_completed(repo.name, round(time.time() - start, 3))
 
@@ -370,7 +413,7 @@ async def batch_import(repos: List[DocsRepo]) -> None:
 def get_files(config: Config, repo: DocsRepo) -> Files:
     """Walk the `docs_dir` and return a Files collection."""
     files = []
-    exclude = ['.*', '/templates']
+    exclude = [".*", "/templates"]
 
     for source_dir, dirnames, filenames in os.walk(repo.location, followlinks=True):
         relative_dir = os.path.relpath(source_dir, repo.temp_dir)
@@ -385,16 +428,23 @@ def get_files(config: Config, repo: DocsRepo) -> Files:
         for filename in _sort_files(filenames):
             path = os.path.normpath(os.path.join(relative_dir, filename))
             # Skip any excluded files
-            if _filter_paths(basename=filename, path=path, is_dir=False, exclude=exclude):
+            if _filter_paths(
+                basename=filename, path=path, is_dir=False, exclude=exclude
+            ):
                 continue
             # Skip README.md if an index file also exists in dir
-            if filename == 'README.md' and 'index.md' in filenames:
+            if filename == "README.md" and "index.md" in filenames:
                 log.warning(
                     f"Both index.md and README.md found. Skipping README.md from {source_dir}"
                 )
                 continue
             files.append(
-                File(path, repo.temp_dir, config['site_dir'], config['use_directory_urls'])
+                File(
+                    path,
+                    repo.temp_dir,
+                    config["site_dir"],
+                    config["use_directory_urls"],
+                )
             )
 
     return Files(files)

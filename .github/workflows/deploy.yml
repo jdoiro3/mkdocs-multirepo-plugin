@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "pyproject.toml"
-      
+
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -14,18 +14,18 @@ on:
       generate-gh-release:
         type: choice
         description: Generate a GH release and create a new tag
-        default: 'false' 
-        options: 
+        default: 'false'
+        options:
         - 'true'
         - 'false'
       run-integration-tests:
         type: choice
         description: Run integration testing before generating release
-        default: 'true' 
-        options: 
+        default: 'true'
+        options:
         - 'true'
         - 'false'
-      
+
 jobs:
   unit-tests:
     name: Unit Tests
@@ -176,4 +176,3 @@ jobs:
             ${{ fromJSON(steps.get-changes.outputs.result).changes }}
           draft: false
           prerelease: false
-      

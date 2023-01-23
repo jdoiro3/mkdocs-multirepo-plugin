@@ -29,7 +29,7 @@ If you like this plugin and want me to continue maintaining it in my free time, 
 ## Dependencies
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) 
+![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
 
 > Newer versions of Git preferred.
 
@@ -51,13 +51,14 @@ plugins:
 The plugin introduces the *!import* statement in your config's *nav* section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
 
 <details><summary><b>!import Statement Sections</b></summary>
-  
+
   - **{url}**: Only *required* part of *!import* statement (e.g., `https://github.com/{user}/{repo name}`).
   - **branch={branch}**: Tells *multirepo* what branch (or tag) to use. Defaults to *master* if not supplied. This is the same argument used in `git clone` (see [here](https://git-scm.com/docs/git-clone#Documentation/git-clone.txt---branchltnamegt)).
   - **docs_dir={path}**: The path to the *docs* directory for the section. Defaults to *docs/\** (a glob) if not supplied.
-  - **multi_docs={True | False}**: If set to *True*, all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
+  - **multi_docs={True | False}**: If set to *True* all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
   - **config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
   - **extra_imports=["{filename | path | glob}"]**: Use this if you want to import additional directories or files along with the docs.
+  - **keep_docs_dir=[True | False]**: If set to *True* the docs directory will not be removed when importing docs. When using this with a `nav` section in an *imported* repo you must keep the docs directory in the path (e.g., `docs/path/to/file.md`).
 
 </details>
 
@@ -157,7 +158,7 @@ By default, this directory turns into this.
 │     index.md
 ```
 
-> Note: 
+> Note:
 > - If using the nav *!import* statement, make sure the nav paths reflect the new directory structure, which doesn't include *docs* directories.
 > - *edit_urls* will still map to underlying markdown file based on the actual directory structure in the remote's repository.
 
@@ -249,4 +250,3 @@ $ PYTHON_37_ONLY=1 ./__tests__/test.sh
 ```
 $ python[3] -m unittest tests.unittests
 ```
-
