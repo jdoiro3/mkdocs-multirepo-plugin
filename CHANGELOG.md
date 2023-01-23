@@ -4,6 +4,7 @@
 
 - [Create .git/info dir if it does not exist](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/59)
 - [Fix edit urls and add new `keep_docs_dir` config param](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/75)
+- [Fix Readme]()
 
 ### Added Features
 
