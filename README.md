@@ -48,8 +48,9 @@ plugins:
   - multirepo
       # (optional) tells multirepo to cleanup the temporary directory after site is built.
       cleanup: true
-      # if set the docs directory will not be removed when importing docs. When using this with a nav section in an imported repo 
-      # you must keep the docs directory in the path (e.g., docs/path/to/file.md).
+      # if set the docs directory will not be removed when importing docs.
+      # When using this with a nav section in an imported repo you must keep the 
+      # docs directory in the path (e.g., docs/path/to/file.md).
       keep_docs_dir: true
 ```
 
