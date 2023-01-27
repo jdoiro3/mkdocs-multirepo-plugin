@@ -46,6 +46,11 @@ Next, add the plugin to your `mkdocs.yml`
 ```yaml
 plugins:
   - multirepo
+      # (optional) tells multirepo to cleanup the temporary directory after site is built.
+      cleanup: true
+      # if set the docs directory will not be removed when importing docs. When using this with a nav section in an imported repo 
+      # you must keep the docs directory in the path (e.g., docs/path/to/file.md).
+      keep_docs_dir: true
 ```
 
 The plugin introduces the *!import* statement in your config's *nav* section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
