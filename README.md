@@ -1,3 +1,7 @@
+:warning: One person maintains this plugin in their spare time for free. :warning:
+
+If you like this plugin and want me to continue maintaining it in my free time, please buy me a [beer 🍺](https://www.buymeacoffee.com/jdoiro) or sponser this plugin!
+
 # mkdocs-multirepo-plugin
 
 [![](https://github.com/jdoiro3/mkdocs-multirepo-plugin/workflows/Tests/badge.svg)](https://github.com/jdoiro3/mkdocs-multirepo-plugin/actions)
@@ -8,8 +12,6 @@
 <img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mkdocs-multirepo-plugin?style=plastic">
 
 Build documentation in multiple repos into one site.
-
-If you like this plugin and want me to continue maintaining it in my free time, please [buy me a 🍺](https://www.buymeacoffee.com/jdoiro)!
 
 ## Features
 
