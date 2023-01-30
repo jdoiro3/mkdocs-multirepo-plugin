@@ -51,7 +51,7 @@ plugins:
       # (optional) tells multirepo to cleanup the temporary directory after site is built.
       cleanup: true
       # if set the docs directory will not be removed when importing docs.
-      # When using this with a nav section in an imported repo you must keep the 
+      # When using this with a nav section in an imported repo you must keep the
       # docs directory in the path (e.g., docs/path/to/file.md).
       keep_docs_dir: true
 ```
@@ -100,7 +100,7 @@ plugins:
   - multirepo:
       # (optional) tells multirepo to cleanup the temporary directory after site is built.
       cleanup: true
-      # if set the docs directory will not be removed when importing docs. When using this with a nav section in an imported repo 
+      # if set the docs directory will not be removed when importing docs. When using this with a nav section in an imported repo
       # you must keep the docs directory in the path (e.g., docs/path/to/file.md).
       keep_docs_dir: true
       repos:
@@ -201,7 +201,7 @@ For `mkdocs serve` to work properly in an imported repo (a repo that is imported
 
 > Notes:
 > - You will also need to have `plugins` and `packages` the parent repo uses installed within your local `venv`.
-> - See documentation on the [set](https://git-scm.com/docs/git-sparse-checkout#Documentation/git-sparse-checkout.txt-emsetem) git command for `sparse-checkout` if you are confused with what `dirs` can contain.
+> - See documentation on the [set](https://git-scm.com/docs/git-sparse-checkout#Documentation/git-sparse-checkout.txt-emsetem) git command for `sparse-checkout` if you are confused with what `paths` can contain.
 
 ```yml
 plugins:
@@ -209,10 +209,10 @@ plugins:
     imported_repo: true
     url: https://github.com/squidfunk/mkdocs-material
     section_name: Backstage
-    # directories and files needed for building the site
+    # dirs/files needed for building the site
     # any path in docs will be included. For example, index.md is the
     # homepage of the parent site
-    dirs: ["material/*", "mkdocs.yml", "docs/index.md"]
+    paths: ["material/*", "mkdocs.yml", "docs/index.md"]
     custom_dir: material
     yml_file: mkdocs.yml # this can also be a relative path
     branch: master
