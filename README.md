@@ -91,9 +91,6 @@ nav:
 
 If you'd prefer *MkDocs* to build the site nav based on the directory structure, you can define your other repos within the *plugins* section.
 
-> Note:
-> Cleanup should be set to `false` when developing (i.e., when calling `mkdocs serve`). This will prevent importing repos multiple times with livereload.
-
 ```yaml
 plugins:
   - search
