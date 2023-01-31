@@ -58,9 +58,9 @@ plugins:
 
 You'll now have 3 ways of importing docs:
 
-- [plugins.multirepo.repos](#repos-config): Use this method of importing if you don't have a `nav` section in the importees `mkdocs.yml` and want Mkdocs to generate navigation based on the directory structures. If there's a `nav` this will be ignored.
-- [plugins.multirepo.nav_repos](#nav-repos-config): Use this method of importing if you do have a `nav` section in the importees `mkdocs.yml` and want to refer to imported docs in the `nav` the same way as docs in the importees repo. This can be used alongside `!import` statements.
-- [!import](#import-statement): Used to specify docs to import within the `nav`.
+- [plugins.multirepo.repos](#repos-config): Use this method if you don't have a `nav` section in the importees `mkdocs.yml` and want Mkdocs to generate navigation based on the directory structure. If there's a `nav` this will be ignored.
+- [plugins.multirepo.nav_repos](#nav-repos-config): Use this if you have a `nav` section in the importees `mkdocs.yml` and want to refer to imported docs in the `nav` the same way as docs in the importees repo. This can be used alongside `!import` statements.
+- [!import](#import-statement): Used to specify docs to import to a section in the `nav`. The imported repo needs to have a `mkdocs.yml` file with a `nav` section as well.
 
 ## Import Statement
 
@@ -110,6 +110,7 @@ plugins:
       # you must keep the docs directory in the path (e.g., docs/path/to/file.md).
       keep_docs_dir: true
       repos:
+          # There will be a navigation section with this section name
         - section: Backstage
           # you can define the edit uri path
           import_url: 'https://github.com/backstage/backstage?edit_uri=/blob/master/'
@@ -132,6 +133,8 @@ plugins:
           section_path: python # Put this under the python menu entry
           import_url: 'https://github.com/samuelcolvin/pydantic?branch=main'
 ```
+
+## Nav Repos Config
 
 Once you're done configuring, run either `mkdocs serve` or `mkdocs build`. This will `import` the docs into a temporary directory and build the site.
 
