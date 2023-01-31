@@ -4,7 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
-from dacite import from_dict
+import dacite as dc
 from mkdocs.config import Config, config_options
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
@@ -37,7 +37,7 @@ IMPORT_STATEMENT = "!import"
 DEFAULT_BRANCH = "master"
 
 
-class ReposSectionException(Exception):
+class ReposConfigException(Exception):
     pass
 
 
@@ -241,9 +241,17 @@ class MultirepoPlugin(BasePlugin):
         return config
 
     def on_config(self, config: Config) -> Config:
-        multi_config: MultirepoConfig = from_dict(
-            data_class=MultirepoConfig, data=self.config
-        )
+        try:
+            multi_config: MultirepoConfig = dc.from_dict(
+                data_class=MultirepoConfig,
+                data=self.config,
+                config=dc.Config(strict=True),
+            )
+        except dc.UnexpectedDataError as e:
+            formatted_keys = ", ".join(f'"{key}"' for key in e.keys)
+            raise ReposConfigException(
+                f"unknown config key(s), {formatted_keys}, for MultirepoConfig"
+            )
         if multi_config.imported_repo:
             config, temp_dir = self.handle_imported_repo(config)
             self.temp_dir = temp_dir
