@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 from copy import deepcopy
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
@@ -39,6 +40,36 @@ DEFAULT_BRANCH = "master"
 
 class ReposConfigException(Exception):
     pass
+
+
+@dataclass
+class RepoConfig:
+    section: str
+    import_url: str
+    section_path: Optional[str] = None
+
+
+@dataclass
+class NavRepoConfig:
+    name: str
+    import_url: str
+    imports: List[str] = field(default_factory=list)
+
+
+@dataclass
+class MultirepoConfig:
+    cleanup: bool
+    repos: List[RepoConfig]
+    nav_repos: List[NavRepoConfig]
+    imported_repo: bool
+    temp_dir: str
+    keep_docs_dir: bool
+    section_name: str
+    url: Optional[str] = None
+    dirs: Optional[List[str]] = None
+    custom_dir: Optional[str] = None
+    yml_file: Optional[str] = None
+    branch: Optional[str] = None
 
 
 class MultirepoPlugin(BasePlugin):
