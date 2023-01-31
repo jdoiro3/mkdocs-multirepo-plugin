@@ -3,8 +3,9 @@ import asyncio
 import os
 import shutil
 import time
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from mkdocs.config import Config
 from mkdocs.structure.files import File, Files, _filter_paths, _sort_files
@@ -20,6 +21,28 @@ from .util import (
     log,
     remove_parents,
 )
+
+
+@dataclass
+class RepoConfig:
+    section: str
+    import_url: str
+    section_path: Optional[str] = None
+
+
+@dataclass
+class NavRepoConfig:
+    name: str
+    import_url: str
+    imports: List[str] = field(default_factory=list)
+
+
+@dataclass
+class MultirepoConfig:
+    repos: List[RepoConfig]
+    nav_repos: List[NavRepoConfig]
+    imported_repo: bool
+    temp_dir: str
 
 
 def is_yaml_file(file: File) -> bool:
@@ -249,7 +272,8 @@ class DocsRepo(Repo):
             edit_uri_parts[1] = self.branch
         if parts > 2 and edit_uri_parts[2] == "docs":
             del edit_uri_parts[2]
-        return "/".join(part for part in edit_uri_parts) + "/"
+        edit_uri = "/".join(part for part in edit_uri_parts)
+        return edit_uri + ("/" if edit_uri else "")
 
     def __init__(
         self,
@@ -299,9 +323,11 @@ class DocsRepo(Repo):
     def name_length(self):
         return len(Path(self.name).parts)
 
-    def get_edit_url(self, src_path, keep_docs_dir: bool = False):
+    def get_edit_url(
+        self, src_path, keep_docs_dir: bool = False, nav_repos: bool = False
+    ):
         src_path = remove_parents(src_path, self.name_length)
-        is_extra_import = src_path.split("/")[-1] in self.extra_imports
+        is_extra_import = src_path.rsplit("/", 1) in self.extra_imports
         if self.multi_docs:
             parent_path = str(Path(src_path).parent).replace("\\", "/")
             if parent_path in self.src_path_map:
@@ -318,16 +344,15 @@ class DocsRepo(Repo):
                     self.edit_uri,
                     self.src_path_map.get(str(src_path), str(src_path)),
                 ]
+        elif is_extra_import or keep_docs_dir or nav_repos:
+            url_parts = [self.url, self.edit_uri, src_path]
         else:
-            if is_extra_import or keep_docs_dir:
-                url_parts = [self.url, self.edit_uri, src_path]
-            else:
-                url_parts = [
-                    self.url,
-                    self.edit_uri,
-                    self.docs_dir.replace("/*", ""),
-                    src_path,
-                ]
+            url_parts = [
+                self.url,
+                self.edit_uri,
+                self.docs_dir.replace("/*", ""),
+                src_path,
+            ]
         return "/".join(part.strip("/") for part in url_parts)
 
     def set_edit_uri(self, edit_uri) -> None:
