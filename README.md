@@ -136,6 +136,25 @@ plugins:
 
 ## Nav Repos Config
 
+```yaml
+plugins:
+  - search
+  - multirepo:
+      nav_repos:
+        - name: backstage
+          import_url: https://github.com/backstage/backstage
+          imports: [docs/publishing.md, docs/integrations/index.md, README.md]
+        - name: fast-api
+          import_url: https://github.com/tiangolo/fastapi?docs_dir=docs/en/docs/*
+          imports: [docs/en/docs/index.md]
+
+nav:
+  - Backstage: backstage/README.md
+  - 'Backstage Integration': backstage/docs/integrations/index.md
+  - 'Backstage Publishing': backstage/docs/publishing.md
+  - FastAPI: fast-api/docs/en/docs/index.md=
+```
+
 Once you're done configuring, run either `mkdocs serve` or `mkdocs build`. This will `import` the docs into a temporary directory and build the site.
 
 ![mkdocs-multirepo-plugin-demo](https://user-images.githubusercontent.com/57968347/183310333-07576062-d4e0-47d1-ac2c-9b682fea8b4e.gif)
