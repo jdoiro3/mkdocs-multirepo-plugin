@@ -3,7 +3,7 @@ import tempfile
 from copy import deepcopy
 from dataclasses import _MISSING_TYPE, dataclass, field, fields
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
 import dacite as dc
 from mkdocs.config import Config, config_options
@@ -11,7 +11,7 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
 from mkdocs.theme import Theme
 from slugify import slugify
-from typing_inspect import get_origin, is_literal_type
+from typing_inspect import get_origin
 
 from .structure import (
     DocsRepo,
