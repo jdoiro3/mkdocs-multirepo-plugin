@@ -32,3 +32,11 @@ repos:
         entry: python -m unittest tests.unittests
         language: system
         pass_filenames: false
+  - repo: local
+    hooks:
+      - id: integration-tests
+        name: run integration tests
+        entry: env PYTHON_37_ONLY=1 ./__tests__/test.sh
+        language: system
+        verbose: true
+        pass_filenames: false

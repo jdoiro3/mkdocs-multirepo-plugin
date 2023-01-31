@@ -232,6 +232,7 @@ class MultirepoPlugin(BasePlugin):
                     or derived_edit_uri,
                     multi_docs=bool(import_stmt.get("multi_docs", False)),
                     extra_imports=import_stmt.get("extra_imports", []),
+                    keep_docs_dir=import_stmt.get("keep_docs_dir", False),
                 )
             )
         asyncio_run(batch_import(docs_repo_objs))

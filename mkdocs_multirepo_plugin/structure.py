@@ -149,6 +149,7 @@ def get_import_stmts(
                 multi_docs=bool(import_stmt.get("multi_docs", False)),
                 config=import_stmt.get("config", "mkdocs.yml"),
                 extra_imports=import_stmt.get("extra_imports", []),
+                keep_docs_dir=import_stmt.get("keep_docs_dir", False),
             )
             imports.append(NavImport(section, nav[index], repo))
             path_to_section.pop()
@@ -264,6 +265,7 @@ class DocsRepo(Repo):
         multi_docs: bool = False,
         config: str = "mkdocs.yml",
         extra_imports: List[str] = None,
+        keep_docs_dir: bool = False,
         *args,
         **kwargs,
     ):
@@ -276,6 +278,7 @@ class DocsRepo(Repo):
         self.config = config
         self.extra_imports = extra_imports
         self.edit_uri = self._fix_edit_uri(edit_uri)
+        self.keep_docs_dir = keep_docs_dir
 
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
@@ -373,7 +376,7 @@ class DocsRepo(Repo):
             self.transform_docs_dir()
         else:
             await self.sparse_clone([self.docs_dir, self.config] + self.extra_imports)
-            if not keep_docs_dir:
+            if not (self.keep_docs_dir and (self.keep_docs_dir or keep_docs_dir)):
                 await execute_bash_script(
                     "mv_docs_up.sh",
                     [self.docs_dir.replace("/*", "")],
