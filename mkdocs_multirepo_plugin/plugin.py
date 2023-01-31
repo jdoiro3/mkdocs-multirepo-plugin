@@ -35,20 +35,6 @@ if is_windows():
 
 IMPORT_STATEMENT = "!import"
 DEFAULT_BRANCH = "master"
-REPO_CONFIG_KEYS: Set[str] = {"import_url", "section", "section_path"}
-NAV_REPO_CONFIG_KEYS: Set[str] = {"name", "url", "import"}
-
-
-def validate_repo_config(import_stmt: Dict[str, str], repo: Dict[str, str]) -> None:
-    if "!import" in import_stmt.get("url"):
-        raise ImportSyntaxError(
-            "import_url should only contain the url with plugin accepted params. You included '!import'."
-        )
-    if set(repo.keys()).difference(REPO_CONFIG_KEYS) != set():
-        raise ReposSectionException(
-            f"Repos section now only supports {REPO_CONFIG_KEYS}."
-            "All other config values should use the nav import url config (i.e., [url]?[key]=[value])"
-        )
 
 
 class ReposSectionException(Exception):
@@ -196,7 +182,10 @@ class MultirepoPlugin(BasePlugin):
         docs_repo_objs: List[DocsRepo] = []
         for repo in repos:
             import_stmt = parse_repo_url(repo.import_url)
-            validate_repo_config(import_stmt=import_stmt, repo=repo)
+            if "!import" in import_stmt.get("url"):
+                raise ImportSyntaxError(
+                    "import_url should only contain the url with plugin accepted params. You included '!import'."
+                )
             name_slug = slugify(repo.section)
             path = repo.section_path
             repo_name = f"{path}/{name_slug}" if path is not None else name_slug
