@@ -56,6 +56,14 @@ plugins:
       keep_docs_dir: true
 ```
 
+You'll now have 3 ways of importing docs:
+
+- [plugins.multirepo.repos](#repos-config): Use this method of importing if you don't have a `nav` section in the importees `mkdocs.yml` and want Mkdocs to generate navigation based on the directory structures. If there's a `nav` this will be ignored.
+- [plugins.multirepo.nav_repos](#nav-repos-config): Use this method of importing if you do have a `nav` section in the importees `mkdocs.yml` and want to refer to imported docs in the `nav` the same way as docs in the importees repo. This can be used alongside `!import` statements.
+- [!import](#import-statement): Used to specify docs to import within the `nav`.
+
+## Import Statement
+
 The plugin introduces the *!import* statement in your config's *nav* section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
 
 <details><summary><b>!import Statement Sections</b></summary>
@@ -88,6 +96,7 @@ nav:
 > - *nav* takes precedence over *repos* (see below).
 > - *{path}* can also be a [glob](https://en.wikipedia.org/wiki/Glob_(programming)) (e.g., `docs/*`).
 
+## Repos Config
 
 If you'd prefer *MkDocs* to build the site nav based on the directory structure, you can define your other repos within the *plugins* section.
 

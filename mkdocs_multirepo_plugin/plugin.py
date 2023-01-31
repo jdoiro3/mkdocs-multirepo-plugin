@@ -306,9 +306,8 @@ class MultirepoPlugin(BasePlugin):
             log.info("Multirepo plugin importing docs...")
             # nav takes precedence over repos
             if nav:
-                if not nav_repos:
-                    return self.handle_nav_import(config)
-                else:
+                config = self.handle_nav_import(config)
+                if nav_repos:
                     return self.handle_nav_repos_import(config, nav_repos)
             # navigation isn't defined but plugin section has repos
             return self.handle_repos_import(config, repos)
