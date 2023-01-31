@@ -212,9 +212,9 @@ class MultirepoPlugin(BasePlugin):
                 raise ImportSyntaxError(
                     "import_url should only contain the url with plugin accepted params. You included '!import'."
                 )
-            name_slug = slugify(repo.section)
+            section_slug = slugify(repo.section)
             path = repo.section_path
-            repo_name = f"{path}/{name_slug}" if path is not None else name_slug
+            repo_name = f"{path}/{section_slug}" if path is not None else section_slug
             # mkdocs config values edit_uri and repo_url aren't set
             if need_to_derive_edit_uris:
                 derived_edit_uri = self.derive_config_edit_uri(
@@ -246,13 +246,14 @@ class MultirepoPlugin(BasePlugin):
         docs_repo_objs: List[DocsRepo] = []
         for nr in nav_repos:
             import_stmt = parse_repo_url(nr.import_url)
+            name: str = slugify(nr.name)
             # mkdocs config values edit_uri and repo_url aren't set
             if need_to_derive_edit_uris:
                 derived_edit_uri = self.derive_config_edit_uri(
-                    nr.name, import_stmt.get("url"), config
+                    name, import_stmt.get("url"), config
                 )
             repo: DocsRepo = DocsRepo(
-                name=nr.name,
+                name=name,
                 url=import_stmt.get("url"),
                 temp_dir=self.temp_dir,
                 branch=import_stmt.get("branch", DEFAULT_BRANCH),
