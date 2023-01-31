@@ -195,12 +195,10 @@ class Repo:
         paths = paths or self.paths
         args = [self.url, self.name, self.branch] + paths
         if git_supports_sparse_clone():
-            stdout = await execute_bash_script("sparse_clone.sh", args, self.temp_dir)
+            await execute_bash_script("sparse_clone.sh", args, self.temp_dir)
         else:
-            stdout = await execute_bash_script(
-                "sparse_clone_old.sh", args, self.temp_dir
-            )
-        return stdout
+            await execute_bash_script("sparse_clone_old.sh", args, self.temp_dir)
+        return self
 
     def delete_repo(self) -> None:
         """Deletes the repo from the temp directory"""
@@ -265,10 +263,12 @@ class DocsRepo(Repo):
         multi_docs: bool = False,
         config: str = "mkdocs.yml",
         extra_imports: List[str] = None,
+        *args,
+        **kwargs,
     ):
         if extra_imports is None:
             extra_imports = []
-        super().__init__(name, url, branch, temp_dir)
+        super().__init__(name, url, branch, temp_dir, *args, **kwargs)
         self.docs_dir = docs_dir
         self.multi_docs = multi_docs
         self.src_path_map = {}

@@ -74,9 +74,6 @@ class MultirepoPlugin(BasePlugin):
         self.repos: Dict[str, DocsRepo] = {}
         self.nav_repos: Dict[str, DocsRepo] = {}
 
-    def set_temp_dir(self, dir: Path) -> None:
-        self.temp_dir = dir
-
     def derive_config_edit_uri(
         self, repo_name: str, repo_url: str, config: Config
     ) -> str:
@@ -224,44 +221,52 @@ class MultirepoPlugin(BasePlugin):
         return config
 
     def handle_nav_repos_import(self, config: Config, nav_repos: List[Dict]) -> Config:
-        nav_repos: List[Repo] = []
+        repos: List[Repo] = []
         for nr in nav_repos:
             import_stmt = parse_repo_url(nr.get("import_url"))
-            repo: Repo = Repo(
+            repo: DocsRepo = DocsRepo(
                 name=nr.get("name"),
                 url=import_stmt.get("url"),
                 temp_dir=self.temp_dir,
                 branch=import_stmt.get("branch", DEFAULT_BRANCH),
                 paths=nr.get("import", []),
             )
-            nav_repos.append(repo)
-        asyncio_run(batch_execute(repos=nav_repos, method=Repo.sparse_clone))
+            repos.append(repo)
+            self.repos[repo.name] = repo
+        asyncio_run(batch_execute(repos=repos, method=Repo.sparse_clone))
         return config
 
     def on_config(self, config: Config) -> Config:
         if self.config.get("imported_repo"):
             config, temp_dir = self.handle_imported_repo(config)
-            self.set_temp_dir(temp_dir)
+            self.temp_dir = temp_dir
             return config
         else:
             docs_dir = Path(config.get("docs_dir"))
-            self.set_temp_dir(docs_dir.parent / self.config.get("temp_dir"))
+            self.temp_dir = docs_dir.parent / self.config.get("temp_dir")
             if not self.temp_dir.is_dir():
                 self.temp_dir.mkdir()
             repos = self.config.get("repos")
-            if not config.get("nav") and not repos:
+            nav_repos = self.config.get("nav_repos")
+            if not config.get("nav") and not repos and not nav_repos:
                 return config
             if config.get("nav") and repos:
                 log.warning(
-                    "Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence"
+                    "Multirepo plugin is ignoring multirepo repos. Nav takes precedence."
+                )
+            if not config.get("nav") and nav_repos:
+                log.warning(
+                    "Multirepo plugin has nav_repos configuration without a nav section."
                 )
             log.info("Multirepo plugin importing docs...")
             # nav takes precedence over repos
             if config.get("nav"):
-                return self.handle_nav_import(config)
+                if not nav_repos:
+                    return self.handle_nav_import(config)
+                else:
+                    return self.handle_nav_repos_import(config, nav_repos)
             # navigation isn't defined but plugin section has repos
-            if repos:
-                return self.handle_repos_import(config, repos)
+            return self.handle_repos_import(config, repos)
 
     def on_files(self, files: Files, config: Config) -> Files:
         if self.config.get("imported_repo"):
@@ -282,14 +287,12 @@ class MultirepoPlugin(BasePlugin):
             return nav
         else:
             for f in files:
-                try:
-                    files_repo = f.repo
-                except AttributeError:
-                    files_repo = None
-                if files_repo and f.page:
-                    f.page.edit_url = files_repo.get_edit_url(
+                repo = f.repo if hasattr(f, "repo") else None
+                if repo and f.page:
+                    f.page.edit_url = repo.get_edit_url(
                         f.src_path, self.config.get("keep_docs_dir")
                     )
+                    print(f.page.edit_url)
             return nav
 
     def on_post_build(self, config: Config) -> None:
