@@ -261,6 +261,8 @@ class MultirepoPlugin(BasePlugin):
                 or config.get("edit_uri")
                 or derived_edit_uri,
             )
+            if repo.cloned:
+                repo.delete_repo()
             docs_repo_objs.append(repo)
             self.repos[repo.name] = repo
         asyncio_run(batch_execute(repos=docs_repo_objs, method=Repo.sparse_clone))

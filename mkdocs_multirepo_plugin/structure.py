@@ -362,8 +362,8 @@ class DocsRepo(Repo):
         self, remove_existing: bool = True, keep_docs_dir: bool = False
     ) -> "DocsRepo":
         """imports the markdown documentation to be included in the site asynchronously"""
-        if self.location.is_dir() and remove_existing:
-            shutil.rmtree(str(self.location))
+        if self.cloned and remove_existing:
+            self.delete_repo()
         if self.multi_docs:
             if self.docs_dir == "docs/*":
                 docs_dir = "docs"
