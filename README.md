@@ -140,20 +140,35 @@ plugins:
 plugins:
   - search
   - multirepo:
+      # (optional) tells multirepo to cleanup the temporary directory after site is built.
+      cleanup: false
       nav_repos:
         - name: backstage
           import_url: https://github.com/backstage/backstage
-          imports: [docs/publishing.md, docs/integrations/index.md, README.md]
+          # forward slash is needed in '/README.md' so that only the README.md in the root
+          # directory is imported and not all README.md files.
+          imports: [
+            docs/publishing.md, docs/integrations/index.md, /README.md,
+            # asset files needed
+            docs/assets/*
+            ]
         - name: fast-api
-          import_url: https://github.com/tiangolo/fastapi?docs_dir=docs/en/docs/*
+          import_url: https://github.com/tiangolo/fastapi
           imports: [docs/en/docs/index.md]
 
 nav:
-  - Backstage: backstage/README.md
-  - 'Backstage Integration': backstage/docs/integrations/index.md
-  - 'Backstage Publishing': backstage/docs/publishing.md
-  - FastAPI: fast-api/docs/en/docs/index.md=
+  - Backstage:
+      - Home: backstage/README.md
+      - Integration: backstage/docs/integrations/index.md
+      - Publishing: backstage/docs/publishing.md
+      - Conduct: backstage/CODE_OF_CONDUCT.md
+      - Adapters: backstage/ADOPTERS.md
+      - Security: backstage/SECURITY.md
+      - Contributing: backstage/CONTRIBUTING.md
+  - FastAPI: fast-api/docs/en/docs/index.md
 ```
+
+## Run
 
 Once you're done configuring, run either `mkdocs serve` or `mkdocs build`. This will `import` the docs into a temporary directory and build the site.
 
