@@ -166,6 +166,8 @@ nav:
       - Security: backstage/SECURITY.md
       - Contributing: backstage/CONTRIBUTING.md
   - FastAPI: fast-api/docs/en/docs/index.md
+  # you can still use the !import statement
+  - MkdocStrings: '!import https://github.com/mkdocstrings/mkdocstrings'
 ```
 
 ## Run
