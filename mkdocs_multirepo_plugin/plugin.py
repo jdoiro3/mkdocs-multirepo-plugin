@@ -1,7 +1,7 @@
 import shutil
 import tempfile
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import _MISSING_TYPE, dataclass, field, fields
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
@@ -11,6 +11,7 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
 from mkdocs.theme import Theme
 from slugify import slugify
+from typing_inspect import get_origin, is_literal_type
 
 from .structure import (
     DocsRepo,
@@ -55,13 +56,13 @@ class NavRepoConfig:
 
 @dataclass
 class MultirepoConfig:
-    cleanup: bool
-    repos: List[RepoConfig]
-    nav_repos: List[NavRepoConfig]
-    imported_repo: bool
-    temp_dir: str
-    keep_docs_dir: bool
-    section_name: str
+    cleanup: bool = True
+    repos: List[RepoConfig] = field(default_factory=list)
+    nav_repos: List[NavRepoConfig] = field(default_factory=list)
+    imported_repo: bool = False
+    temp_dir: str = "temp_dir"
+    keep_docs_dir: bool = False
+    section_name: str = "imported"
     url: Optional[str] = None
     dirs: Optional[List[str]] = None
     custom_dir: Optional[str] = None
@@ -71,20 +72,17 @@ class MultirepoConfig:
 
 class MultirepoPlugin(BasePlugin):
 
-    config_scheme = (
-        ("cleanup", config_options.Type(bool, default=True)),
-        ("temp_dir", config_options.Type(str, default="temp_dir")),
-        ("repos", config_options.Type(list, default=[])),
-        ("nav_repos", config_options.Type(list, default=[])),
-        ("url", config_options.Type(str, default=None)),
-        ("keep_docs_dir", config_options.Type(bool, default=False)),
-        # used when developing in repo that is imported
-        ("custom_dir", config_options.Type(str, default=None)),
-        ("yml_file", config_options.Type(str, default=None)),
-        ("imported_repo", config_options.Type(bool, default=False)),
-        ("dirs", config_options.Type(list, default=[])),
-        ("branch", config_options.Type(str, default=None)),
-        ("section_name", config_options.Type(str, default="Imported Docs")),
+    config_scheme = tuple(
+        (
+            f.name,
+            config_options.Type(
+                get_origin(f.type) or f.type,
+                default=f.default
+                if not isinstance(f.default, _MISSING_TYPE)
+                else f.default_factory(),
+            ),
+        )
+        for f in fields(MultirepoConfig)
     )
 
     def __init__(self):
