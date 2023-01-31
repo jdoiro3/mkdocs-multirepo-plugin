@@ -14,10 +14,7 @@ from slugify import slugify
 
 from .structure import (
     DocsRepo,
-    MultirepoConfig,
-    NavRepoConfig,
     Repo,
-    RepoConfig,
     batch_execute,
     batch_import,
     get_files,
