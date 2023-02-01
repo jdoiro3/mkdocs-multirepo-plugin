@@ -4,7 +4,7 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 from mkdocs.config import Config
 from mkdocs.structure.files import File, Files, _filter_paths, _sort_files
@@ -278,7 +278,7 @@ class DocsRepo(Repo):
         self.config = config
         self.extra_imports = extra_imports
         self.edit_uri = self._fix_edit_uri(edit_uri)
-        self.keep_docs_dir = keep_docs_dir
+        self._keep_docs_dir = keep_docs_dir
 
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
@@ -303,6 +303,9 @@ class DocsRepo(Repo):
     def name_length(self):
         return len(Path(self.name).parts)
 
+    def keep_docs_dir(self, global_config_val: bool = False):
+        return self._keep_docs_dir and (self._keep_docs_dir or global_config_val)
+
     def get_edit_url(
         self, src_path, keep_docs_dir: bool = False, nav_repos: bool = False
     ):
@@ -324,7 +327,11 @@ class DocsRepo(Repo):
                     self.edit_uri,
                     self.src_path_map.get(str(src_path), str(src_path)),
                 ]
-        elif is_extra_import or keep_docs_dir or nav_repos:
+        elif (
+            is_extra_import
+            or self.keep_docs_dir(global_config_val=keep_docs_dir)
+            or nav_repos
+        ):
             url_parts = [self.url, self.edit_uri, src_path]
         else:
             url_parts = [
@@ -376,7 +383,7 @@ class DocsRepo(Repo):
             self.transform_docs_dir()
         else:
             await self.sparse_clone([self.docs_dir, self.config] + self.extra_imports)
-            if not (self.keep_docs_dir and (self.keep_docs_dir or keep_docs_dir)):
+            if not self.keep_docs_dir(global_config_val=keep_docs_dir):
                 await execute_bash_script(
                     "mv_docs_up.sh",
                     [self.docs_dir.replace("/*", "")],

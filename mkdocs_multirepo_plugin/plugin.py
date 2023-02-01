@@ -298,7 +298,7 @@ class MultirepoPlugin(BasePlugin):
                 return config
             if nav and repos:
                 log.warning(
-                    "Multirepo plugin is ignoring multirepo repos. Nav takes precedence."
+                    "Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence."
                 )
             if not nav and nav_repos:
                 log.warning(
@@ -310,6 +310,7 @@ class MultirepoPlugin(BasePlugin):
                 config = self.handle_nav_import(config)
                 if nav_repos:
                     return self.handle_nav_repos_import(config, nav_repos)
+                return config
             # navigation isn't defined but plugin section has repos
             return self.handle_repos_import(config, repos)
 
