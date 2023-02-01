@@ -28,6 +28,7 @@ repos:
   - repo: local
     hooks:
       - id: unit-tests
+        types: [executable, python]
         name: run unit tests
         entry: python -m unittest tests.unittests
         language: system
@@ -35,6 +36,7 @@ repos:
   - repo: local
     hooks:
       - id: integration-tests
+        types: [executable, python]
         name: run integration tests
         entry: env PYTHON_37_ONLY=1 ./__tests__/test.sh
         language: system
