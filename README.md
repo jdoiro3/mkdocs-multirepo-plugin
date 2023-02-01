@@ -81,7 +81,7 @@ The plugin introduces the *!import* statement in your config's *nav* section. Yo
 ```yaml
 nav:
   - Home: 'index.md'
-  - MicroService: '!import {url}?branch={branch}&docs_dir={path}&multi_docs={True | False}&config={filename}.yml'
+  - MicroService: '!import {url}?branch={branch}&docs_dir={path}&multi_docs={True | False}&config={filename}.yml&keep_docs_dir={True | False}'
 ```
 
 *MicroService mkdocs.yml (located within the docs directory or the parent directory)*
