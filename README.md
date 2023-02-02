@@ -163,10 +163,6 @@ nav:
       - Home: backstage/README.md
       - Integration: backstage/docs/integrations/index.md
       - Publishing: backstage/docs/publishing.md
-      - Conduct: backstage/CODE_OF_CONDUCT.md
-      - Adapters: backstage/ADOPTERS.md
-      - Security: backstage/SECURITY.md
-      - Contributing: backstage/CONTRIBUTING.md
   - FastAPI: fast-api/docs/en/docs/index.md
   # you can still use the !import statement
   - MkdocStrings: '!import https://github.com/mkdocstrings/mkdocstrings'
