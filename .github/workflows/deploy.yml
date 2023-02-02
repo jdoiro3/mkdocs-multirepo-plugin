@@ -63,7 +63,7 @@ jobs:
         run: poetry run python3 -m unittest tests.unittests -v
 
   integration-tests:
-    if: ${{ github.event.inputs.run-integration-tests == 'true' }}
+    if: ${{ github.event.inputs.run-integration-tests == 'true' || github.event.inputs.run-integration-tests == '' }}
     needs: unit-tests
     name: Python ${{ matrix.python-version }} and Git ${{ matrix.git-version }}
     runs-on: ubuntu-latest
