@@ -1,0 +1,29 @@
+site_name: Test
+
+plugins:
+  - multirepo:
+      nav_repos:
+        - name: repo1
+          import_url: https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=main
+          imports: [
+            docs/page1.md,
+            docs/page2.md,
+            /README.md,
+            ]
+        - name: repo2
+          import_url: https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-no-nav
+          imports: [
+            /README.md,
+            docs/index.md,
+            ]
+
+nav:
+  - Home: docs/index.md
+  - Repo1:
+      - Home: repo1/README.md
+      - Page1: repo1/docs/page1.md
+      - Page2: repo1/docs/page2.md
+  - Repo2:
+      - Home: repo2/README.md
+      - Index: repo2/docs/index.md
+  - Repo3: '!import https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1?branch=ok-nav-simple'

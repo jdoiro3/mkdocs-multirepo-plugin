@@ -20,7 +20,7 @@ docker build -t mkdocs-multirepo-test-runner:$1 --quiet -f- . <<EOF
   COPY ./mkdocs_multirepo_plugin /workspace/mkdocs_multirepo_plugin
   COPY ./README.md /workspace/README.md
   COPY ./integration-requirements.txt /workspace/integration-requirements.txt
-  RUN apt-get -y update && apt-get -yyy install bats && apt-get -yyy install git
+  RUN apt-get -y update && apt-get -yyy install bats && apt-get -yyy install git && apt-get install tree
   RUN pip install --upgrade pip
   RUN pip install -r ./workspace/integration-requirements.txt
   RUN pip install ./workspace

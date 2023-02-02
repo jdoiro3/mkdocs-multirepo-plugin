@@ -159,19 +159,32 @@ teardown() {
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
   # testing subsection import
+  assertFileExists "$parent/site/section/ok-nav-simple/index.html"
   run cat "$parent/site/section/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
+
+  assertFileExists "$parent/site/section/ok-nav-complex/index.html"
   run cat "$parent/site/section/ok-nav-complex/index.html"
   outputContains "Welcome to a complex repo."
+
+  assertFileExists "$parent/site/section/ok-nav-complex/section1/getting-started/index.html"
   run cat "$parent/site/section/ok-nav-complex/section1/getting-started/index.html"
   outputContains "Let's get started with section 1."
+
+  assertFileExists "$parent/site/section/ok-nav-complex/section2/getting-started/index.html"
   run cat "$parent/site/section/ok-nav-complex/section2/getting-started/index.html"
   outputContains "Let's get started with section 2."
+
+  assertFileExists "$parent/site/section/ok-nav-complex/section1/index.html"
   run cat "$parent/site/section/ok-nav-complex/section1/index.html"
   outputContains "Welcome to section 1."
+
+  assertFileExists "$parent/site/section/ok-nav-complex/section2/index.html"
   run cat "$parent/site/section/ok-nav-complex/section2/index.html"
   outputContains "Welcome to section 2."
+
   # testing an import within multiple subsections
+  assertFileExists "$parent/site/deepimport/subsection/subsection/ok-nav-simple/index.html"
   run cat "$parent/site/deepimport/subsection/subsection/ok-nav-simple/index.html"
   outputContains "Welcome to a simple repo."
 }
@@ -190,4 +203,39 @@ teardown() {
   run mkdocs build --config-file=$parent/mkdocs.yml
   debugger
   assertFileExists "$parent/site/ok-with-images/assets/images/zelda-dark-world.png"
+}
+
+@test "Build a mkdocs site with nav_repos" {
+  cd ${fixturesDir}
+  parent="parent-with-nav-repos"
+  run mkdocs build --config-file=$parent/mkdocs.yml
+
+  debugger
+  assertFileExists "$parent/site/index.html"
+  run cat "$parent/site/index.html"
+  outputContains "Main page of parent repo."
+
+  assertFileExists "$parent/site/repo1/index.html"
+  run cat "$parent/site/repo1/index.html"
+  outputContains "Used to demo the"
+
+  assertFileExists "$parent/site/repo1/docs/page1/index.html"
+  run cat "$parent/site/repo1/docs/page1/index.html"
+  outputContains "Welcome to Page1"
+
+  assertFileExists "$parent/site/repo1/docs/page2/index.html"
+  run cat "$parent/site/repo1/docs/page2/index.html"
+  outputContains "Welcome to Page2"
+
+  assertFileExists "$parent/site/repo2/index.html"
+  run cat "$parent/site/repo2/index.html"
+  outputContains "Used to demo the"
+
+  assertFileExists "$parent/site/repo2/index.html"
+  run cat "$parent/site/repo2/index.html"
+  outputContains "Used to demo the"
+
+  assertFileExists "$parent/site/repo3/index.html"
+  run cat "$parent/site/repo3/index.html"
+  outputContains "Welcome to a simple repo."
 }
