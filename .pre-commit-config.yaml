@@ -40,5 +40,4 @@ repos:
         name: run integration tests
         entry: env PYTHON_37_ONLY=1 NO_IT=1 ./__tests__/test.sh
         language: system
-        verbose: true
         pass_filenames: false
