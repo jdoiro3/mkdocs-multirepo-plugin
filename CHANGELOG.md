@@ -9,7 +9,7 @@
 A new `nav_repos` was added to the configuration. This is similar to the `repos` configuration except that `nav_repos`
 expects a `nav` to be present to use in the navigation. This configuration can also be used along with `!import` statements.
 
-### Usage Example
+#### Usage Example
 
 <details><summary><b>See example</b></summary>
 
@@ -59,7 +59,7 @@ In addition this release adds `keeps_docs_dir` to the `!import` statement, which
 
 A new `keep_docs_dir` was added to the `multirepo` config. Setting this to `true` will cause the plugin to not move the contents of the `docs_dir` up and delete it. See issue [#74](https://github.com/jdoiro3/mkdocs-multirepo-plugin/issues/74) for more details.
 
-### Usage Example
+#### Usage Example
 
 ```yaml
 plugins:
