@@ -2,10 +2,9 @@ import ast
 import asyncio
 import os
 import shutil
-import subprocess
 import time
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 from mkdocs.config import Config
 from mkdocs.structure.files import File, Files, _filter_paths, _sort_files
@@ -132,11 +131,11 @@ def get_import_stmts(
             continue
         ((section, value),) = entry.items()
         path_to_section.append(section)
-        if type(value) is list:
+        if isinstance(value, list):
             imports += get_import_stmts(
                 value, temp_dir, default_branch, path_to_section
             )
-        elif value.startswith("!import"):
+        elif isinstance(value, str) and value.startswith("!import"):
             import_stmt: Dict[str, str] = parse_import(value)
             # slugify the section names and turn them into a valid path string
             path = str(Path(*[slugify(section) for section in path_to_section]))
@@ -150,15 +149,10 @@ def get_import_stmts(
                 multi_docs=bool(import_stmt.get("multi_docs", False)),
                 config=import_stmt.get("config", "mkdocs.yml"),
                 extra_imports=import_stmt.get("extra_imports", []),
+                keep_docs_dir=import_stmt.get("keep_docs_dir", False),
             )
             imports.append(NavImport(section, nav[index], repo))
-            path_to_section.pop()
-        else:
-            path_to_section.pop()
-    try:
         path_to_section.pop()
-    except IndexError:
-        pass
     return imports
 
 
@@ -171,14 +165,18 @@ class Repo:
         branch (str): The branch that will be cloned.
         temp_dir (Path): The directory where all repos are cloned to.
         location (Path): The location of the local repo on the filesystem.
+        paths (List[str]): paths to import.
     """
 
-    def __init__(self, name: str, url: str, branch: str, temp_dir: Path):
+    def __init__(
+        self, name: str, url: str, branch: str, temp_dir: Path, paths: List[str] = None
+    ):
         self.name = name
         self.url = url
         self.branch = branch
         self.temp_dir = temp_dir
         self.location = temp_dir / self.name
+        self.paths = paths or []
 
     @property
     def cloned(self):
@@ -187,22 +185,15 @@ class Repo:
             return True
         return False
 
-    async def sparse_clone(self, dirs: List[str]) -> Tuple[str, str]:
+    async def sparse_clone(self, paths: List[str] = None) -> Tuple[str, str]:
         """sparse clones a Git repo asynchronously"""
-        args = [self.url, self.name, self.branch] + dirs
+        paths = paths or self.paths
+        args = [self.url, self.name, self.branch] + paths
         if git_supports_sparse_clone():
-            stdout = await execute_bash_script("sparse_clone.sh", args, self.temp_dir)
+            await execute_bash_script("sparse_clone.sh", args, self.temp_dir)
         else:
-            stdout = await execute_bash_script(
-                "sparse_clone_old.sh", args, self.temp_dir
-            )
-        return stdout
-
-    async def import_config_files(self, dirs: List[str]) -> subprocess.CompletedProcess:
-        """Imports directories needed for building the site
-        the list of dirs might include: mkdocs.yml, overrides/*, etc"""
-        self.temp_dir.mkdir(exist_ok=True)
-        return await self.sparse_clone(dirs)
+            await execute_bash_script("sparse_clone_old.sh", args, self.temp_dir)
+        return self
 
     def delete_repo(self) -> None:
         """Deletes the repo from the temp directory"""
@@ -253,7 +244,8 @@ class DocsRepo(Repo):
             edit_uri_parts[1] = self.branch
         if parts > 2 and edit_uri_parts[2] == "docs":
             del edit_uri_parts[2]
-        return "/".join(part for part in edit_uri_parts) + "/"
+        edit_uri = "/".join(part for part in edit_uri_parts)
+        return edit_uri + ("/" if edit_uri else "")
 
     def __init__(
         self,
@@ -267,16 +259,20 @@ class DocsRepo(Repo):
         multi_docs: bool = False,
         config: str = "mkdocs.yml",
         extra_imports: List[str] = None,
+        keep_docs_dir: bool = False,
+        *args,
+        **kwargs,
     ):
         if extra_imports is None:
             extra_imports = []
-        super().__init__(name, url, branch, temp_dir)
+        super().__init__(name, url, branch, temp_dir, *args, **kwargs)
         self.docs_dir = docs_dir
         self.multi_docs = multi_docs
         self.src_path_map = {}
         self.config = config
         self.extra_imports = extra_imports
         self.edit_uri = self._fix_edit_uri(edit_uri)
+        self._keep_docs_dir = keep_docs_dir
 
     def __str__(self):
         return f"DocsRepo({self.name}, {self.url}, {self.location})"
@@ -301,9 +297,14 @@ class DocsRepo(Repo):
     def name_length(self):
         return len(Path(self.name).parts)
 
-    def get_edit_url(self, src_path, keep_docs_dir: bool = False):
+    def keep_docs_dir(self, global_config_val: bool = False):
+        return self._keep_docs_dir and (self._keep_docs_dir or global_config_val)
+
+    def get_edit_url(
+        self, src_path, keep_docs_dir: bool = False, nav_repos: bool = False
+    ):
         src_path = remove_parents(src_path, self.name_length)
-        is_extra_import = src_path.split("/")[-1] in self.extra_imports
+        is_extra_import = src_path.rsplit("/", 1) in self.extra_imports
         if self.multi_docs:
             parent_path = str(Path(src_path).parent).replace("\\", "/")
             if parent_path in self.src_path_map:
@@ -320,16 +321,19 @@ class DocsRepo(Repo):
                     self.edit_uri,
                     self.src_path_map.get(str(src_path), str(src_path)),
                 ]
+        elif (
+            is_extra_import
+            or self.keep_docs_dir(global_config_val=keep_docs_dir)
+            or nav_repos
+        ):
+            url_parts = [self.url, self.edit_uri, src_path]
         else:
-            if is_extra_import or keep_docs_dir:
-                url_parts = [self.url, self.edit_uri, src_path]
-            else:
-                url_parts = [
-                    self.url,
-                    self.edit_uri,
-                    self.docs_dir.replace("/*", ""),
-                    src_path,
-                ]
+            url_parts = [
+                self.url,
+                self.edit_uri,
+                self.docs_dir.replace("/*", ""),
+                src_path,
+            ]
         return "/".join(part.strip("/") for part in url_parts)
 
     def set_edit_uri(self, edit_uri) -> None:
@@ -362,8 +366,8 @@ class DocsRepo(Repo):
         self, remove_existing: bool = True, keep_docs_dir: bool = False
     ) -> "DocsRepo":
         """imports the markdown documentation to be included in the site asynchronously"""
-        if self.location.is_dir() and remove_existing:
-            shutil.rmtree(str(self.location))
+        if self.cloned and remove_existing:
+            self.delete_repo()
         if self.multi_docs:
             if self.docs_dir == "docs/*":
                 docs_dir = "docs"
@@ -373,7 +377,7 @@ class DocsRepo(Repo):
             self.transform_docs_dir()
         else:
             await self.sparse_clone([self.docs_dir, self.config] + self.extra_imports)
-            if not keep_docs_dir:
+            if not self.keep_docs_dir(global_config_val=keep_docs_dir):
                 await execute_bash_script(
                     "mv_docs_up.sh",
                     [self.docs_dir.replace("/*", "")],
@@ -389,24 +393,31 @@ class DocsRepo(Repo):
         return config
 
 
-async def batch_import(
-    repos: List[DocsRepo], remove_existing: bool = True, keep_docs_dir: bool = False
+async def batch_execute(
+    repos: List[Repo], method: Callable[..., Repo], *args, **kwargs
 ) -> None:
-    """Given a list of DocRepo instances, performs a batch import asynchronously"""
+    """"""
     if not repos:
         return None
     progress_list = ProgressList([repo.name for repo in repos])
     start = time.time()
-    for import_async in asyncio.as_completed(
-        [
-            repo.import_docs(
-                remove_existing=remove_existing, keep_docs_dir=keep_docs_dir
-            )
-            for repo in repos
-        ]
+    for future in asyncio.as_completed(
+        [method(repo, *args, **kwargs) for repo in repos]
     ):
-        repo = await import_async
+        repo = await future
         progress_list.mark_completed(repo.name, round(time.time() - start, 3))
+
+
+async def batch_import(
+    repos: List[DocsRepo], remove_existing: bool = True, keep_docs_dir: bool = False
+) -> None:
+    """Given a list of DocsRepo instances, performs a batch import asynchronously"""
+    await batch_execute(
+        repos=repos,
+        method=DocsRepo.import_docs,
+        remove_existing=remove_existing,
+        keep_docs_dir=keep_docs_dir,
+    )
 
 
 # taken from Mkdocs and adjusted for the plugin

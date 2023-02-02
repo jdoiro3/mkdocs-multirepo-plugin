@@ -1,3 +1,52 @@
+## 0.6.0
+
+### Prs in Release
+
+- [Add support for nav repos](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/80)
+
+### Added Features
+
+A new `nav_repos` was added to the configuration. This is similar to the `repos` configuration except that `nav_repos`
+expects a `nav` to be present to use in the navigation. This configuration can also be used along with `!import` statements.
+
+#### Usage Example
+
+<details><summary><b>See example</b></summary>
+
+  ```yaml
+  plugins:
+    - search
+    - multirepo:
+        # (optional) tells multirepo to cleanup the temporary directory after site is built.
+        cleanup: false
+        nav_repos:
+          - name: backstage
+            import_url: https://github.com/backstage/backstage
+            # forward slash is needed in '/README.md' so that only the README.md in the root
+            # directory is imported and not all README.md files.
+            imports: [
+              docs/publishing.md, docs/integrations/index.md, /README.md,
+              # asset files needed
+              docs/assets/*
+              ]
+          - name: fast-api
+            import_url: https://github.com/tiangolo/fastapi
+            imports: [docs/en/docs/index.md]
+
+  nav:
+    - Backstage:
+        - Home: backstage/README.md
+        - Integration: backstage/docs/integrations/index.md
+        - Publishing: backstage/docs/publishing.md
+    - FastAPI: fast-api/docs/en/docs/index.md
+    # you can still use the !import statement
+    - MkdocStrings: '!import https://github.com/mkdocstrings/mkdocstrings'
+  ```
+
+</details>
+
+In addition this release adds `keeps_docs_dir` to the `!import` statement, which means one imported repo can override the behavior set by the global configuration. See [Fix edit urls and add new `keep_docs_dir` config param](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/75) for more details.
+
 ## 0.5.0
 
 ### PRs in Release

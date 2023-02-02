@@ -51,10 +51,18 @@ plugins:
       # (optional) tells multirepo to cleanup the temporary directory after site is built.
       cleanup: true
       # if set the docs directory will not be removed when importing docs.
-      # When using this with a nav section in an imported repo you must keep the 
+      # When using this with a nav section in an imported repo you must keep the
       # docs directory in the path (e.g., docs/path/to/file.md).
       keep_docs_dir: true
 ```
+
+You'll now have 3 ways of importing docs:
+
+- [plugins.multirepo.repos](#repos-config): Use this method if you don't have a `nav` section in the imported `mkdocs.yml` and want Mkdocs to generate navigation based on the directory structure. If there's a `nav` this configuration will be ignored since `nav` configuration takes precedence.
+- [plugins.multirepo.nav_repos](#nav-repos-config): Use this if you have a `nav` section in your `mkdocs.yml` and want to refer to imported docs in the `nav` the same way as other docs in the repo. This can be used alongside `!import` statements.
+- [!import](#import-statement): Used to specify docs to import to a section in the `nav`. The imported repo needs to have a `mkdocs.yml` file with a `nav` section as well.
+
+## Import Statement
 
 The plugin introduces the *!import* statement in your config's *nav* section. You can now use the import statement to add a documentation section, where the docs are pulled from the source repo.
 
@@ -66,12 +74,14 @@ The plugin introduces the *!import* statement in your config's *nav* section. Yo
   - **multi_docs={True | False}**: If set to *True* all *docs* directories will be imported (more info [here](#α-multiple-docs-directories-in-imported-repo-alpha)).
   - **config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
   - **extra_imports=["{filename | path | glob}"]**: Use this if you want to import additional directories or files along with the docs.
+  - **keep_docs_dir={True | False}**: If set the docs directory will not be removed when importing docs (i.e., `section/page.md` becomes `section/docs/page.md`)
+  
 </details>
 
 ```yaml
 nav:
   - Home: 'index.md'
-  - MicroService: '!import {url}?branch={branch}&docs_dir={path}&multi_docs={True | False}&config={filename}.yml'
+  - MicroService: '!import {url}?branch={branch}&docs_dir={path}&multi_docs={True | False}&config={filename}.yml&keep_docs_dir={True | False}'
 ```
 
 *MicroService mkdocs.yml (located within the docs directory or the parent directory)*
@@ -88,11 +98,9 @@ nav:
 > - *nav* takes precedence over *repos* (see below).
 > - *{path}* can also be a [glob](https://en.wikipedia.org/wiki/Glob_(programming)) (e.g., `docs/*`).
 
+## Repos Config
 
 If you'd prefer *MkDocs* to build the site nav based on the directory structure, you can define your other repos within the *plugins* section.
-
-> Note:
-> Cleanup should be set to `false` when developing (i.e., when calling `mkdocs serve`). This will prevent importing repos multiple times with livereload.
 
 ```yaml
 plugins:
@@ -100,10 +108,11 @@ plugins:
   - multirepo:
       # (optional) tells multirepo to cleanup the temporary directory after site is built.
       cleanup: true
-      # if set the docs directory will not be removed when importing docs. When using this with a nav section in an imported repo 
+      # if set the docs directory will not be removed when importing docs. When using this with a nav section in an imported repo
       # you must keep the docs directory in the path (e.g., docs/path/to/file.md).
       keep_docs_dir: true
       repos:
+          # There will be a navigation section with this section name
         - section: Backstage
           # you can define the edit uri path
           import_url: 'https://github.com/backstage/backstage?edit_uri=/blob/master/'
@@ -126,6 +135,44 @@ plugins:
           section_path: python # Put this under the python menu entry
           import_url: 'https://github.com/samuelcolvin/pydantic?branch=main'
 ```
+
+## Nav Repos Config
+
+```yaml
+plugins:
+  - search
+  - multirepo:
+      # (optional) tells multirepo to cleanup the temporary directory after site is built.
+      cleanup: false
+      nav_repos:
+        - name: backstage
+          import_url: https://github.com/backstage/backstage
+          # forward slash is needed in '/README.md' so that only the README.md in the root
+          # directory is imported and not all README.md files.
+          imports: [
+            docs/publishing.md, docs/integrations/index.md, /README.md,
+            # asset files needed
+            docs/assets/*
+            ]
+        - name: fast-api
+          import_url: https://github.com/tiangolo/fastapi
+          imports: [docs/en/docs/index.md]
+
+nav:
+  - Backstage:
+      - Home: backstage/README.md
+      - Integration: backstage/docs/integrations/index.md
+      - Publishing: backstage/docs/publishing.md
+      - Conduct: backstage/CODE_OF_CONDUCT.md
+      - Adapters: backstage/ADOPTERS.md
+      - Security: backstage/SECURITY.md
+      - Contributing: backstage/CONTRIBUTING.md
+  - FastAPI: fast-api/docs/en/docs/index.md
+  # you can still use the !import statement
+  - MkdocStrings: '!import https://github.com/mkdocstrings/mkdocstrings'
+```
+
+## Run
 
 Once you're done configuring, run either `mkdocs serve` or `mkdocs build`. This will `import` the docs into a temporary directory and build the site.
 
@@ -201,7 +248,7 @@ For `mkdocs serve` to work properly in an imported repo (a repo that is imported
 
 > Notes:
 > - You will also need to have `plugins` and `packages` the parent repo uses installed within your local `venv`.
-> - See documentation on the [set](https://git-scm.com/docs/git-sparse-checkout#Documentation/git-sparse-checkout.txt-emsetem) git command for `sparse-checkout` if you are confused with what `dirs` can contain.
+> - See documentation on the [set](https://git-scm.com/docs/git-sparse-checkout#Documentation/git-sparse-checkout.txt-emsetem) git command for `sparse-checkout` if you are confused with what `paths` can contain.
 
 ```yml
 plugins:
@@ -209,10 +256,10 @@ plugins:
     imported_repo: true
     url: https://github.com/squidfunk/mkdocs-material
     section_name: Backstage
-    # directories and files needed for building the site
+    # dirs/files needed for building the site
     # any path in docs will be included. For example, index.md is the
     # homepage of the parent site
-    dirs: ["material/*", "mkdocs.yml", "docs/index.md"]
+    paths: ["material/*", "mkdocs.yml", "docs/index.md"]
     custom_dir: material
     yml_file: mkdocs.yml # this can also be a relative path
     branch: master

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 url="$1"
-docs_dir="$2"
+name="$2"
 branch=$3
 shift 3
 dirs=( "$@" )
@@ -18,7 +18,7 @@ else
   url_to_use="$url"
 fi
 
-git clone --branch "$branch" --depth 1 --filter=blob:none --sparse $url_to_use "$docs_dir" || exit 1
-cd "$docs_dir"
+git clone --branch "$branch" --depth 1 --filter=blob:none --sparse $url_to_use "$name" || exit 1
+cd "$name"
 git sparse-checkout set --no-cone ${dirs[*]}
 rm -rf .git

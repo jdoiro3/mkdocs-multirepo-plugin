@@ -1,18 +1,22 @@
 import shutil
 import tempfile
 from copy import deepcopy
+from dataclasses import _MISSING_TYPE, dataclass, field, fields
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
+import dacite as dc
 from mkdocs.config import Config, config_options
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
 from mkdocs.theme import Theme
 from slugify import slugify
+from typing_inspect import get_origin
 
 from .structure import (
     DocsRepo,
     Repo,
+    batch_execute,
     batch_import,
     get_files,
     get_import_stmts,
@@ -32,33 +36,59 @@ IMPORT_STATEMENT = "!import"
 DEFAULT_BRANCH = "master"
 
 
-class ReposSectionException(Exception):
+class ReposConfigException(Exception):
     pass
+
+
+@dataclass
+class RepoConfig:
+    section: str
+    import_url: str
+    section_path: Optional[str] = None
+
+
+@dataclass
+class NavRepoConfig:
+    name: str
+    import_url: str
+    imports: List[str] = field(default_factory=list)
+
+
+@dataclass
+class MultirepoConfig:
+    cleanup: bool = True
+    repos: List[RepoConfig] = field(default_factory=list)
+    nav_repos: List[NavRepoConfig] = field(default_factory=list)
+    imported_repo: bool = False
+    temp_dir: str = "temp_dir"
+    keep_docs_dir: bool = False
+    section_name: str = "imported"
+    url: Optional[str] = None
+    dirs: Optional[List[str]] = None
+    custom_dir: Optional[str] = None
+    yml_file: Optional[str] = None
+    branch: Optional[str] = None
 
 
 class MultirepoPlugin(BasePlugin):
 
-    config_scheme = (
-        ("cleanup", config_options.Type(bool, default=True)),
-        ("temp_dir", config_options.Type(str, default="temp_dir")),
-        ("repos", config_options.Type(list, default=[])),
-        ("url", config_options.Type(str, default=None)),
-        ("keep_docs_dir", config_options.Type(bool, default=False)),
-        # used when developing in repo that is imported
-        ("custom_dir", config_options.Type(str, default=None)),
-        ("yml_file", config_options.Type(str, default=None)),
-        ("imported_repo", config_options.Type(bool, default=False)),
-        ("dirs", config_options.Type(list, default=[])),
-        ("branch", config_options.Type(str, default=None)),
-        ("section_name", config_options.Type(str, default="Imported Docs")),
+    config_scheme = tuple(
+        (
+            f.name,
+            config_options.Type(
+                get_origin(f.type) or f.type,
+                default=f.default
+                if not isinstance(f.default, _MISSING_TYPE)
+                else f.default_factory(),
+            ),
+        )
+        for f in fields(MultirepoConfig)
     )
 
     def __init__(self):
         self.temp_dir: Path = None
         self.repos: Dict[str, DocsRepo] = {}
-
-    def set_temp_dir(self, dir):
-        self.temp_dir = dir
+        self.nav_repos: Dict[str, DocsRepo] = {}
 
     def derive_config_edit_uri(
         self, repo_name: str, repo_url: str, config: Config
@@ -70,14 +100,14 @@ class MultirepoPlugin(BasePlugin):
         edit_uri_obj = config_options.EditURI(repo_url_key)
         # sets the mkdocs edit_uri in place
         edit_uri_obj.post_validation(config, "edit_uri")
-        derived_edit_uri = config.get("edit_uri")
+        derived_edit_uri = config.get("edit_uri", "")
         # we just used mkdocs machinery to get the derived value and
         # now we can delete these two config entries
         del config["edit_uri"]
         del config[repo_url_key]
-        return derived_edit_uri or ""
+        return derived_edit_uri
 
-    def setup_imported_repo(self, config: Config):
+    def setup_imported_repo(self, config: Config) -> Path:
         temp_dir = tempfile.mkdtemp(prefix="multirepo_")
         temp_section_dir = Path(temp_dir) / "docs" / self.config.get("section_name")
         temp_section_dir.mkdir(parents=True)
@@ -92,7 +122,8 @@ class MultirepoPlugin(BasePlugin):
         parent_repo = Repo(
             "importee", self.config.get("url"), self.config.get("branch"), temp_dir
         )
-        asyncio_run(parent_repo.import_config_files(self.config.get("dirs")))
+        parent_repo.temp_dir.mkdir(exist_ok=True)
+        asyncio_run(parent_repo.sparse_clone(self.config.get("paths")))
         shutil.copytree(
             str(parent_repo.location / "docs"),
             str(temp_dir / "docs"),
@@ -140,7 +171,7 @@ class MultirepoPlugin(BasePlugin):
         config["dev_addr"] = (addr.host, addr.port)
         return config, temp_dir
 
-    def handle_nav_based_import(self, config: Config) -> Config:
+    def handle_nav_import(self, config: Config) -> Config:
         """Imports documentation in other repos based on nav configuration"""
         keep_docs_dir: bool = self.config.get("keep_docs_dir")
         nav: List[Dict] = config.get("nav")
@@ -171,74 +202,117 @@ class MultirepoPlugin(BasePlugin):
             self.repos[repo.name] = repo
         return config
 
-    def handle_repos_based_import(self, config: Config, repos: List[Dict]) -> Config:
+    def handle_repos_import(self, config: Config, repos: List[RepoConfig]) -> Config:
         """Imports documentation in other repos based on repos configuration"""
-        need_to_derive_edit_uris = config.get("edit_uri") is None
-        docs_repo_objs = []
+        need_to_derive_edit_uris: bool = config.get("edit_uri") is None
+        docs_repo_objs: List[DocsRepo] = []
         for repo in repos:
-            import_stmt = parse_repo_url(repo.get("import_url"))
+            import_stmt = parse_repo_url(repo.import_url)
             if "!import" in import_stmt.get("url"):
                 raise ImportSyntaxError(
                     "import_url should only contain the url with plugin accepted params. You included '!import'."
                 )
-            if (
-                set(repo.keys()).difference({"import_url", "section", "section_path"})
-                != set()
-            ):
-                raise ReposSectionException(
-                    "Repos section now only supports 'import_url', 'section', and 'section_path'. \
-                     All other config values should use the nav import url config (i.e., [url]?[key]=[value])"
-                )
-            name_slug = slugify(repo.get("section"))
-            path = repo.get("section_path")
-            repo_name = f"{path}/{name_slug}" if path is not None else name_slug
+            section_slug = slugify(repo.section)
+            path = repo.section_path
+            repo_name = f"{path}/{section_slug}" if path is not None else section_slug
             # mkdocs config values edit_uri and repo_url aren't set
             if need_to_derive_edit_uris:
                 derived_edit_uri = self.derive_config_edit_uri(
                     repo_name, import_stmt.get("url"), config
                 )
-            repo = DocsRepo(
-                name=repo_name,
+            docs_repo_objs.append(
+                DocsRepo(
+                    name=repo_name,
+                    url=import_stmt.get("url"),
+                    temp_dir=self.temp_dir,
+                    docs_dir=import_stmt.get("docs_dir", "docs/*"),
+                    branch=import_stmt.get("branch", DEFAULT_BRANCH),
+                    edit_uri=import_stmt.get("edit_uri")
+                    or config.get("edit_uri")
+                    or derived_edit_uri,
+                    multi_docs=bool(import_stmt.get("multi_docs", False)),
+                    extra_imports=import_stmt.get("extra_imports", []),
+                    keep_docs_dir=import_stmt.get("keep_docs_dir", False),
+                )
+            )
+        asyncio_run(batch_import(docs_repo_objs))
+        for dr in docs_repo_objs:
+            self.repos[dr.name] = dr
+        return config
+
+    def handle_nav_repos_import(
+        self, config: Config, nav_repos: List[NavRepoConfig]
+    ) -> Config:
+        need_to_derive_edit_uris = config.get("edit_uri") is None
+        docs_repo_objs: List[DocsRepo] = []
+        for nr in nav_repos:
+            import_stmt = parse_repo_url(nr.import_url)
+            name: str = slugify(nr.name)
+            # mkdocs config values edit_uri and repo_url aren't set
+            if need_to_derive_edit_uris:
+                derived_edit_uri = self.derive_config_edit_uri(
+                    name, import_stmt.get("url"), config
+                )
+            repo: DocsRepo = DocsRepo(
+                name=name,
                 url=import_stmt.get("url"),
                 temp_dir=self.temp_dir,
-                docs_dir=import_stmt.get("docs_dir", "docs/*"),
                 branch=import_stmt.get("branch", DEFAULT_BRANCH),
+                paths=nr.imports,
                 edit_uri=import_stmt.get("edit_uri")
                 or config.get("edit_uri")
                 or derived_edit_uri,
-                multi_docs=bool(import_stmt.get("multi_docs", False)),
-                extra_imports=import_stmt.get("extra_imports", []),
             )
+            if repo.cloned:
+                repo.delete_repo()
             docs_repo_objs.append(repo)
-        asyncio_run(batch_import(docs_repo_objs))
-        for repo in docs_repo_objs:
             self.repos[repo.name] = repo
+        asyncio_run(batch_execute(repos=docs_repo_objs, method=Repo.sparse_clone))
         return config
 
     def on_config(self, config: Config) -> Config:
-        if self.config.get("imported_repo"):
+        try:
+            multi_config: MultirepoConfig = dc.from_dict(
+                data_class=MultirepoConfig,
+                data=self.config,
+                config=dc.Config(strict=True),
+            )
+        except dc.UnexpectedDataError as e:
+            formatted_keys = ", ".join(f'"{key}"' for key in e.keys)
+            raise ReposConfigException(
+                f"unknown config key(s), {formatted_keys}, for MultirepoConfig"
+            )
+        if multi_config.imported_repo:
             config, temp_dir = self.handle_imported_repo(config)
-            self.set_temp_dir(temp_dir)
+            self.temp_dir = temp_dir
             return config
         else:
             docs_dir = Path(config.get("docs_dir"))
-            self.set_temp_dir(docs_dir.parent / self.config.get("temp_dir"))
+            self.temp_dir = docs_dir.parent / multi_config.temp_dir
             if not self.temp_dir.is_dir():
                 self.temp_dir.mkdir()
-            repos = self.config.get("repos")
-            if not config.get("nav") and not repos:
+            repos: RepoConfig = multi_config.repos
+            nav_repos: NavRepoConfig = multi_config.nav_repos
+            nav: Optional[Dict[str, ...]] = config.get("nav")
+            if not nav and not repos and not nav_repos:
                 return config
-            if config.get("nav") and repos:
+            if nav and repos:
                 log.warning(
-                    "Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence"
+                    "Multirepo plugin is ignoring plugins.multirepo.repos. Nav takes precedence."
+                )
+            if not nav and nav_repos:
+                log.warning(
+                    "Multirepo plugin has nav_repos configuration without a nav section."
                 )
             log.info("Multirepo plugin importing docs...")
             # nav takes precedence over repos
-            if config.get("nav"):
-                return self.handle_nav_based_import(config)
+            if nav:
+                config = self.handle_nav_import(config)
+                if nav_repos:
+                    return self.handle_nav_repos_import(config, nav_repos)
+                return config
             # navigation isn't defined but plugin section has repos
-            if repos:
-                return self.handle_repos_based_import(config, repos)
+            return self.handle_repos_import(config, repos)
 
     def on_files(self, files: Files, config: Config) -> Files:
         if self.config.get("imported_repo"):
@@ -259,13 +333,12 @@ class MultirepoPlugin(BasePlugin):
             return nav
         else:
             for f in files:
-                try:
-                    files_repo = f.repo
-                except AttributeError:
-                    files_repo = None
-                if files_repo and f.page:
-                    f.page.edit_url = files_repo.get_edit_url(
-                        f.src_path, self.config.get("keep_docs_dir")
+                repo = f.repo if hasattr(f, "repo") else None
+                if repo and f.page:
+                    f.page.edit_url = repo.get_edit_url(
+                        f.src_path,
+                        self.config.get("keep_docs_dir"),
+                        self.config.get("nav_repos"),
                     )
             return nav
 

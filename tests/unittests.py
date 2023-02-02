@@ -70,6 +70,7 @@ class TestUtil(BaseCase):
             (1, "root/subfolder", "/subfolder"),
             (2, "root/subfolder/subfolder2", "/subfolder2"),
             (3, "root/subfolder/subfolder2/subfolder3", "/subfolder3"),
+            (0, "root/subfolder", "/root/subfolder"),
         ]
         for case in test_cases:
             self.assertEqual(util.remove_parents(case[1], case[0]), case[2])
@@ -77,6 +78,8 @@ class TestUtil(BaseCase):
             (1, "root"),
             (2, "root/subfolder"),
             (3, "root/subfolder"),
+            (3, "root"),
+            (1, ""),
         ]
         for case in test_exception_cases:
             with self.assertRaises(ValueError):
@@ -109,6 +112,7 @@ class TestStructure(BaseCase):
                 ]
             },
             {"Home": "index.md"},
+            {"Section2": [{"Section3": [{"Home": "index.md"}]}, {"Home": "index.md"}]},
         ]
         expected = [
             {
@@ -118,6 +122,12 @@ class TestStructure(BaseCase):
                 ]
             },
             {"Home": "some_repo/index.md"},
+            {
+                "Section2": [
+                    {"Section3": [{"Home": "some_repo/index.md"}]},
+                    {"Home": "some_repo/index.md"},
+                ]
+            },
         ]
         structure.resolve_nav_paths(nav, section_name)
         self.assertListEqual(nav, expected)
@@ -376,6 +386,55 @@ class TestStructure(BaseCase):
                 docsRepo.location / "src" / file for file in ["script.py"]
             ]
             for file in expected_files + expected_src_files:
+                self.assertFileExists(file)
+
+    async def test_keep_docs_dir(self):
+        async with tempfile.TemporaryDirectory() as temp_dir:
+            temp_dir_path = pathlib.Path(temp_dir)
+            docsRepo = structure.DocsRepo(
+                name="test-repo",
+                url="https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1",
+                temp_dir=temp_dir_path,
+                docs_dir="docs/*",
+                branch="main",
+                edit_uri="/test",
+                multi_docs=False,
+                keep_docs_dir=True,
+            )
+            await docsRepo.import_docs()
+            expected_files = [
+                docsRepo.location / "docs" / file
+                for file in ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
+            ]
+            for file in expected_files:
+                self.assertFileExists(file)
+
+    async def test_multi_docs(self):
+        async with tempfile.TemporaryDirectory() as temp_dir:
+            temp_dir_path = pathlib.Path(temp_dir)
+            docsRepo = structure.DocsRepo(
+                name="test-repo",
+                url="https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1",
+                temp_dir=temp_dir_path,
+                docs_dir="docs/*",
+                branch="test-multi-docs",
+                edit_uri="/test",
+                multi_docs=True,
+            )
+            await docsRepo.import_docs()
+            expected_files = [
+                docsRepo.location / path
+                for path in [
+                    "package1/index.md",
+                    "package2/index.md",
+                    "package1/getting-started/page.md",
+                    "index.md",
+                    "mkdocs.yml",
+                    "page1.md",
+                    "page2.md",
+                ]
+            ]
+            for file in expected_files:
                 self.assertFileExists(file)
 
 

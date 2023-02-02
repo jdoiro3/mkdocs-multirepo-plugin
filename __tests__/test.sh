@@ -20,7 +20,7 @@ docker build -t mkdocs-multirepo-test-runner:$1 --quiet -f- . <<EOF
   COPY ./mkdocs_multirepo_plugin /workspace/mkdocs_multirepo_plugin
   COPY ./README.md /workspace/README.md
   COPY ./integration-requirements.txt /workspace/integration-requirements.txt
-  RUN apt-get -y update && apt-get -yyy install bats && apt-get -yyy install git
+  RUN apt-get -y update && apt-get -yyy install bats && apt-get -yyy install git && apt-get install tree
   RUN pip install --upgrade pip
   RUN pip install -r ./workspace/integration-requirements.txt
   RUN pip install ./workspace
@@ -29,7 +29,11 @@ docker build -t mkdocs-multirepo-test-runner:$1 --quiet -f- . <<EOF
 EOF
 
 printf "\nRunning E2E tests via Bats in Docker (python:$1) -------->\n"
-docker run -it -w /workspace -v $(pwd):/workspace mkdocs-multirepo-test-runner:$1
+if [[ ! -z "$NO_IT" ]]; then
+  docker run -w /workspace -v $(pwd):/workspace mkdocs-multirepo-test-runner:$1
+else
+  docker run -it -w /workspace -v $(pwd):/workspace mkdocs-multirepo-test-runner:$1
+fi
 }
 
 if [[ ! -z "$PYTHON_37_ONLY" ]]; then
