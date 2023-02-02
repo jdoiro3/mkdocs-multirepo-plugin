@@ -15,7 +15,7 @@ on:
         description: Generate a GH release and create a new tag
         type: boolean
         required: false
-        default: true
+        default: false
       release-to-pypi-override:
         description: Generate a release to PYPI even if the version in pyproject.toml is the same as main
         type: boolean
