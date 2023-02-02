@@ -29,10 +29,10 @@ docker build -t mkdocs-multirepo-test-runner:$1 --quiet -f- . <<EOF
 EOF
 
 printf "\nRunning E2E tests via Bats in Docker (python:$1) -------->\n"
-if [[ ! -z "$IT" ]]; then
-  docker run -it -w /workspace -v $(pwd):/workspace mkdocs-multirepo-test-runner:$1
-else
+if [[ ! -z "$NO_IT" ]]; then
   docker run -w /workspace -v $(pwd):/workspace mkdocs-multirepo-test-runner:$1
+else
+  docker run -it -w /workspace -v $(pwd):/workspace mkdocs-multirepo-test-runner:$1
 fi
 }
 

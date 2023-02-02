@@ -131,11 +131,11 @@ def get_import_stmts(
             continue
         ((section, value),) = entry.items()
         path_to_section.append(section)
-        if type(value) is list:
+        if isinstance(value, list):
             imports += get_import_stmts(
                 value, temp_dir, default_branch, path_to_section
             )
-        elif value.startswith("!import"):
+        elif isinstance(value, str) and value.startswith("!import"):
             import_stmt: Dict[str, str] = parse_import(value)
             # slugify the section names and turn them into a valid path string
             path = str(Path(*[slugify(section) for section in path_to_section]))
@@ -152,13 +152,7 @@ def get_import_stmts(
                 keep_docs_dir=import_stmt.get("keep_docs_dir", False),
             )
             imports.append(NavImport(section, nav[index], repo))
-            path_to_section.pop()
-        else:
-            path_to_section.pop()
-    try:
         path_to_section.pop()
-    except IndexError:
-        pass
     return imports
 
 
