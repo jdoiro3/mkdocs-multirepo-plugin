@@ -1,3 +1,9 @@
+## 0.6.1
+
+### Prs in Release
+
+- [Disable globbing in clone scripts](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/86)
+
 ## 0.6.0
 
 ### Prs in Release
