@@ -28,11 +28,13 @@ jobs:
             npm install semver
             npm install toml
         - name: Fetch main branch
-          run: git fetch --no-tags origin main:main
+          run: |
+            git remote add jdoiro3_main https://github.com/jdoiro3/mkdocs-multirepo-plugin
+            git fetch --no-tags jdoiro3_main main:jdoiro3_main
         - name: Get Old pyproject.toml and Hashes of CHANGELOG.md
           run: |
             git show main:pyproject.toml > old_pyproject.toml
-            main_changelog=$(git show main:CHANGELOG.md | git hash-object --stdin)
+            main_changelog=$(git show jdoiro3_main:CHANGELOG.md | git hash-object --stdin)
             curr_changelog=$(git show ${{ github.head_ref }}:CHANGELOG.md | git hash-object --stdin)
             echo "main_changelog=${main_changelog}" >> $GITHUB_ENV
             echo "curr_changelog=$curr_changelog" >> $GITHUB_ENV
