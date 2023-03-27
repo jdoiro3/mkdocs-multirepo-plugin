@@ -1,3 +1,9 @@
+## 0.6.1
+
+### Prs in Release
+
+- [Fix keep docs dir](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/89)
+
 ## 0.6.0
 
 ### Prs in Release
