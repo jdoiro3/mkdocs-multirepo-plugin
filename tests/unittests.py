@@ -6,6 +6,7 @@ import sys
 import unittest
 from pathlib import Path
 from shutil import copy
+from parameterized import parameterized
 
 from aiofiles import tempfile
 
@@ -388,7 +389,15 @@ class TestStructure(BaseCase):
             for file in expected_files + expected_src_files:
                 self.assertFileExists(file)
 
-    async def test_keep_docs_dir(self):
+    @parameterized.expand([
+       (True, False, True), # keep_docs_dir is set, global setting ignored
+       (True, True, True),
+       (False, False, False),
+       (False, True, False),
+       (None, False, False), # keep_docs_dir is not set, global setting overrides
+       (None, True, True),
+   ])
+    async def test_keep_docs_dir(self, keep_docs_dir, global_keep_docs_dir, expected_docs_exist):
         async with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
             docsRepo = structure.DocsRepo(
@@ -399,13 +408,19 @@ class TestStructure(BaseCase):
                 branch="main",
                 edit_uri="/test",
                 multi_docs=False,
-                keep_docs_dir=True,
+                keep_docs_dir=keep_docs_dir,
             )
-            await docsRepo.import_docs()
+            await docsRepo.import_docs(keep_docs_dir=global_keep_docs_dir)
+
+            prefix = docsRepo.location
+            if expected_docs_exist:
+                prefix = prefix / "docs"
+
             expected_files = [
-                docsRepo.location / "docs" / file
+                prefix / file
                 for file in ["index.md", "mkdocs.yml", "page1.md", "page2.md"]
             ]
+
             for file in expected_files:
                 self.assertFileExists(file)
 
