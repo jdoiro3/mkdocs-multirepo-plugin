@@ -33,7 +33,7 @@ jobs:
             git fetch --no-tags jdoiro3_main main:jdoiro3_main
         - name: Get Old pyproject.toml and Hashes of CHANGELOG.md
           run: |
-            git show main:pyproject.toml > old_pyproject.toml
+            git show jdoiro3_main:pyproject.toml > old_pyproject.toml
             main_changelog=$(git show jdoiro3_main:CHANGELOG.md | git hash-object --stdin)
             curr_changelog=$(git show ${{ github.head_ref }}:CHANGELOG.md | git hash-object --stdin)
             echo "main_changelog=${main_changelog}" >> $GITHUB_ENV
