@@ -4,7 +4,7 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from mkdocs.config import Config
 from mkdocs.structure.files import File, Files, _filter_paths, _sort_files
@@ -149,7 +149,7 @@ def get_import_stmts(
                 multi_docs=bool(import_stmt.get("multi_docs", False)),
                 config=import_stmt.get("config", "mkdocs.yml"),
                 extra_imports=import_stmt.get("extra_imports", []),
-                keep_docs_dir=import_stmt.get("keep_docs_dir", False),
+                keep_docs_dir=import_stmt.get("keep_docs_dir"),
             )
             imports.append(NavImport(section, nav[index], repo))
         path_to_section.pop()
@@ -231,6 +231,9 @@ class DocsRepo(Repo):
         multi_docs (bool): If this is True, it means the repo has multiple docs directories that the user
                             wants to be pulled into the site.
         extra_imports (list): Extra directories to import along with the docs.
+        keep_docs_dir (bool): If `True` the docs directory will be kept when importing docs from this repo,
+                              if `False` it will be removed, and if `None` (default) it will fall back to
+                              the global setting.
     """
 
     def _fix_edit_uri(self, edit_uri: str) -> str:
@@ -259,7 +262,7 @@ class DocsRepo(Repo):
         multi_docs: bool = False,
         config: str = "mkdocs.yml",
         extra_imports: List[str] = None,
-        keep_docs_dir: bool = False,
+        keep_docs_dir: Optional[bool] = None,
         *args,
         **kwargs,
     ):
@@ -297,8 +300,10 @@ class DocsRepo(Repo):
     def name_length(self):
         return len(Path(self.name).parts)
 
-    def keep_docs_dir(self, global_config_val: bool = False):
-        return self._keep_docs_dir and (self._keep_docs_dir or global_config_val)
+    def keep_docs_dir(self, global_keep_docs_dir: bool = False):
+        if self._keep_docs_dir is None:
+            return global_keep_docs_dir
+        return self._keep_docs_dir
 
     def get_edit_url(
         self, src_path, keep_docs_dir: bool = False, nav_repos: bool = False
@@ -323,7 +328,7 @@ class DocsRepo(Repo):
                 ]
         elif (
             is_extra_import
-            or self.keep_docs_dir(global_config_val=keep_docs_dir)
+            or self.keep_docs_dir(global_keep_docs_dir=keep_docs_dir)
             or nav_repos
         ):
             url_parts = [self.url, self.edit_uri, src_path]
@@ -377,7 +382,7 @@ class DocsRepo(Repo):
             self.transform_docs_dir()
         else:
             await self.sparse_clone([self.docs_dir, self.config] + self.extra_imports)
-            if not self.keep_docs_dir(global_config_val=keep_docs_dir):
+            if not self.keep_docs_dir(global_keep_docs_dir=keep_docs_dir):
                 await execute_bash_script(
                     "mv_docs_up.sh",
                     [self.docs_dir.replace("/*", "")],
