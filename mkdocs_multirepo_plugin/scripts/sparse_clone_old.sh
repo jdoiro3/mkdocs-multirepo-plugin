@@ -1,4 +1,5 @@
 #!/bin/bash
+set -f
 
 url="$1"
 docs_dir="$2"

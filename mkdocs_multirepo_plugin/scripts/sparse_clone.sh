@@ -1,4 +1,5 @@
 #!/bin/bash
+set -f
 
 url="$1"
 name="$2"
