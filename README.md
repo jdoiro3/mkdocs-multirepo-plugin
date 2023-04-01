@@ -1,5 +1,3 @@
-:warning: One person maintains this plugin in their spare time for free. :warning:
-
 If you like this plugin and want me to continue maintaining it in my free time, please buy me a [beer 🍺](https://www.buymeacoffee.com/jdoiro) or sponser this plugin!
 
 # mkdocs-multirepo-plugin
