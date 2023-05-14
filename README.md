@@ -45,7 +45,7 @@ Next, add the plugin to your `mkdocs.yml`
 
 ```yaml
 plugins:
-  - multirepo
+  - multirepo:
       # (optional) tells multirepo to cleanup the temporary directory after site is built.
       cleanup: true
       # if set the docs directory will not be removed when importing docs.
