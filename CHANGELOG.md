@@ -1,3 +1,9 @@
+## 0.6.2
+
+### Prs in Release
+
+- [Fix deps for Python 3.10](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/104)
+
 ## 0.6.1
 
 ### Prs in Release
