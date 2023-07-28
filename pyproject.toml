@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mkdocs-multirepo-plugin"
-version = "0.6.1"
+version = "0.6.2"
 description = "Build documentation in multiple repos into one site."
 authors = ["jdoiro3 <josephdoiron1234@yahoo.com>"]
 license = "MIT"
@@ -25,7 +25,7 @@ mv_docs_up = { reference = 'mkdocs_multirepo_plugin/scripts/mv_docs_up.sh', type
 
 [tool.poetry.dependencies]
 mkdocs = {version = ">=1.0.4", python = ">=3.6"}
-asyncio = "*"
+asyncio = {version = "*", python = "<=3.8"}
 python-slugify = {version = "*", python = ">=2.7,<2.8 || >=3.6.0"}
 dacite = {version = "^1.8.0", python = ">=3.6"}
 typing-inspect = {version = "^0.8.0", python = ">=3.6"}
