@@ -300,6 +300,10 @@ class DocsRepo(Repo):
     def name_length(self):
         return len(Path(self.name).parts)
 
+    @property
+    def config_path(self):
+        return os.path.join(self.name, self.config)
+
     def keep_docs_dir(self, global_keep_docs_dir: bool = False):
         if self._keep_docs_dir is None:
             return global_keep_docs_dir
