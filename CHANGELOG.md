@@ -1,3 +1,9 @@
+## 0.6.3
+
+### Prs in Release
+
+- [Only exclude mkdocs config YAML files.](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/117)
+
 ## 0.6.2
 
 ### Prs in Release
