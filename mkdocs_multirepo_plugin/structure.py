@@ -343,6 +343,8 @@ class DocsRepo(Repo):
                 self.docs_dir.replace("/*", ""),
                 src_path,
             ]
+        if(self.edit_uri.startswith("http")):
+            url_parts.pop(0)
         return "/".join(part.strip("/") for part in url_parts)
 
     def set_edit_uri(self, edit_uri) -> None:
