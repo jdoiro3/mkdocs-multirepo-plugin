@@ -344,7 +344,7 @@ class DocsRepo(Repo):
                 src_path,
             ]
         if(self.edit_uri.startswith("http")):
-            # If edit_uri starts with http we will use this instead of repo url
+            # If edit_uri starts with http wee will use this instead of repo url
             url_parts.pop(0)
         return "/".join(part.strip("/") for part in url_parts)
 
