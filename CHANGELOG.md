@@ -1,4 +1,8 @@
-## 0.6.3
+## 0.6.4
+
+### prs in Release
+
+- [Support edit_url starting with http](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/120)
 
 ### Prs in Release
 
