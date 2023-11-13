@@ -212,7 +212,7 @@ class MultirepoPlugin(BasePlugin):
                 raise ImportSyntaxError(
                     "import_url should only contain the url with plugin accepted params. You included '!import'."
                 )
-            section_slug = slugify(repo.section)
+            section_slug = slugify(text=repo.section, lowercase=False)
             path = repo.section_path
             repo_name = f"{path}/{section_slug}" if path is not None else section_slug
             # mkdocs config values edit_uri and repo_url aren't set

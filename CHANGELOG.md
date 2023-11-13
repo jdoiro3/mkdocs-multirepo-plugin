@@ -1,3 +1,9 @@
+## 0.6.4
+
+### Prs in Release
+
+- [Fix section case](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/124)
+
 ## 0.6.3
 
 ### Prs in Release
