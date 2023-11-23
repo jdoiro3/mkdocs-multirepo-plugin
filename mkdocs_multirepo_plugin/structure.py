@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from mkdocs.config import Config
-from mkdocs.structure.files import File, Files, _filter_paths, _sort_files
+from mkdocs.structure.files import File, Files, _sort_files
 from mkdocs.utils import yaml_load
 from slugify import slugify
 
@@ -433,25 +433,16 @@ async def batch_import(
 def get_files(config: Config, repo: DocsRepo) -> Files:
     """Walk the `docs_dir` and return a Files collection."""
     files = []
-    exclude = [".*", "/templates"]
 
     for source_dir, dirnames, filenames in os.walk(repo.location, followlinks=True):
         relative_dir = os.path.relpath(source_dir, repo.temp_dir)
 
         for dirname in list(dirnames):
             path = os.path.normpath(os.path.join(relative_dir, dirname))
-            # Skip any excluded directories
-            if _filter_paths(basename=dirname, path=path, is_dir=True, exclude=exclude):
-                dirnames.remove(dirname)
         dirnames.sort()
 
         for filename in _sort_files(filenames):
             path = os.path.normpath(os.path.join(relative_dir, filename))
-            # Skip any excluded files
-            if _filter_paths(
-                basename=filename, path=path, is_dir=False, exclude=exclude
-            ):
-                continue
             # Skip README.md if an index file also exists in dir
             if filename == "README.md" and "index.md" in filenames:
                 log.warning(
