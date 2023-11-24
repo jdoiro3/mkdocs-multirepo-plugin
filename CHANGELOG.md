@@ -1,3 +1,9 @@
+## 0.6.4
+
+### Prs in Release
+
+- [Add Bitbucket config in scripts.](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/132)
+
 ## 0.6.3
 
 ### Prs in Release
