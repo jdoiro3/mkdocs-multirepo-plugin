@@ -1,3 +1,9 @@
+## 0.6.4
+
+### Prs in Release
+
+- [Remove deprecation warning.](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/131)
+
 ## 0.6.3
 
 ### Prs in Release
