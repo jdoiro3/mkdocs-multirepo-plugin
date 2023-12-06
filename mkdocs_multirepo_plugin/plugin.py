@@ -324,7 +324,9 @@ class MultirepoPlugin(BasePlugin):
                 repo_config_path = repo.config_path
                 for f in repo_files:
                     if f.src_path == repo_config_path:
-                        log.info(f"Multirepo plugin is not copying config file: {f.src_path}")
+                        log.info(
+                            f"Multirepo plugin is not copying config file: {f.src_path}"
+                        )
                     else:
                         # the file needs to know about the repo it belongs to
                         f.repo = repo

@@ -37,7 +37,7 @@ jobs:
           echo "run-integration-tests = ${{ github.event.inputs.run-integration-tests }}"
           echo "generate-gh-release = ${{ github.event.inputs.generate-gh-release }}"
           echo "release-to-pypi-override = ${{ github.event.inputs.elease-to-pypi-override }}"
-          
+
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
