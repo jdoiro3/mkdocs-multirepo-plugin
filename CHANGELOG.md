@@ -3,7 +3,7 @@
 ### Prs in Release
 
 - [Fix section case](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/124)
-- [Remove deprecation warning.](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/131)
+- [Remove deprecation warning](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/131)
 
 ## 0.6.3
 
