@@ -212,7 +212,7 @@ class MultirepoPlugin(BasePlugin):
                 raise ImportSyntaxError(
                     "import_url should only contain the url with plugin accepted params. You included '!import'."
                 )
-            section_slug = slugify(repo.section)
+            section_slug = slugify(text=repo.section, lowercase=False)
             path = repo.section_path
             repo_name = f"{path}/{section_slug}" if path is not None else section_slug
             # mkdocs config values edit_uri and repo_url aren't set
@@ -324,7 +324,9 @@ class MultirepoPlugin(BasePlugin):
                 repo_config_path = repo.config_path
                 for f in repo_files:
                     if f.src_path == repo_config_path:
-                        log.info(f"Multirepo plugin is not copying config file: {f.src_path}")
+                        log.info(
+                            f"Multirepo plugin is not copying config file: {f.src_path}"
+                        )
                     else:
                         # the file needs to know about the repo it belongs to
                         f.repo = repo

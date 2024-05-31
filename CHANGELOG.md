@@ -1,8 +1,17 @@
-## 0.6.4
+## 0.7.1
 
-### prs in Release
+### Prs in Release
 
 - [Support edit_url starting with http](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/120)
+
+## 0.7.0
+
+### Prs in Release
+
+- [Fix section case](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/124)
+- [Remove deprecation warning](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/131)
+
+## 0.6.3
 
 ### Prs in Release
 

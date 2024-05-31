@@ -73,7 +73,7 @@ The plugin introduces the *!import* statement in your config's *nav* section. Yo
   - **config={filename}.yml**: Tells *multirepo* the name of the config file, containing configuration for the plugin. The default value is also `mkdocs.yml`. This config file can live within the docs directory *or* in the parent directory.
   - **extra_imports=["{filename | path | glob}"]**: Use this if you want to import additional directories or files along with the docs.
   - **keep_docs_dir={True | False}**: If set the docs directory will not be removed when importing docs (i.e., `section/page.md` becomes `section/docs/page.md`)
-  
+
 </details>
 
 ```yaml
