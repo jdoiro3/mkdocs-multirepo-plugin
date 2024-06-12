@@ -21,6 +21,8 @@ if [[ -n  "$AccessToken" ]]; then
     git config http.extraheader "AUTHORIZATION: bearer $AccessToken"
 elif [[ -n  "$GithubAccessToken" ]]; then
     url_to_use="${protocol}://x-access-token:$GithubAccessToken@$url_rest"
+elif [[ -n  "$GitlabCIJobToken" ]]; then
+    url_to_use="${protocol}://gitlab-ci-token:$GitlabCIJobToken@$url_rest"
 else
   url_to_use="$url"
 fi
