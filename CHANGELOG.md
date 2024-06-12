@@ -3,6 +3,7 @@
 ### Prs in Release
 
 - [Support edit_url starting with http](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/120)
+- [Support Gitlab CI job token](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/145)
 
 ## 0.7.0
 
