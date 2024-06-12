@@ -35,13 +35,13 @@ Build documentation in multiple repos into one site.
 
 ## Setup
 
-Install plugin using pip:
+Install the plugin using `pip`.
 
 ```
 pip install mkdocs-multirepo-plugin
 ```
 
-Next, add the plugin to your `mkdocs.yml`
+Next, add the plugin to your `mkdocs.yml`.
 
 ```yaml
 plugins:
@@ -215,26 +215,15 @@ By default, this directory turns into this.
 
 ### Use in CI/CD
 
-If you want to use the plugin within Azure Pipelines or Github Actions, you'll need to define an access token.
+If you want to use the plugin within Azure Pipelines, Github or Gitlab, you'll need to define an access token. Below is the `env` variable
+that needs to be set based on which CI system you're using.
 
-#### Azure Pipelines
+| Tool     | Env Var | Notes |
+| -------- | ------- | ----- |
+| [Github](https://docs.github.com/en/actions) | `GithubAccessToken` | The access token should have access to `clone` all repos. This can be a personal access token or one from a GitHub App.
+| [Gitlab](https://docs.gitlab.com/ee/ci/) | `GitlabCIJobToken`  |
+| [Azure Pipelines](https://azure.microsoft.com/en-us/products/devops/pipelines) | `AccessToken` |
 
-You'll need to define an `AccessToken` environment variable for the `mkdocs build` step. The access token should have access to `clone` all repos.
-
-#### Github Actions
-
-You'll need to define an `GithubAccessToken` environment variable for the `mkdocs build` step. The access token should have access to `clone` all repos. This can be a personal access token or one from a GitHub App.
-
-#### Azure Pipeline Step Example
-
-```yaml
-- script: |
-    source ./env/bin/activate
-    mkdocs build
-  env:
-    AccessToken: $(System.AccessToken)
-  displayName: 'Build MkDocs Site'
-```
 
 ### β Development in Imported Repos (Beta)
 
