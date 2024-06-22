@@ -1,21 +1,28 @@
 import asyncio
 import logging
+import re
 import subprocess
-from collections import namedtuple
 from pathlib import Path
-from re import search
 from sys import platform, version_info
-from typing import Any, Dict
+from typing import Any, Dict, NamedTuple
 
-# used for getting Git version
-GitVersion = namedtuple("GitVersion", "major minor")
 LINUX_LIKE_PLATFORMS = ["linux", "linux2", "darwin"]
 
 # This is a global variable imported by other modules
 log = logging.getLogger("mkdocs.plugins." + __name__)
 
 
+class Version(NamedTuple):
+    major: int
+    minor: int
+    patch: int
+
+
 class ImportDocsException(Exception):
+    pass
+
+
+class VersionException(Exception):
     pass
 
 
@@ -60,7 +67,20 @@ def remove_parents(path: str, num_to_remove: int) -> str:
     return "/" + str(Path(*parts_to_keep)).replace("\\", "/")
 
 
-def git_version() -> GitVersion:
+def parse_version(val: str) -> Version:
+    match = re.match(r"[^0-9]*(([0-9]+\.){2}[0-9]+).*", val)
+    if not match:
+        raise VersionException(f"Could not match version in {val}")
+    version: str = match.group(1) if match else ""
+    major, minor, patch = version.split(".", maxsplit=2)
+    return Version(
+        major=int(major.ljust(2, "0")),
+        minor=int(minor.ljust(2, "0")),
+        patch=int(patch.ljust(2, "0")),
+    )
+
+
+def git_version() -> Version:
     extra_run_args = get_subprocess_run_extra_args()
     try:
         output = subprocess.run(["git", "--version"], **extra_run_args)
@@ -71,15 +91,19 @@ def git_version() -> GitVersion:
     stdout = output.stdout
     if isinstance(stdout, bytes):
         stdout = output.stdout.decode()
-    version = search(r"([\d.]+)", stdout).group(1).split(".")[:2]
-    return GitVersion(int(version[0]), int(version[1]))
+    # thanks @matt
+    match = re.match(r"[^0-9]*(([0-9]+\.){2}[0-9]+).*", stdout)
+    if not match:
+        raise GitException(f"Could not match Git version number in {stdout}")
+    version: str = match.group(1) if match else ""
+    return parse_version(version)
 
 
 def git_supports_sparse_clone() -> bool:
-    git_v = git_version()
-    if (git_v.major == 2 and git_v.minor < 25) or (git_v.major < 2):
-        return False
-    return True
+    """The sparse-checkout was added in 2.25.0
+    See RelNotes here: https://github.com/git/git/blob/9005149a4a77e2d3409c6127bf4fd1a0893c3495/Documentation/RelNotes/2.25.0.txt#L67
+    """
+    return git_version() < Version(2, 25, 0)
 
 
 async def execute_bash_script(
@@ -101,10 +125,10 @@ async def execute_bash_script(
         )
 
     stdout, stderr = await process.communicate()
-    stdout, stderr = stdout.decode(), stderr.decode()
+    stdout_str, stderr_str = stdout.decode(), stderr.decode()
     if process.returncode == 1:
-        raise BashException(f"\n{stderr}\n")
-    return stdout
+        raise BashException(f"\n{stderr_str}\n")
+    return stdout_str
 
 
 def asyncio_run(futures) -> None:
