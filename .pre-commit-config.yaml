@@ -1,3 +1,12 @@
+exclude: >
+      (?x)(
+          \.mypy_cache/
+          | \.pytest_cache/
+          | \.venv/
+          | build/
+          | dist/
+          | \S+\.egg-info/
+      )
 repos:
   - repo: https://github.com/timothycrosley/isort
     rev: 5.10.1
@@ -25,6 +34,10 @@ repos:
     hooks:
       - id: flake8
         args: ["--select=E9,F63,F7,F82", "--show-source", "--max-complexity=10", "--max-line-length=127", "--statistics"]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.10.0'  # Use the sha / tag you want to point at
+    hooks:
+      - id: mypy
   - repo: local
     hooks:
       - id: unit-tests
