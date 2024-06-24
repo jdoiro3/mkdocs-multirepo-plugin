@@ -74,9 +74,9 @@ def parse_version(val: str) -> Version:
     version: str = match.group(1) if match else ""
     major, minor, patch = version.split(".", maxsplit=2)
     return Version(
-        major=int(major.ljust(2, "0")),
-        minor=int(minor.ljust(2, "0")),
-        patch=int(patch.ljust(2, "0")),
+        major=int(major),
+        minor=int(minor),
+        patch=int(patch),
     )
 
 
