@@ -1,3 +1,9 @@
+## 0.8.2
+
+### Prs in Release
+
+- [Fix Version Parsing and Git Version Check](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/151)
+
 ## 0.8.1
 
 ### Prs in Release

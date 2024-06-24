@@ -74,9 +74,9 @@ def parse_version(val: str) -> Version:
     version: str = match.group(1) if match else ""
     major, minor, patch = version.split(".", maxsplit=2)
     return Version(
-        major=int(major.ljust(2, "0")),
-        minor=int(minor.ljust(2, "0")),
-        patch=int(patch.ljust(2, "0")),
+        major=int(major),
+        minor=int(minor),
+        patch=int(patch),
     )
 
 
@@ -103,7 +103,7 @@ def git_supports_sparse_clone() -> bool:
     """The sparse-checkout was added in 2.25.0
     See RelNotes here: https://github.com/git/git/blob/9005149a4a77e2d3409c6127bf4fd1a0893c3495/Documentation/RelNotes/2.25.0.txt#L67
     """
-    return git_version() < Version(2, 25, 0)
+    return git_version() >= Version(2, 25, 0)
 
 
 async def execute_bash_script(
