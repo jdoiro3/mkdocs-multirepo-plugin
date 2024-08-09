@@ -1,3 +1,9 @@
+## 0.8.3
+
+### Prs in Release
+
+- [Fix script execution in virtualenvs](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/156)
+
 ## 0.8.2
 
 ### Prs in Release
