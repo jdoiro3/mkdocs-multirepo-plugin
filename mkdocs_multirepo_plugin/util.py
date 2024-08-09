@@ -126,7 +126,7 @@ async def execute_bash_script(
 
     stdout, stderr = await process.communicate()
     stdout_str, stderr_str = stdout.decode(), stderr.decode()
-    if process.returncode == 1:
+    if process.returncode != 0:
         raise BashException(f"\n{stderr_str}\n")
     return stdout_str
 
