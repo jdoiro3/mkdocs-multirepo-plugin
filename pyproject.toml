@@ -18,10 +18,11 @@ classifiers = [
     "Operating System :: POSIX :: Linux"
 ]
 
-[tool.poetry.scripts]
-sparse_clone = { reference = 'mkdocs_multirepo_plugin/scripts/sparse_clone.sh', type = "file" }
-sparse_clone_old = { reference = 'mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh', type = "file" }
-mv_docs_up = { reference = 'mkdocs_multirepo_plugin/scripts/mv_docs_up.sh', type = "file" }
+include = [
+    { path = "mkdocs_multirepo_plugin/scripts/sparse_clone.sh", format = ["sdist", "wheel"] },
+    { path = "mkdocs_multirepo_plugin/scripts/sparse_clone_old.sh", format = ["sdist", "wheel"] },
+    { path = "mkdocs_multirepo_plugin/scripts/mv_docs_up.sh", format = ["sdist", "wheel"] }
+]
 
 [tool.poetry.dependencies]
 mkdocs = {version = ">=1.0.4", python = ">=3.6"}
@@ -29,6 +30,7 @@ asyncio = {version = "*", python = "<=3.8"}
 python-slugify = {version = "*", python = ">=2.7,<2.8 || >=3.6.0"}
 dacite = {version = "^1.8.0", python = ">=3.6"}
 typing-inspect = {version = "^0.8.0", python = ">=3.6"}
+importlib-resources = {version = ">=1.3", python = ">=2.7,<2.8 || >=3.5,<3.9"}
 
 [tool.poetry.dev-dependencies]
 aiofiles = {version = "*", python = ">=3.6,<4.0"}

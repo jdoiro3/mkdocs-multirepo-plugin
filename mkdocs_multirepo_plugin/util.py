@@ -6,6 +6,13 @@ from pathlib import Path
 from sys import platform, version_info
 from typing import Any, Dict, NamedTuple
 
+try:
+    from importlib import resources
+    if not hasattr(resources, 'files'):
+        import importlib_resources as resources
+except ImportError:
+    import importlib_resources as resources
+
 LINUX_LIKE_PLATFORMS = ["linux", "linux2", "darwin"]
 
 # This is a global variable imported by other modules
@@ -110,25 +117,27 @@ async def execute_bash_script(
     script: str, arguments: list = [], cwd: Path = Path.cwd()
 ) -> str:
     """executes a bash script in an asynchronously"""
-    try:
-        process = await asyncio.create_subprocess_exec(
-            "bash",
-            script,
-            *arguments,
-            cwd=cwd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-    except FileNotFoundError:
-        raise GitException(
-            "bash executable not found. Please ensure bash is available in PATH."
-        )
+    ref = resources.files("mkdocs_multirepo_plugin") / "scripts" / script
+    with resources.as_file(ref) as script_path:
+        try:
+            process = await asyncio.create_subprocess_exec(
+                "bash",
+                script_path,
+                *arguments,
+                cwd=cwd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+        except FileNotFoundError:
+            raise GitException(
+                "bash executable not found. Please ensure bash is available in PATH."
+            )
 
-    stdout, stderr = await process.communicate()
-    stdout_str, stderr_str = stdout.decode(), stderr.decode()
-    if process.returncode != 0:
-        raise BashException(f"\n{stderr_str}\n")
-    return stdout_str
+        stdout, stderr = await process.communicate()
+        stdout_str, stderr_str = stdout.decode(), stderr.decode()
+        if process.returncode != 0:
+            raise BashException(f"\n{stderr_str}\n")
+        return stdout_str
 
 
 def asyncio_run(futures) -> None:
