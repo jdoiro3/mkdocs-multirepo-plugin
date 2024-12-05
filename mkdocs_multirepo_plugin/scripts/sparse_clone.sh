@@ -23,5 +23,7 @@ fi
 
 git clone --branch "$branch" --depth 1 --filter=blob:none --sparse $url_to_use "$name" || exit 1
 cd "$name"
+git submodule init
+git submodule update
 git sparse-checkout set --no-cone ${dirs[*]}
 rm -rf .git
