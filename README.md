@@ -155,6 +155,8 @@ plugins:
         - name: fast-api
           import_url: https://github.com/tiangolo/fastapi
           imports: [docs/en/docs/index.md]
+          # Puts the repo in the modules/fast-api directory
+          section_path: modules
 
 nav:
   - Backstage:

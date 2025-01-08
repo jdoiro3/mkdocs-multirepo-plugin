@@ -52,7 +52,7 @@ class NavRepoConfig:
     name: str
     import_url: str
     imports: List[str] = field(default_factory=list)
-
+    section_path: Optional[str] = None
 
 @dataclass
 class MultirepoConfig:
@@ -247,7 +247,10 @@ class MultirepoPlugin(BasePlugin):
         docs_repo_objs: List[DocsRepo] = []
         for nr in nav_repos:
             import_stmt = parse_repo_url(nr.import_url)
-            name: str = slugify(nr.name)
+            section_slug: str = slugify(nr.name)
+            path = repo.section_path
+            name = f"{path}/{section_slug}" if path is not None else section_slug
+            
             # mkdocs config values edit_uri and repo_url aren't set
             if need_to_derive_edit_uris:
                 derived_edit_uri = self.derive_config_edit_uri(
