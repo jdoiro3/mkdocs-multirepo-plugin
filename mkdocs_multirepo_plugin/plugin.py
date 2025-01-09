@@ -248,7 +248,7 @@ class MultirepoPlugin(BasePlugin):
         for nr in nav_repos:
             import_stmt = parse_repo_url(nr.import_url)
             section_slug: str = slugify(nr.name)
-            path = repo.section_path
+            path = nr.section_path
             name = f"{path}/{section_slug}" if path is not None else section_slug
             
             # mkdocs config values edit_uri and repo_url aren't set
