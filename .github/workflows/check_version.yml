@@ -49,7 +49,8 @@ jobs:
 
               var pyproject = toml.parse(await fs.readFile('pyproject.toml', 'utf8'))
               var old_pyproject = toml.parse(await fs.readFile('old_pyproject.toml', 'utf8'))
-
+              console.log(old_pyproject.tool.poetry.version, pyproject.project.version)
+              
               var msg_body = ""
               if (semver.gte(old_pyproject.tool.poetry.version, pyproject.project.version)) {
                 msg_body = (
