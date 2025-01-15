@@ -168,7 +168,7 @@ jobs:
             const toml = require('toml')
             const fs = require('fs').promises
             const parseChangelog = require('changelog-parser')
-            var version = toml.parse(await fs.readFile('pyproject.toml', 'utf8')).tool.poetry.version
+            var version = toml.parse(await fs.readFile('pyproject.toml', 'utf8')).project.version
             var changelog = await parseChangelog('CHANGELOG.md')
             let result = {changes: changelog.versions[0].body, version: version}
             console.log(result)
