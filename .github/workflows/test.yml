@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.8
+      - name: Set up Python 3.10
         uses: actions/setup-python@v3
         with:
-          python-version: '3.8'
+          python-version: '3.10'
       - name: Install Poetry
         uses: snok/install-poetry@v1
       - name: Install Python dependencies
@@ -42,7 +42,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         git-version: [2.17.0, 2.35.0, 2.37.1]
 
     steps:
