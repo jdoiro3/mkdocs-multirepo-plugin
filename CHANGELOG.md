@@ -1,3 +1,9 @@
+## 0.8.4
+
+### Prs in Release
+
+- [Support for `section_path` in `nav_repos`](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/169)
+
 ## 0.8.3
 
 ### Prs in Release
