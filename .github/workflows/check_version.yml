@@ -51,9 +51,9 @@ jobs:
               var old_pyproject = toml.parse(await fs.readFile('old_pyproject.toml', 'utf8'))
 
               var msg_body = ""
-              if (semver.gte(old_pyproject.project.version, pyproject.project.version)) {
+              if (semver.gte(old_pyproject.tool.poetry.version, pyproject.project.version)) {
                 msg_body = (
-                  `Update the version in [pyproject.toml](https://github.com/${{ github.event.pull_request.head.repo.full_name }}/blob/${{ github.head_ref }}/pyproject.toml) if you want this PR to generate a new release (main is ${old_pyproject.project.version} >= ${pyproject.project.version}).`
+                  `Update the version in [pyproject.toml](https://github.com/${{ github.event.pull_request.head.repo.full_name }}/blob/${{ github.head_ref }}/pyproject.toml) if you want this PR to generate a new release (main is ${old_pyproject.tool.poetry.version} >= ${pyproject.project.version}).`
                   )
               } else {
                 msg_body = "Version has been updated in pyproject.toml."
