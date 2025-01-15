@@ -2,7 +2,9 @@
 name = "mkdocs-multirepo-plugin"
 version = "0.8.3"
 description = "Build documentation in multiple repos into one site."
-authors = ["jdoiro3 <josephdoiron1234@yahoo.com>"]
+authors = [
+    { name="Joseph Doiron", email="josephdoiron1234@yahoo.com" }
+]
 license = "MIT"
 readme = "README.md"
 homepage = "https://pypi.org/project/mkdocs-multirepo-plugin/"
