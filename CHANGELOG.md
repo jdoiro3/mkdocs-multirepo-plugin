@@ -1,3 +1,9 @@
+## 0.8.4
+
+### Prs in Release
+
+- [Improve Auth Handling](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/176)
+  
 ## 0.8.3
 
 ### Prs in Release

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -f
 
-url="$1"
+eval "url=\"$1\""
 name="$2"
 branch=$3
 shift 3
