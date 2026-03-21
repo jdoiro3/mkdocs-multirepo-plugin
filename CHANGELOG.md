@@ -1,3 +1,7 @@
+## 0.8.4
+
+- Fix Handle missing edit_uri safely to prevent crash when edit_uri is not set in mkdocs.yml
+
 ## 0.8.3
 
 ### Prs in Release
