@@ -286,7 +286,7 @@ class TestStructure(BaseCase):
             url="https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1",
             temp_dir=pathlib.Path("."),
             branch="main",
-            edit_uri=None
+            edit_uri=None,
         )
 
         self.assertEqual(repo.edit_uri, "")
