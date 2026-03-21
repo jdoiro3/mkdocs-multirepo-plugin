@@ -280,6 +280,17 @@ class TestStructure(BaseCase):
                 f"{base_url}?docs_dir=fldr/docs/*?config=multirepo.yml"
             )
 
+    def test_edit_uri_none(self):
+        repo = structure.DocsRepo(
+            name="test-repo",
+            url="https://github.com/jdoiro3/mkdocs-multirepo-demoRepo1",
+            temp_dir=pathlib.Path("."),
+            branch="main",
+            edit_uri=None
+        )
+
+        self.assertEqual(repo.edit_uri, "")
+
     async def test_sparse_clone(self):
         async with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = pathlib.Path(temp_dir)
