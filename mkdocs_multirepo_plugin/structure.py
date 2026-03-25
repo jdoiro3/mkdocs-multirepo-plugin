@@ -30,12 +30,17 @@ def resolve_nav_paths(nav: List[Dict], section_name: str) -> None:
     """Adds the section_name to the beginning of all paths in a MkDocs nav object"""
     for index, entry in enumerate(nav):
         if isinstance(entry, str):
-            nav[index] = str(section_name / Path(entry)).replace("\\", "/")
+            if entry.startswith("http"):
+                nav[index] = entry
+            else:
+                nav[index] = str(section_name / Path(entry)).replace("\\", "/")
         elif isinstance(entry, dict):
             ((key, value),) = entry.items()
             if type(value) is list:
                 resolve_nav_paths(value, section_name)
-            else:
+            elif type(value) is str and value.startswith("http"):
+                nav[index][key] = value
+            else:                
                 nav[index][key] = str(section_name / Path(value)).replace("\\", "/")
 
 
