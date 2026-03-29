@@ -1,3 +1,9 @@
+## 0.8.4
+
+### Prs in Release
+
+- [Fix SSH urls to HTTPS](https://github.com/jdoiro3/mkdocs-multirepo-plugin/pull/171)
+
 ## 0.8.3
 
 ### Prs in Release

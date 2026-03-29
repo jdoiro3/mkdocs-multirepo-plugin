@@ -308,6 +308,14 @@ class DocsRepo(Repo):
         if self._keep_docs_dir is None:
             return global_keep_docs_dir
         return self._keep_docs_dir
+    
+    def get_https_url(self, source_url: str) -> str:
+        """Converts a git url to an https url"""
+        if source_url.startswith("ssh://"):
+            source_url = source_url.replace("ssh://", "")
+        if source_url.startswith("git@"):
+            source_url = source_url.replace(":", "/").replace("git@", "https://")
+        return source_url
 
     def get_edit_url(
         self, src_path, keep_docs_dir: bool = False, nav_repos: bool = False
@@ -319,14 +327,14 @@ class DocsRepo(Repo):
             if parent_path in self.src_path_map:
                 src_path = Path(src_path)
                 url_parts = [
-                    self.url,
+                    self.get_https_url(self.url),
                     self.edit_uri,
                     self.src_path_map.get(parent_path),
                     str(src_path.name),
                 ]
             else:
                 url_parts = [
-                    self.url,
+                    self.get_https_url(self.url),
                     self.edit_uri,
                     self.src_path_map.get(str(src_path), str(src_path)),
                 ]
@@ -335,10 +343,10 @@ class DocsRepo(Repo):
             or self.keep_docs_dir(global_keep_docs_dir=keep_docs_dir)
             or nav_repos
         ):
-            url_parts = [self.url, self.edit_uri, src_path]
+            url_parts = [self.get_https_url(self.url), self.edit_uri, src_path]
         else:
             url_parts = [
-                self.url,
+                self.get_https_url(self.url),
                 self.edit_uri,
                 self.docs_dir.replace("/*", ""),
                 src_path,

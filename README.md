@@ -172,6 +172,22 @@ Once you're done configuring, run either `mkdocs serve` or `mkdocs build`. This 
 
 ## Additional Features
 
+### Support ssh urls for import
+
+If an imported repo is imported via an ssh connection, the edit url needs to be modified to reflect an https link.
+
+```
+plugins:
+  - multirepo:
+      cleanup: false
+      repos:
+        - section: Some MKDocs Repo
+          section_path: mkdocs
+          import_url: 'ssh://git@github.com/mkdocs/some-repo?branch=main&edit_uri=blob/main/docs'
+```
+
+This url is modified to remove the `ssh://git@`  or `git@` with `https://` creating the correct edit url.
+
 ### α Multiple Docs Directories in Imported Repo (Alpha)
 
 If an imported repo is a monorepo (i.e., has multiple *docs* directories), *multirepo* automatically includes them in the site when `multi_docs` is set to `True`.
